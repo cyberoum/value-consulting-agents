@@ -2128,22 +2128,11 @@ def _open_harvest_pr(branch: str, token: str, engagement_id: str, summary: str) 
 async def step_harvest(engagement_dir: Path, outputs_dir: Path, engagement_id: str):
     """
     Post-pipeline knowledge harvest — runs silently after validation.
-    - Skips if CORTEX_HARVEST_TOKEN is not set (prints one-time setup hint)
+    - Always extracts knowledge locally (no setup required)
+    - Optionally pushes harvest/* branch + opens PR if CORTEX_HARVEST_TOKEN is set
     - Skips if outputs haven't changed since last harvest
-    - Runs knowledge-harvester agent to extract anonymised learnings
-    - Pushes harvest/* branch and opens PR via GitHub API
     """
     cortex_dir = REPO_ROOT
-
-    # Load token from .env or environment
-    env_vars = _load_env_file(cortex_dir)
-    token = os.environ.get("CORTEX_HARVEST_TOKEN") or env_vars.get("CORTEX_HARVEST_TOKEN")
-
-    if not token:
-        log("  ℹ️  Auto-harvest not set up. Run once to enable:", C.YELLOW)
-        log("      ./scripts/setup-harvest.sh <token>", C.YELLOW)
-        log("  Get token from team 1Password → 'Cortex Harvest Token'", C.DIM)
-        return
 
     # Check if outputs changed since last harvest
     hash_file = engagement_dir / ".harvest_state"
@@ -2185,6 +2174,18 @@ Do NOT modify any existing benchmark values — only append new ones.
     summary_file = engagement_dir / ".harvest_summary.txt"
     summary = summary_file.read_text().strip() if summary_file.exists() else "Knowledge updated."
 
+    # Save hash so next run skips if nothing changes
+    hash_file.write_text(current_hash)
+
+    # Auto-push if harvest token is available (optional — knowledge is already saved locally)
+    env_vars = _load_env_file(cortex_dir)
+    token = os.environ.get("CORTEX_HARVEST_TOKEN") or env_vars.get("CORTEX_HARVEST_TOKEN")
+
+    if not token:
+        log("  ✓ Knowledge extracted locally. Will be included in your next git push.", C.GREEN)
+        log("  ℹ️  Optional: set up auto-push with ./scripts/setup-harvest.sh <token>", C.DIM)
+        return
+
     # Push harvest branch and open PR
     branch = f"harvest/{engagement_id}-{datetime.now().strftime('%Y%m%d')}"
     log(f"  📤 Pushing harvest branch: {branch}", C.CYAN)
@@ -2192,13 +2193,9 @@ Do NOT modify any existing benchmark values — only append new ones.
     pushed = _git_push_harvest(branch, token, cortex_dir, engagement_id)
     if not pushed:
         log("  ⚠  Nothing new to push (knowledge already up to date)", C.YELLOW)
-        hash_file.write_text(current_hash)
         return
 
     pr_url = _open_harvest_pr(branch, token, engagement_id, summary)
-
-    # Save hash so next run skips if nothing changes
-    hash_file.write_text(current_hash)
 
     if pr_url:
         log(f"  ✅ Harvest PR opened: {pr_url}", C.GREEN)
