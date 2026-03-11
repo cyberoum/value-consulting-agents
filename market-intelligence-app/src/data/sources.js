@@ -1,0 +1,210 @@
+export const SOURCES = {
+  // Market-level Nordic sources
+  "_market_nordics": [
+    {label:"Nordic Financial Supervisory Authorities",url:"https://www.fi.se/en/",cat:"Regulatory"},
+    {label:"European Banking Authority",url:"https://www.eba.europa.eu/",cat:"Regulatory"},
+    {label:"ECB Banking Supervision",url:"https://www.bankingsupervision.europa.eu/",cat:"Regulatory"},
+    {label:"Statista — Nordic Banking Market",url:"https://www.statista.com/outlook/dmo/fintech/neobanking/nordics",cat:"Market Data"},
+    {label:"McKinsey Nordic Banking Report",url:"https://www.mckinsey.com/industries/financial-services",cat:"Analysis"}
+  ],
+  // Country sources
+  "_country_Sweden": [
+    {label:"Finansinspektionen (Swedish FSA)",url:"https://www.fi.se/en/",cat:"Regulatory"},
+    {label:"Sveriges Riksbank",url:"https://www.riksbank.se/en-gb/",cat:"Central Bank"},
+    {label:"Statistics Sweden (SCB)",url:"https://www.scb.se/en/",cat:"Statistics"},
+    {label:"Swedish Bankers' Association",url:"https://www.swedishbankers.se/en-us/",cat:"Industry"},
+    {label:"Swish — Payment Statistics",url:"https://www.swish.nu/about-swish",cat:"Payments"}
+  ],
+  "_country_Norway": [
+    {label:"Finanstilsynet (Norwegian FSA)",url:"https://www.finanstilsynet.no/en/",cat:"Regulatory"},
+    {label:"Norges Bank",url:"https://www.norges-bank.no/en/",cat:"Central Bank"},
+    {label:"Statistics Norway (SSB)",url:"https://www.ssb.no/en",cat:"Statistics"},
+    {label:"Finance Norway (Finans Norge)",url:"https://www.finansnorge.no/en/",cat:"Industry"},
+    {label:"Vipps MobilePay",url:"https://vippsmobilepay.com/",cat:"Payments"}
+  ],
+  "_country_Denmark": [
+    {label:"Finanstilsynet (Danish FSA)",url:"https://www.dfsa.dk/",cat:"Regulatory"},
+    {label:"Danmarks Nationalbank",url:"https://www.nationalbanken.dk/en",cat:"Central Bank"},
+    {label:"Statistics Denmark",url:"https://www.dst.dk/en",cat:"Statistics"},
+    {label:"Finance Denmark",url:"https://financedenmark.dk/",cat:"Industry"},
+    {label:"Danish Covered Bond System",url:"https://financedenmark.dk/lending/danish-mortgage-model/",cat:"Mortgage"}
+  ],
+  "_country_Finland": [
+    {label:"Finanssivalvonta (Finnish FSA)",url:"https://www.finanssivalvonta.fi/en/",cat:"Regulatory"},
+    {label:"Bank of Finland",url:"https://www.bof.fi/en/",cat:"Central Bank"},
+    {label:"Statistics Finland",url:"https://www.stat.fi/index_en.html",cat:"Statistics"},
+    {label:"Finance Finland (FFI)",url:"https://www.finanssiala.fi/en/",cat:"Industry"}
+  ],
+  "_country_Iceland": [
+    {label:"Central Bank of Iceland (Seðlabanki)",url:"https://www.cb.is/",cat:"Central Bank"},
+    {label:"FME (Icelandic FSA)",url:"https://www.fme.is/en/",cat:"Regulatory"},
+    {label:"Statistics Iceland",url:"https://www.statice.is/",cat:"Statistics"}
+  ],
+  // Bank sources
+  "Nordea_Sweden": [
+    {label:"Nordea Annual Report 2024",url:"https://www.nordea.com/en/doc/annual-report-nordea-bank-abp-2024-0.pdf",cat:"Annual Report"},
+    {label:"Nordea Investor Relations",url:"https://www.nordea.com/en/investors",cat:"IR"},
+    {label:"Nordea Q4 2024 Results",url:"https://www.nordea.com/en/press/2025-01-30/fourth-quarter-and-full-year-results-2024",cat:"Financials"},
+    {label:"Nordea Group Annual Reports",url:"https://www.nordea.com/en/investors/group-annual-reports",cat:"Annual Report"},
+    {label:"Nordea Leadership",url:"https://www.nordea.com/en/about-us/leadership",cat:"People"},
+    {label:"Nordea Press Releases",url:"https://www.nordea.com/en/press",cat:"News"}
+  ],
+  "SEB_Sweden": [
+    {label:"SEB Annual Report 2024",url:"https://sebgroup.com/investor-relations/reports-and-presentations/annual-reports",cat:"Annual Report"},
+    {label:"SEB Investor Relations",url:"https://sebgroup.com/investor-relations",cat:"IR"},
+    {label:"SEB Group Management",url:"https://sebgroup.com/about-seb/who-we-are/organisation/group-management",cat:"People"},
+    {label:"SEB Press Releases",url:"https://sebgroup.com/press",cat:"News"},
+    {label:"SEB Sustainability Report",url:"https://sebgroup.com/investor-relations/reports-and-presentations/sustainability-reports",cat:"ESG"}
+  ],
+  "DNB_Norway": [
+    {label:"DNB Annual Report 2024",url:"https://www.dnb.no/en/about-us/investor-relations/reports.html",cat:"Annual Report"},
+    {label:"DNB Investor Relations",url:"https://www.dnb.no/en/about-us/investor-relations.html",cat:"IR"},
+    {label:"DNB Group Management",url:"https://www.dnb.no/en/about-us/management.html",cat:"People"},
+    {label:"DNB Press Centre",url:"https://www.dnb.no/en/about-us/press.html",cat:"News"},
+    {label:"DNB Q4 2024 Results",url:"https://www.dnb.no/en/about-us/investor-relations/reports.html",cat:"Financials"}
+  ],
+  "Handelsbanken_Sweden": [
+    {label:"Handelsbanken Annual Report",url:"https://www.handelsbanken.com/en/investor-relations/reports-and-presentations",cat:"Annual Report"},
+    {label:"Handelsbanken Investor Relations",url:"https://www.handelsbanken.com/en/investor-relations",cat:"IR"},
+    {label:"Handelsbanken About Us",url:"https://www.handelsbanken.com/en/about-the-group",cat:"Corporate"},
+    {label:"Handelsbanken Press",url:"https://www.handelsbanken.com/en/press",cat:"News"}
+  ],
+  "Swedbank_Sweden": [
+    {label:"Swedbank Annual Report",url:"https://www.swedbank.com/investor-relations/reports-and-presentations/annual-reports.html",cat:"Annual Report"},
+    {label:"Swedbank Investor Relations",url:"https://www.swedbank.com/investor-relations.html",cat:"IR"},
+    {label:"Swedbank Leadership",url:"https://www.swedbank.com/about-swedbank/organisation/group-management.html",cat:"People"},
+    {label:"Swedbank Press",url:"https://www.swedbank.com/newsroom.html",cat:"News"}
+  ],
+  "Danske Bank_Denmark": [
+    {label:"Danske Bank Annual Report",url:"https://danskebank.com/investor-relations/reports",cat:"Annual Report"},
+    {label:"Danske Bank Investor Relations",url:"https://danskebank.com/investor-relations",cat:"IR"},
+    {label:"Danske Bank Management",url:"https://danskebank.com/about-us/corporate-governance/management",cat:"People"},
+    {label:"Danske Bank News",url:"https://danskebank.com/news",cat:"News"},
+    {label:"Danske Bank AML Settlement (DOJ)",url:"https://danskebank.com/about-us/corporate-governance/compliance/estonia-matters",cat:"Compliance"}
+  ],
+  "OP Financial Group_Finland": [
+    {label:"OP Financial Group Annual Report",url:"https://www.op.fi/op-financial-group/investor-relations/reports-and-presentations",cat:"Annual Report"},
+    {label:"OP Investor Relations",url:"https://www.op.fi/op-financial-group/investor-relations",cat:"IR"},
+    {label:"OP Management",url:"https://www.op.fi/op-financial-group/about-us/management",cat:"People"},
+    {label:"OP Group Structure (Cooperative)",url:"https://www.op.fi/op-financial-group/about-us/op-financial-group",cat:"Corporate"}
+  ],
+  "TF Bank_Sweden": [
+    {label:"TF Bank Investor Relations",url:"https://www.tfbankgroup.com/en/investor-relations/",cat:"IR"},
+    {label:"TF Bank Annual Report",url:"https://www.tfbankgroup.com/en/investor-relations/reports/",cat:"Annual Report"},
+    {label:"TF Bank Press Releases",url:"https://www.tfbankgroup.com/en/investor-relations/press-releases/",cat:"News"},
+    {label:"TF Bank Avarda Rebrand (EGM Nov 2025)",url:"https://www.tfbankgroup.com/en/investor-relations/press-releases/",cat:"Strategy"},
+    {label:"TF Bank Q-reports",url:"https://www.tfbankgroup.com/en/investor-relations/reports/",cat:"Financials"}
+  ],
+  "Nykredit_Denmark": [
+    {label:"Nykredit Investor Relations",url:"https://www.nykredit.com/en-gb/investor-relations/",cat:"IR"},
+    {label:"Nykredit Annual Report",url:"https://www.nykredit.com/en-gb/investor-relations/reports/",cat:"Annual Report"},
+    {label:"Nykredit About Us",url:"https://www.nykredit.com/en-gb/about-nykredit/",cat:"Corporate"},
+    {label:"Nykredit Press",url:"https://www.nykredit.com/en-gb/press/",cat:"News"}
+  ],
+  "Jyske Bank_Denmark": [
+    {label:"Jyske Bank Investor Relations",url:"https://investor.jyskebank.com/",cat:"IR"},
+    {label:"Jyske Bank Annual Report",url:"https://investor.jyskebank.com/documentcentre/reports",cat:"Annual Report"},
+    {label:"Jyske Bank About",url:"https://www.jyskebank.dk/english",cat:"Corporate"}
+  ],
+  "SpareBank 1 SR-Bank_Norway": [
+    {label:"SR-Bank Investor Relations",url:"https://www.sparebank1.no/en/sr-bank/about-us/investor-relations.html",cat:"IR"},
+    {label:"SR-Bank Annual Report",url:"https://www.sparebank1.no/en/sr-bank/about-us/investor-relations/reports.html",cat:"Annual Report"},
+    {label:"SpareBank 1 Alliance",url:"https://www.sparebank1.no/en/bank/about-us/sparebank-1-alliance.html",cat:"Alliance"}
+  ],
+  "SpareBank 1 SMN_Norway": [
+    {label:"SMN Investor Relations",url:"https://www.sparebank1.no/en/smn/about-us/investor-relations.html",cat:"IR"},
+    {label:"SMN Annual Report",url:"https://www.sparebank1.no/en/smn/about-us/investor-relations/reports.html",cat:"Annual Report"}
+  ],
+  "Storebrand Bank_Norway": [
+    {label:"Storebrand Investor Relations",url:"https://www.storebrand.no/en/investor-relations",cat:"IR"},
+    {label:"Storebrand Annual Report",url:"https://www.storebrand.no/en/investor-relations/reports-and-presentations",cat:"Annual Report"}
+  ],
+  "Sydbank_Denmark": [
+    {label:"Sydbank Investor Relations",url:"https://www.sydbank.com/ir",cat:"IR"},
+    {label:"Sydbank Annual Report",url:"https://www.sydbank.com/ir/reports",cat:"Annual Report"}
+  ],
+  "Spar Nord_Denmark": [
+    {label:"Spar Nord Investor Relations",url:"https://www.sparnord.com/investor",cat:"IR"}
+  ],
+  "Landsbankinn_Iceland": [
+    {label:"Landsbankinn Investor Relations",url:"https://www.landsbankinn.is/english/about-us/investor-relations/",cat:"IR"},
+    {label:"Landsbankinn Annual Report",url:"https://www.landsbankinn.is/english/about-us/investor-relations/financial-reports/",cat:"Annual Report"}
+  ],
+  "Íslandsbanki_Iceland": [
+    {label:"Íslandsbanki Investor Relations",url:"https://www.islandsbanki.is/en/product/about/investor-relations",cat:"IR"},
+    {label:"Íslandsbanki Annual Report",url:"https://www.islandsbanki.is/en/product/about/investor-relations/annual-report",cat:"Annual Report"}
+  ],
+  "Arion Bank_Iceland": [
+    {label:"Arion Bank Investor Relations",url:"https://www.arionbanki.is/english/about-us/investor-relations/",cat:"IR"},
+    {label:"Arion Bank Annual Report",url:"https://www.arionbanki.is/english/about-us/investor-relations/reports/",cat:"Annual Report"}
+  ],
+  "Aktia Bank_Finland": [
+    {label:"Aktia Investor Relations",url:"https://www.aktia.com/en/investors",cat:"IR"},
+    {label:"Aktia Annual Report",url:"https://www.aktia.com/en/investors/reports-and-presentations",cat:"Annual Report"}
+  ],
+  "Länsförsäkringar_Sweden": [
+    {label:"Länsförsäkringar About",url:"https://www.lansforsakringar.se/other-languages/english/",cat:"Corporate"},
+    {label:"Länsförsäkringar Bank IR",url:"https://www.lansforsakringar.se/finansiellt/english/",cat:"IR"}
+  ],
+  "Klarna Bank_Sweden": [
+    {label:"Klarna About",url:"https://www.klarna.com/international/about-us/",cat:"Corporate"},
+    {label:"Klarna Investor Relations",url:"https://www.klarna.com/international/ir/",cat:"IR"}
+  ],
+  "SBAB_Sweden": [
+    {label:"SBAB Investor Relations",url:"https://www.sbab.se/1/in_english/investor_relations.html",cat:"IR"}
+  ]
+  ,
+  "Nordea Finland_Finland": [
+    {label:"Nordea Group HQ — Investor Relations",url:"https://www.nordea.com/en/investors",cat:"IR"},
+    {label:"Nordea Annual Report 2024",url:"https://www.nordea.com/en/doc/annual-report-nordea-bank-abp-2024-0.pdf",cat:"Annual Report"},
+    {label:"Nordea Leadership",url:"https://www.nordea.com/en/about-us/leadership",cat:"People"},
+    {label:"Nordea Press Releases",url:"https://www.nordea.com/en/press",cat:"News"}
+  ],
+  "Nordea Norway_Norway": [
+    {label:"Nordea Group IR (decisions from Helsinki)",url:"https://www.nordea.com/en/investors",cat:"IR"},
+    {label:"Nordea Norway",url:"https://www.nordea.no/",cat:"Corporate"}
+  ],
+  "Nordea Denmark_Denmark": [
+    {label:"Nordea Group IR (decisions from Helsinki)",url:"https://www.nordea.com/en/investors",cat:"IR"},
+    {label:"Nordea Denmark",url:"https://www.nordea.dk/",cat:"Corporate"}
+  ],
+  "Danske Bank Finland_Finland": [
+    {label:"Danske Bank Group IR (decisions from Copenhagen)",url:"https://danskebank.com/investor-relations",cat:"IR"},
+    {label:"Danske Bank Finland",url:"https://danskebank.fi/",cat:"Corporate"}
+  ],
+  "Handelsbanken Norway_Norway": [
+    {label:"Handelsbanken Group IR (decisions from Stockholm)",url:"https://www.handelsbanken.com/en/investor-relations",cat:"IR"},
+    {label:"Handelsbanken Norway",url:"https://www.handelsbanken.no/",cat:"Corporate"}
+  ],
+  "SpareBank 1 Østlandet_Norway": [
+    {label:"SpareBank 1 Østlandet IR",url:"https://www.sparebank1.no/en/ostlandet/about-us/investor-relations.html",cat:"IR"},
+    {label:"SpareBank 1 Alliance",url:"https://www.sparebank1.no/en/bank/about-us/sparebank-1-alliance.html",cat:"Alliance"}
+  ],
+  "Sbanken_Norway": [
+    {label:"DNB Group IR (Sbanken parent)",url:"https://www.dnb.no/en/about-us/investor-relations.html",cat:"IR"},
+    {label:"Sbanken",url:"https://sbanken.no/",cat:"Corporate"}
+  ],
+  "Skandiabanken_Sweden": [
+    {label:"Skandia Group",url:"https://www.skandia.se/",cat:"Corporate"},
+    {label:"Skandia Annual Report",url:"https://www.skandia.se/om-oss/finansiell-information/",cat:"Annual Report"}
+  ],
+  "Savings Bank Group (Säästöpankki)_Finland": [
+    {label:"Säästöpankki Group",url:"https://www.saastopankki.fi/en",cat:"Corporate"},
+    {label:"Savings Bank Centre (Sp-Fund)",url:"https://www.sp-rahastoyhtio.fi/en/",cat:"IR"}
+  ],
+  "S-Bank_Finland": [
+    {label:"S-Bank (S-Pankki)",url:"https://www.s-pankki.fi/en/",cat:"Corporate"},
+    {label:"S Group",url:"https://s-ryhma.fi/en",cat:"Corporate"}
+  ],
+  "POP Bank Group_Finland": [
+    {label:"POP Pankki Group",url:"https://www.poppankki.fi/en",cat:"Corporate"}
+  ],
+  "Municipality Finance (MuniFin)_Finland": [
+    {label:"MuniFin Investor Relations",url:"https://www.kfrn.fi/en/investor-relations",cat:"IR"},
+    {label:"MuniFin About",url:"https://www.kfrn.fi/en",cat:"Corporate"}
+  ],
+  "Lunar_Denmark": [
+    {label:"Lunar About",url:"https://www.lunar.app/en/",cat:"Corporate"},
+    {label:"Lunar Blog",url:"https://www.lunar.app/en/blog",cat:"News"}
+  ]
+};
