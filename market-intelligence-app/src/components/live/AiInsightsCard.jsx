@@ -1,4 +1,3 @@
-import { getAiAnalysis, getAiSignals, getAiSuggestedActions } from '../../data/liveDataProvider';
 import { Cpu, Zap, Target, ArrowRight, AlertTriangle, CheckCircle, Info } from 'lucide-react';
 
 const URGENCY_CONFIG = {
@@ -22,8 +21,8 @@ const SIGNAL_TYPE_LABELS = {
  * AI Insights Card — shows Claude's analysis of a bank's news
  * Renders signals, relevance assessment, and suggested actions
  */
-export default function AiInsightsCard({ bankKey }) {
-  const analysis = getAiAnalysis(bankKey);
+export default function AiInsightsCard({ aiAnalysis }) {
+  const analysis = aiAnalysis;
   if (!analysis || analysis.error) return null;
 
   const signals = analysis.signals || [];
@@ -127,8 +126,8 @@ export default function AiInsightsCard({ bankKey }) {
 /**
  * Compact AI signal badge for bank card headers
  */
-export function AiSignalBadge({ bankKey }) {
-  const analysis = getAiAnalysis(bankKey);
+export function AiSignalBadge({ aiAnalysis }) {
+  const analysis = aiAnalysis;
   if (!analysis || analysis.error) return null;
 
   const relevance = analysis.backbaseRelevance;

@@ -1,16 +1,27 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { MARKETS_META, MARKET_DATA, getTotalStats } from '../data/utils';
+import { useMarkets, useStats } from '../hooks/useData';
+import { LoadingState, ErrorState } from '../components/common/DataState';
 import StatBanner from '../components/common/StatBanner';
 import Card from '../components/common/Card';
 import { FadeInUp, StaggerContainer, StaggerItem } from '../components/common/Motion';
 
 export default function HomePage() {
-  const { totalBanks, totalCountries, totalMarkets, avgScore } = getTotalStats();
+  const { data: markets, isLoading: marketsLoading, error: marketsError } = useMarkets();
+  const { data: stats, isLoading: statsLoading } = useStats();
+
+  if (marketsLoading) return <LoadingState message="Loading markets..." />;
+  if (marketsError) return <ErrorState message={marketsError.message} />;
+
+  const totalBanks = stats?.totalBanks || 0;
+  const totalCountries = stats?.totalCountries || 0;
+  const totalMarkets = stats?.totalMarkets || 0;
+  const avgScore = stats?.avgScore || 0;
 
   const mvpMarkets = ['nordics', 'benelux', 'dach', 'uk_ireland', 'iberia'];
-  const mvp = Object.entries(MARKETS_META).filter(([k]) => mvpMarkets.includes(k));
-  const other = Object.entries(MARKETS_META).filter(([k]) => !mvpMarkets.includes(k));
+  const marketEntries = (markets || []).map(m => [m.key, m]);
+  const mvp = marketEntries.filter(([k]) => mvpMarkets.includes(k));
+  const other = marketEntries.filter(([k]) => !mvpMarkets.includes(k));
 
   return (
     <div>
@@ -59,9 +70,9 @@ export default function HomePage() {
 }
 
 function MarketCard({ marketKey, meta }) {
-  const md = MARKET_DATA[marketKey];
+  const md = meta.data;
   const kpis = md?.kpis?.slice(0, 2) || [];
-  const hasData = meta.hasData;
+  const hasData = meta.has_data;
 
   const cardContent = (
     <Card hover={hasData} className={`relative ${!hasData ? 'opacity-40' : ''}`}>

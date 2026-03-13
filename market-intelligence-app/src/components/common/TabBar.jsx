@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-export default function TabBar({ tabs, defaultTab = 0 }) {
+export default function TabBar({ tabs, defaultTab = 0, id = 'tab-indicator' }) {
   const [active, setActive] = useState(defaultTab);
 
   return (
@@ -16,7 +16,7 @@ export default function TabBar({ tabs, defaultTab = 0 }) {
           >
             {active === i && (
               <motion.div
-                layoutId="tab-indicator"
+                layoutId={id}
                 className="absolute inset-0 bg-surface rounded-md shadow-sm"
                 transition={{ type: 'spring', stiffness: 400, damping: 30 }}
               />

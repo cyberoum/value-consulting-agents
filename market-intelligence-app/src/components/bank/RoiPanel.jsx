@@ -1,7 +1,9 @@
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { TrendingUp, DollarSign, AlertTriangle, Info, ChevronDown, ChevronUp, Copy, Check, Zap } from 'lucide-react';
+import { TrendingUp, DollarSign, AlertTriangle, Info, ChevronDown, ChevronUp, Copy, Check, Zap, FileSpreadsheet } from 'lucide-react';
 import { calculateRoi, formatEur, formatNumber, formatMillions, getConversationSummary, BENCHMARKS } from '../../data/roiEngine';
+import { getRegionalCosts, getRegionForCountry, RETAIL_BENCHMARKS, BACKBASE_IMPACT, REFERENCE_BANKS } from '../../data/domainBenchmarks';
+import { BANK_DATA } from '../../data/banks';
 import { AnimatedBar } from '../common/Motion';
 
 const SCENARIO_CONFIG = [
@@ -23,6 +25,7 @@ export default function RoiPanel({ bankKey }) {
   const [showAssumptions, setShowAssumptions] = useState(false);
   const [showMethodology, setShowMethodology] = useState(null); // lever id
   const [copied, setCopied] = useState(false);
+  const [exporting, setExporting] = useState(false);
 
   const roi = useMemo(() => calculateRoi(bankKey), [bankKey]);
 
@@ -88,6 +91,17 @@ export default function RoiPanel({ bankKey }) {
             className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-lg text-xs font-bold transition-colors"
           >
             {copied ? <><Check size={12} /> Copied</> : <><Copy size={12} /> Copy</>}
+          </button>
+          <button
+            onClick={async () => {
+              setExporting(true);
+              const { generateRoiExcel } = await import('../../utils/generateRoiExcel');
+              generateRoiExcel({ roi, bankData: BANK_DATA[bankKey], bankKey });
+              setExporting(false);
+            }}
+            className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 rounded-lg text-xs font-bold transition-colors"
+          >
+            <FileSpreadsheet size={12} /> {exporting ? 'Exporting...' : 'Export Excel'}
           </button>
         </div>
         {roi.dealContext.valueHypothesis && (
@@ -343,6 +357,9 @@ export default function RoiPanel({ bankKey }) {
         </div>
       )}
 
+      {/* Benchmark Context */}
+      <BenchmarkContext bankKey={bankKey} />
+
       {/* Assumptions & Disclaimers */}
       <button
         onClick={() => setShowAssumptions(!showAssumptions)}
@@ -391,6 +408,135 @@ export default function RoiPanel({ bankKey }) {
                   data validation, detailed process analysis, and implementation scoping. All numbers should be treated
                   as directional indicators, not commitments.
                 </p>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+function BenchmarkContext({ bankKey }) {
+  const [open, setOpen] = useState(false);
+  const bd = BANK_DATA[bankKey];
+  if (!bd) return null;
+
+  const region = getRegionForCountry(bd.country);
+  const costs = getRegionalCosts(bd.country);
+  const relevantRefs = REFERENCE_BANKS.filter(r => r.region === region).slice(0, 3);
+  const impact = BACKBASE_IMPACT.onboarding;
+
+  return (
+    <div className="mb-5">
+      <button
+        onClick={() => setOpen(!open)}
+        className="flex items-center gap-2 w-full p-3 bg-primary-50 border border-primary/10 rounded-xl text-xs font-bold text-primary hover:bg-primary-50/80 transition-colors"
+      >
+        <TrendingUp size={14} />
+        <span>Industry Benchmarks — {region} Region</span>
+        <span className="ml-auto text-[9px] text-primary/60">{costs.source}</span>
+        {open ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+      </button>
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="overflow-hidden"
+          >
+            <div className="p-4 bg-primary-50/50 border border-primary/10 border-t-0 rounded-b-xl space-y-4">
+              {/* Regional Costs */}
+              <div>
+                <div className="text-[10px] font-bold text-primary uppercase mb-2">Transaction Costs ({region})</div>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  <div className="p-2 bg-surface rounded-lg">
+                    <div className="text-[8px] text-fg-disabled">Branch</div>
+                    <div className="text-xs font-bold text-fg">${costs.branch_interaction}</div>
+                  </div>
+                  <div className="p-2 bg-surface rounded-lg">
+                    <div className="text-[8px] text-fg-disabled">Digital</div>
+                    <div className="text-xs font-bold text-success">${costs.digital_interaction}</div>
+                  </div>
+                  <div className="p-2 bg-surface rounded-lg">
+                    <div className="text-[8px] text-fg-disabled">Call Center</div>
+                    <div className="text-xs font-bold text-fg">${costs.call_center_interaction}</div>
+                  </div>
+                  <div className="p-2 bg-surface rounded-lg">
+                    <div className="text-[8px] text-fg-disabled">FTE Cost</div>
+                    <div className="text-xs font-bold text-fg">${(costs.fte_cost / 1000).toFixed(0)}K</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Backbase Impact */}
+              <div>
+                <div className="text-[10px] font-bold text-primary uppercase mb-2">Validated Backbase Impact</div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="p-2 bg-surface rounded-lg">
+                    <div className="text-[8px] text-fg-disabled">Onboarding Revenue Uplift</div>
+                    <div className="text-xs font-bold text-success">{Math.round(impact.revenue_uplift.conservative * 100)}–{Math.round(impact.revenue_uplift.aggressive * 100)}%</div>
+                  </div>
+                  <div className="p-2 bg-surface rounded-lg">
+                    <div className="text-[8px] text-fg-disabled">Onboarding Cost Avoidance</div>
+                    <div className="text-xs font-bold text-success">{Math.round(impact.cost_avoidance.conservative * 100)}–{Math.round(impact.cost_avoidance.aggressive * 100)}%</div>
+                  </div>
+                  <div className="p-2 bg-surface rounded-lg">
+                    <div className="text-[8px] text-fg-disabled">Servicing Revenue Uplift</div>
+                    <div className="text-xs font-bold text-fg">{Math.round(BACKBASE_IMPACT.servicing.revenue_uplift.conservative * 100)}–{Math.round(BACKBASE_IMPACT.servicing.revenue_uplift.aggressive * 100)}%</div>
+                  </div>
+                  <div className="p-2 bg-surface rounded-lg">
+                    <div className="text-[8px] text-fg-disabled">Servicing Cost Avoidance</div>
+                    <div className="text-xs font-bold text-fg">{Math.round(BACKBASE_IMPACT.servicing.cost_avoidance.conservative * 100)}–{Math.round(BACKBASE_IMPACT.servicing.cost_avoidance.aggressive * 100)}%</div>
+                  </div>
+                </div>
+                <div className="text-[8px] text-fg-disabled mt-1">{impact.source}</div>
+              </div>
+
+              {/* Reference Banks */}
+              {relevantRefs.length > 0 && (
+                <div>
+                  <div className="text-[10px] font-bold text-primary uppercase mb-2">Reference Banks ({region})</div>
+                  <div className="space-y-1">
+                    {relevantRefs.map((ref, i) => (
+                      <div key={i} className="flex items-center gap-2 p-2 bg-surface rounded-lg text-[10px]">
+                        <span className="font-bold text-fg">{ref.name}</span>
+                        {ref.digital_rate != null && <span className="text-fg-muted">Digital: {Math.round(ref.digital_rate * 100)}%</span>}
+                        {ref.products_per != null && <span className="text-fg-muted">Products/Cust: {ref.products_per}</span>}
+                        {ref.nps != null && <span className="text-fg-muted">NPS: {ref.nps}</span>}
+                        <span className="ml-auto text-fg-disabled">{ref.source}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Industry Ranges */}
+              <div>
+                <div className="text-[10px] font-bold text-primary uppercase mb-2">Industry Benchmark Ranges</div>
+                <div className="grid grid-cols-2 gap-2">
+                  {[
+                    { ...RETAIL_BENCHMARKS.digital_adoption, fmt: v => Math.round(v * 100) + '%' },
+                    { ...RETAIL_BENCHMARKS.self_service_rate, fmt: v => Math.round(v * 100) + '%' },
+                    { ...RETAIL_BENCHMARKS.cross_sell_ratio, fmt: v => v.toFixed(1) },
+                    { ...RETAIL_BENCHMARKS.stp_rate, fmt: v => Math.round(v * 100) + '%' },
+                  ].map((b, i) => (
+                    <div key={i} className="p-2 bg-surface rounded-lg">
+                      <div className="text-[8px] text-fg-disabled">{b.label}</div>
+                      <div className="flex items-center gap-1 mt-0.5">
+                        <span className="text-[9px] text-danger">{b.fmt(b.poor)}</span>
+                        <div className="flex-1 h-1.5 bg-surface-2 rounded-full overflow-hidden flex">
+                          <div className="h-full bg-danger/40" style={{ width: '25%' }} />
+                          <div className="h-full bg-warning/40" style={{ width: '25%' }} />
+                          <div className="h-full bg-success/40" style={{ width: '25%' }} />
+                          <div className="h-full bg-primary/40" style={{ width: '25%' }} />
+                        </div>
+                        <span className="text-[9px] text-primary">{b.fmt(b.best)}</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </motion.div>

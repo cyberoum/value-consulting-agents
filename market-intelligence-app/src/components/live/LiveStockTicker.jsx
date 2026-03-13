@@ -1,11 +1,11 @@
-import { getLiveStockData } from '../../data/liveDataProvider';
 import { TrendingUp, TrendingDown, Minus, RefreshCw } from 'lucide-react';
 
 /**
  * Compact stock ticker badge for bank headers.
+ * Reads from bankData.live_stock (populated by pipeline → SQLite).
  */
-export default function LiveStockTicker({ bankKey }) {
-  const stock = getLiveStockData(bankKey);
+export default function LiveStockTicker({ bankData }) {
+  const stock = bankData?.live_stock;
   if (!stock || !stock.price) return null;
 
   const isUp = stock.dayChangePercent > 0;
@@ -13,14 +13,18 @@ export default function LiveStockTicker({ bankKey }) {
   const Icon = isUp ? TrendingUp : isDown ? TrendingDown : Minus;
   const color = isUp ? 'text-success' : isDown ? 'text-danger' : 'text-fg-muted';
 
+  const hasChange = stock.dayChangePercent != null;
+
   return (
     <div className="inline-flex items-center gap-1.5 text-[10px] bg-surface-2 border border-border rounded-full px-2 py-0.5">
       <span className="font-mono font-bold text-fg-muted">{stock.ticker}</span>
       <span className="font-bold text-fg">{stock.currency} {stock.price.toFixed(2)}</span>
-      <span className={`flex items-center gap-0.5 ${color}`}>
-        <Icon size={9} />
-        <span className="font-bold">{isUp ? '+' : ''}{stock.dayChangePercent?.toFixed(2)}%</span>
-      </span>
+      {hasChange && (
+        <span className={`flex items-center gap-0.5 ${color}`}>
+          <Icon size={9} />
+          <span className="font-bold">{isUp ? '+' : ''}{stock.dayChangePercent.toFixed(2)}%</span>
+        </span>
+      )}
     </div>
   );
 }
@@ -28,8 +32,8 @@ export default function LiveStockTicker({ bankKey }) {
 /**
  * Full stock data card for the Profile tab.
  */
-export function LiveStockCard({ bankKey }) {
-  const stock = getLiveStockData(bankKey);
+export function LiveStockCard({ bankData }) {
+  const stock = bankData?.live_stock;
   if (!stock || !stock.price) return null;
 
   const isUp = stock.dayChangePercent > 0;
@@ -62,12 +66,14 @@ export function LiveStockCard({ bankKey }) {
       <div className="flex items-baseline gap-3 mb-3">
         <span className="font-mono text-[10px] text-fg-disabled">{stock.ticker}</span>
         <span className="text-2xl font-black text-fg">{stock.currency} {stock.price.toFixed(2)}</span>
-        <span className={`flex items-center gap-1 ${color}`}>
-          <Icon size={14} />
-          <span className="text-sm font-bold">
-            {isUp ? '+' : ''}{stock.dayChange?.toFixed(2)} ({isUp ? '+' : ''}{stock.dayChangePercent?.toFixed(2)}%)
+        {stock.dayChangePercent != null && (
+          <span className={`flex items-center gap-1 ${color}`}>
+            <Icon size={14} />
+            <span className="text-sm font-bold">
+              {isUp ? '+' : ''}{stock.dayChange?.toFixed(2)} ({isUp ? '+' : ''}{stock.dayChangePercent.toFixed(2)}%)
+            </span>
           </span>
-        </span>
+        )}
       </div>
 
       {/* 52-Week Range */}

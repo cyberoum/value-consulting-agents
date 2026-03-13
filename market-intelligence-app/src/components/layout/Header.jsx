@@ -34,10 +34,8 @@ export default function Header() {
     query, setQuery, results, totalMatches,
     activeIndex, setActiveIndex, activeFilter, setActiveFilter,
     recentSearches, addRecent, clearRecent,
-    handleKeyDown, search, getTypeCounts,
+    handleKeyDown, search, typeCounts,
   } = useSearch();
-
-  const [typeCounts, setTypeCounts] = useState({});
 
   // Global keyboard shortcuts
   useEffect(() => {
@@ -68,7 +66,6 @@ export default function Header() {
     }
     if (!searchOpen) {
       search('', 'all');
-      setTypeCounts({});
     }
   }, [searchOpen, search]);
 
@@ -77,8 +74,7 @@ export default function Header() {
 
   const handleSearchInput = useCallback((q) => {
     setQuery(q);
-    setTypeCounts(getTypeCounts(q));
-  }, [setQuery, getTypeCounts]);
+  }, [setQuery]);
 
   const goResult = useCallback((r) => {
     addRecent(r);

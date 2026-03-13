@@ -1,5 +1,5 @@
-import { useState, useRef, useCallback, useEffect } from 'react';
-import { buildSearchIndex } from '../data/utils';
+import { useState, useCallback } from 'react';
+import { searchAll } from '../data/api';
 
 const RECENT_KEY = 'mi-recent-searches';
 const MAX_RECENT = 8;
@@ -9,21 +9,15 @@ export function useSearch() {
   const [results, setResults] = useState([]);
   const [totalMatches, setTotalMatches] = useState(0);
   const [activeIndex, setActiveIndex] = useState(-1);
-  const [activeFilter, setActiveFilter] = useState('all'); // all | bank | person | country | market
+  const [activeFilter, setActiveFilter] = useState('all');
+  const [typeCounts, setTypeCounts] = useState({});
   const [recentSearches, setRecentSearches] = useState(() => {
     try { return JSON.parse(localStorage.getItem(RECENT_KEY)) || []; }
     catch { return []; }
   });
-  const indexRef = useRef(null);
 
-  // Build or get cached search index
-  const getIndex = useCallback(() => {
-    if (!indexRef.current) indexRef.current = buildSearchIndex();
-    return indexRef.current;
-  }, []);
-
-  // Perform search
-  const search = useCallback((q, filter = 'all') => {
+  // Perform search via API
+  const search = useCallback(async (q, filter = 'all') => {
     setQuery(q);
     setActiveFilter(filter);
     setActiveIndex(-1);
@@ -31,37 +25,39 @@ export function useSearch() {
     if (!q || q.length < 2) {
       setResults([]);
       setTotalMatches(0);
+      setTypeCounts({});
       return;
     }
 
-    const index = getIndex();
-    const words = q.toLowerCase().split(/\s+/);
+    try {
+      const data = await searchAll(q);
+      const allResults = data.results || [];
+      const counts = data.counts || {};
+      setTypeCounts(counts);
 
-    let matches = index.filter(item => {
-      const hay = (item.keywords || '') + ' ' + item.name.toLowerCase() + ' ' + (item.meta || '').toLowerCase();
-      return words.every(w => hay.includes(w));
-    });
+      // Apply type filter client-side
+      let filtered = filter !== 'all'
+        ? allResults.filter(item => item.type === filter)
+        : allResults;
 
-    // Apply type filter
-    if (filter !== 'all') {
-      matches = matches.filter(item => item.type === filter);
-    }
-
-    // Sort: exact name matches first, then by score (for banks), then alphabetically
-    matches.sort((a, b) => {
-      const aName = a.name.toLowerCase();
-      const bName = b.name.toLowerCase();
+      // Sort: exact name matches first, then by score, then alphabetically
       const qLow = q.toLowerCase();
-      const aExact = aName.startsWith(qLow) ? 0 : 1;
-      const bExact = bName.startsWith(qLow) ? 0 : 1;
-      if (aExact !== bExact) return aExact - bExact;
-      if (a.score !== undefined && b.score !== undefined) return b.score - a.score;
-      return aName.localeCompare(bName);
-    });
+      filtered.sort((a, b) => {
+        const aExact = a.name.toLowerCase().startsWith(qLow) ? 0 : 1;
+        const bExact = b.name.toLowerCase().startsWith(qLow) ? 0 : 1;
+        if (aExact !== bExact) return aExact - bExact;
+        if (a.score !== undefined && b.score !== undefined) return b.score - a.score;
+        return a.name.localeCompare(b.name);
+      });
 
-    setTotalMatches(matches.length);
-    setResults(matches.slice(0, 20));
-  }, [getIndex]);
+      setTotalMatches(filtered.length);
+      setResults(filtered.slice(0, 20));
+    } catch {
+      setResults([]);
+      setTotalMatches(0);
+      setTypeCounts({});
+    }
+  }, []);
 
   // Save to recent searches
   const addRecent = useCallback((item) => {
@@ -93,25 +89,14 @@ export function useSearch() {
     }
   }, [results.length]);
 
-  // Get type counts from current unfiltered search
-  const getTypeCounts = useCallback((q) => {
-    if (!q || q.length < 2) return {};
-    const index = getIndex();
-    const words = q.toLowerCase().split(/\s+/);
-    const matches = index.filter(item => {
-      const hay = (item.keywords || '') + ' ' + item.name.toLowerCase() + ' ' + (item.meta || '').toLowerCase();
-      return words.every(w => hay.includes(w));
-    });
-    const counts = {};
-    matches.forEach(m => { counts[m.type] = (counts[m.type] || 0) + 1; });
-    return counts;
-  }, [getIndex]);
+  // getTypeCounts kept for backward compat — returns current counts
+  const getTypeCounts = useCallback(() => typeCounts, [typeCounts]);
 
   return {
     query, setQuery: (q) => search(q, activeFilter),
     results, totalMatches, activeIndex, setActiveIndex,
     activeFilter, setActiveFilter: (f) => search(query, f),
     recentSearches, addRecent, clearRecent,
-    handleKeyDown, search, getTypeCounts,
+    handleKeyDown, search, getTypeCounts, typeCounts,
   };
 }

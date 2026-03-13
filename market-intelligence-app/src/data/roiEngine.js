@@ -9,6 +9,7 @@
 
 import { BANK_DATA } from './banks';
 import { VALUE_SELLING } from './valueSelling';
+import { getRegionalCosts, getRegionForCountry } from './domainBenchmarks';
 
 // ─── Currency conversion to EUR (approximate, for estimation only) ───
 const FX_TO_EUR = {
@@ -62,6 +63,24 @@ export const BENCHMARKS = {
   }
 };
 
+/**
+ * Get region-aware benchmarks for a bank's country.
+ * Overlays real regional costs from domainBenchmarks onto the default BENCHMARKS.
+ */
+export function getBenchmarks(country) {
+  const region = getRegionForCountry(country);
+  const rc = getRegionalCosts(country);
+  return {
+    ...BENCHMARKS,
+    avg_cost_per_fte_eur: rc.fte_cost,
+    avg_branch_interaction_cost_eur: rc.branch_interaction,
+    avg_digital_interaction_cost_eur: rc.digital_interaction,
+    interaction_delta_eur: rc.branch_interaction - rc.digital_interaction,
+    _region: region,
+    _regionalSource: rc.source,
+  };
+}
+
 // ─── KPI Parsing ─────────────────────────────────────────────────────
 
 /**
@@ -109,9 +128,10 @@ export function parseKpiValue(str) {
 /**
  * Extract structured financial metrics from a bank's KPIs array
  */
-export function extractMetrics(bankKey) {
+export function extractMetrics(bankKey, benchmarksOverride) {
   const bd = BANK_DATA[bankKey];
   if (!bd) return null;
+  const B = benchmarksOverride || BENCHMARKS;
 
   const kpis = bd.kpis || [];
   const metrics = {
@@ -172,13 +192,13 @@ export function extractMetrics(bankKey) {
 
   // Estimate revenue from total assets × NIM (if no revenue KPI)
   if (metrics.totalAssets) {
-    metrics.estimatedRevenue = metrics.totalAssets * BENCHMARKS.net_interest_margin * 2.5; // NII + fees multiplier
+    metrics.estimatedRevenue = metrics.totalAssets * B.net_interest_margin * 2.5; // NII + fees multiplier
     metrics._sources.estimatedRevenue = 'calculated (assets × NIM × 2.5 fee multiplier)';
   }
 
   // Estimate tech spend
   if (metrics.estimatedRevenue) {
-    metrics.techSpend = metrics.estimatedRevenue * BENCHMARKS.tech_spend_pct_revenue;
+    metrics.techSpend = metrics.estimatedRevenue * B.tech_spend_pct_revenue;
     metrics._sources.techSpend = 'calculated (revenue × 12% tech spend ratio)';
   }
 
@@ -195,20 +215,20 @@ export function extractMetrics(bankKey) {
 
   // Estimate employee cost base
   if (metrics.employees) {
-    metrics.totalEmployeeCost = metrics.employees * BENCHMARKS.avg_cost_per_fte_eur;
-    metrics._sources.totalEmployeeCost = 'calculated (FTE × €95K avg)';
+    metrics.totalEmployeeCost = metrics.employees * B.avg_cost_per_fte_eur;
+    metrics._sources.totalEmployeeCost = `calculated (FTE × €${formatNumber(B.avg_cost_per_fte_eur)} avg${B._region ? ' — ' + B._region : ''})`;
   }
 
   // Estimate customer revenue
   if (metrics.customers) {
-    metrics.totalCustomerRevenue = metrics.customers * BENCHMARKS.avg_revenue_per_retail_customer_eur;
+    metrics.totalCustomerRevenue = metrics.customers * B.avg_revenue_per_retail_customer_eur;
     metrics._sources.totalCustomerRevenue = 'calculated (customers × €380 avg revenue)';
   }
 
   // Non-digital interactions estimate (branch + call center per year)
   if (metrics.customers) {
-    metrics.nonDigitalInteractions = metrics.customers * BENCHMARKS.annual_interactions_per_customer;
-    metrics.shiftableInteractions = metrics.nonDigitalInteractions * BENCHMARKS.addressable_interaction_pct;
+    metrics.nonDigitalInteractions = metrics.customers * B.annual_interactions_per_customer;
+    metrics.shiftableInteractions = metrics.nonDigitalInteractions * B.addressable_interaction_pct;
     metrics._sources.nonDigitalInteractions = 'calculated (customers × 30 non-digital interactions/yr)';
   }
 
@@ -222,22 +242,33 @@ export function extractMetrics(bankKey) {
  * Returns { levers: [...], totals: {conservative, base, optimistic}, metrics, assumptions }
  */
 export function calculateRoi(bankKey) {
-  const metrics = extractMetrics(bankKey);
+  const bd = BANK_DATA[bankKey];
+  if (!bd) return null;
+  const B = getBenchmarks(bd.country);
+  const metrics = extractMetrics(bankKey, B);
   if (!metrics) return null;
 
   const vs = VALUE_SELLING[bankKey];
-  const bd = BANK_DATA[bankKey];
   const q = bd?.backbase_qualification;
 
   const levers = [];
   const assumptions = [];
 
+  // Record which regional benchmarks are being used
+  if (B._region) {
+    assumptions.push({
+      assumption: `Using ${B._region} regional cost benchmarks (FTE: €${formatNumber(B.avg_cost_per_fte_eur)}, Branch: €${B.avg_branch_interaction_cost_eur}, Digital: €${B.avg_digital_interaction_cost_eur})`,
+      source: B._regionalSource || 'domainBenchmarks.js',
+      confidence: 'High',
+    });
+  }
+
   // ─── Lever 1: Cost-to-Serve Reduction ───
   // Only ~15% of FTEs are front-office/customer-facing roles addressable by engagement platform
   if (metrics.totalEmployeeCost) {
-    const addressableCost = metrics.totalEmployeeCost * BENCHMARKS.addressable_fte_pct;
-    const addressableFTEs = Math.round(metrics.employees * BENCHMARKS.addressable_fte_pct);
-    const f = BENCHMARKS.cost_to_serve.factors;
+    const addressableCost = metrics.totalEmployeeCost * B.addressable_fte_pct;
+    const addressableFTEs = Math.round(metrics.employees * B.addressable_fte_pct);
+    const f = B.cost_to_serve.factors;
     levers.push({
       id: 'cost_to_serve',
       name: 'Cost-to-Serve Reduction',
@@ -251,13 +282,13 @@ export function calculateRoi(bankKey) {
         Math.round(addressableCost * f[1]),
         Math.round(addressableCost * f[2]),
       ],
-      metric: `${formatNumber(addressableFTEs)} addressable FTEs (15% of ${formatNumber(metrics.employees)}) × €95K avg cost`,
+      metric: `${formatNumber(addressableFTEs)} addressable FTEs (15% of ${formatNumber(metrics.employees)}) × €${formatNumber(B.avg_cost_per_fte_eur)} avg cost`,
       source: metrics._sources.employees === 'bank_data' ? 'Annual Report' : 'Estimate',
-      methodology: `Addressable FTE cost (${formatNumber(addressableFTEs)} × €95K) × ${f.map(x => Math.round(x*100)+'%').join(' / ')} efficiency`,
+      methodology: `Addressable FTE cost (${formatNumber(addressableFTEs)} × €${formatNumber(B.avg_cost_per_fte_eur)}) × ${f.map(x => Math.round(x*100)+'%').join(' / ')} efficiency`,
     });
     assumptions.push({
       assumption: `15% of FTEs are front-office/customer-facing roles addressable by engagement platform`,
-      source: BENCHMARKS.sources.cost_per_fte,
+      source: B._regionalSource || BENCHMARKS.sources.cost_per_fte,
       confidence: 'Medium',
     });
   }
@@ -265,8 +296,8 @@ export function calculateRoi(bankKey) {
   // ─── Lever 2: Digital Channel Shift ───
   // Only 20% of non-digital interactions are realistically shiftable via engagement platform
   if (metrics.shiftableInteractions) {
-    const savingsPerShift = BENCHMARKS.interaction_delta_eur;
-    const f = BENCHMARKS.channel_shift.factors;
+    const savingsPerShift = B.interaction_delta_eur;
+    const f = B.channel_shift.factors;
     const shiftable = metrics.shiftableInteractions;
 
     levers.push({
@@ -288,7 +319,7 @@ export function calculateRoi(bankKey) {
     });
     assumptions.push({
       assumption: `20% of non-digital interactions are shiftable; cost delta: €${savingsPerShift} per interaction`,
-      source: BENCHMARKS.sources.interaction_cost,
+      source: B._regionalSource || BENCHMARKS.sources.interaction_cost,
       confidence: 'Medium',
     });
   }
@@ -297,10 +328,10 @@ export function calculateRoi(bankKey) {
   if (metrics.customers) {
     // 3% annual new customer acquisition; only digital channel (60%) is addressable
     const annualNewCustomers = Math.round(metrics.customers * 0.03 * 0.6);
-    const f = BENCHMARKS.onboarding_lift.factors;
+    const f = B.onboarding_lift.factors;
     // Better onboarding = more customers from same marketing spend
     // Use first-year partial revenue (50% of annual) to be conservative
-    const firstYearRevenue = BENCHMARKS.avg_revenue_per_retail_customer_eur * 0.5;
+    const firstYearRevenue = B.avg_revenue_per_retail_customer_eur * 0.5;
 
     levers.push({
       id: 'onboarding',
@@ -327,21 +358,21 @@ export function calculateRoi(bankKey) {
   // ─── Lever 4: Cross-Sell Revenue Uplift ───
   // Only 25% of customers are "active digital" addressable for cross-sell
   if (metrics.customers) {
-    const f = BENCHMARKS.cross_sell.factors;
-    const revenuePerProduct = BENCHMARKS.avg_revenue_per_product_eur;
+    const f = B.cross_sell.factors;
+    const revenuePerProduct = B.avg_revenue_per_product_eur;
 
     levers.push({
       id: 'cross_sell',
       name: 'Cross-Sell & Engagement Revenue',
       icon: '📈',
       description: 'Increase products-per-customer for active digital users through personalized engagement',
-      talkingPoint: `Adding ${f[0]} products per active digital customer (${formatNumber(Math.round(metrics.customers * BENCHMARKS.addressable_customer_pct))} of ${formatNumber(metrics.customers)}) generates €${formatMillions(metrics.customers * BENCHMARKS.addressable_customer_pct * f[0] * revenuePerProduct)}/year`,
+      talkingPoint: `Adding ${f[0]} products per active digital customer (${formatNumber(Math.round(metrics.customers * B.addressable_customer_pct))} of ${formatNumber(metrics.customers)}) generates €${formatMillions(metrics.customers * B.addressable_customer_pct * f[0] * revenuePerProduct)}/year`,
       values: [
-        Math.round(metrics.customers * BENCHMARKS.addressable_customer_pct * f[0] * revenuePerProduct),
-        Math.round(metrics.customers * BENCHMARKS.addressable_customer_pct * f[1] * revenuePerProduct),
-        Math.round(metrics.customers * BENCHMARKS.addressable_customer_pct * f[2] * revenuePerProduct),
+        Math.round(metrics.customers * B.addressable_customer_pct * f[0] * revenuePerProduct),
+        Math.round(metrics.customers * B.addressable_customer_pct * f[1] * revenuePerProduct),
+        Math.round(metrics.customers * B.addressable_customer_pct * f[2] * revenuePerProduct),
       ],
-      metric: `${formatNumber(Math.round(metrics.customers * BENCHMARKS.addressable_customer_pct))} active digital customers (25% of ${formatNumber(metrics.customers)}) × +${f.join('/')} products`,
+      metric: `${formatNumber(Math.round(metrics.customers * B.addressable_customer_pct))} active digital customers (25% of ${formatNumber(metrics.customers)}) × +${f.join('/')} products`,
       source: metrics._sources.customers === 'bank_data' ? 'Annual Report' : 'Estimate',
       methodology: `Addressable customers × additional products × €${revenuePerProduct} revenue per product`,
     });
@@ -354,7 +385,7 @@ export function calculateRoi(bankKey) {
 
   // ─── Lever 5: Platform Consolidation ───
   if (metrics.techSpend) {
-    const f = BENCHMARKS.platform_savings.factors;
+    const f = B.platform_savings.factors;
     // Only a portion of tech spend is addressable (engagement layer ~20-30%)
     const addressableTechSpend = metrics.techSpend * 0.25;
 

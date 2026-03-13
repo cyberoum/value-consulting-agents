@@ -133,6 +133,123 @@ export async function structureIntelWithClaude(category, rawText, bankContext = 
   }
 }
 
+// ── Deep Bank Analysis (4 types: competitive, pain_points, opportunities, executive_briefing) ──
+
+const DEEP_ANALYSIS_PROMPTS = {
+  competitive: {
+    system: `You are a senior competitive intelligence analyst for Backbase, an engagement banking platform vendor.
+Analyze a bank's competitive position and generate actionable intelligence for the sales team.
+
+Return ONLY valid JSON:
+{
+  "title": "Competitive Analysis: [Bank Name]",
+  "findings": [
+    {
+      "category": "Vendor Landscape|Displacement Opportunity|Competitive Threat|Differentiation Angle",
+      "finding": "Key finding in 1-2 sentences",
+      "detail": "Supporting analysis (2-3 sentences)",
+      "actionability": "high|medium|low",
+      "suggestedAction": "What the AE should do"
+    }
+  ],
+  "topOpportunity": "The single biggest competitive opportunity in 1-2 sentences",
+  "riskFactors": ["Risk 1", "Risk 2"]
+}`,
+    maxTokens: 2048,
+  },
+
+  pain_points: {
+    system: `You are a value consultant specializing in banking digital transformation.
+Analyze the bank's profile and identify the most impactful business pain points that Backbase can address.
+
+Return ONLY valid JSON:
+{
+  "title": "Pain Point Discovery: [Bank Name]",
+  "painPoints": [
+    {
+      "title": "Pain point title",
+      "description": "What the pain point is (2-3 sentences)",
+      "quantifiedImpact": "Estimated financial or operational impact",
+      "affectedStakeholder": "CTO|COO|Head of Digital|Head of Retail|CFO",
+      "backbaseSolution": "How Backbase addresses this (1-2 sentences)",
+      "severity": "critical|high|medium"
+    }
+  ],
+  "topPriority": "The #1 pain point to lead with and why"
+}`,
+    maxTokens: 2048,
+  },
+
+  opportunities: {
+    system: `You are a strategic account planner for Backbase, an engagement banking platform.
+Identify the highest-value opportunities for Backbase given the bank's profile.
+
+Return ONLY valid JSON:
+{
+  "title": "Opportunity Map: [Bank Name]",
+  "opportunities": [
+    {
+      "title": "Opportunity title",
+      "description": "What the opportunity is (2-3 sentences)",
+      "estimatedValue": "Rough deal size or value range",
+      "entryStrategy": "How to approach this (2-3 sentences)",
+      "champion": "Likely internal champion role",
+      "timeline": "short-term|medium-term|long-term",
+      "confidence": "high|medium|low"
+    }
+  ],
+  "recommendedLeadWith": "Which opportunity to open with and why"
+}`,
+    maxTokens: 2048,
+  },
+
+  executive_briefing: {
+    system: `You are a senior sales strategist preparing an AE for an executive meeting at a bank.
+Generate a concise, high-impact executive briefing.
+
+Return ONLY valid JSON:
+{
+  "title": "Executive Briefing: [Bank Name]",
+  "openingHook": "A provocative opening statement to grab attention (1-2 sentences)",
+  "talkingPoints": [
+    {
+      "topic": "Topic name",
+      "point": "What to say (2-3 sentences)",
+      "dataPoint": "Supporting metric or fact",
+      "transition": "How to bridge to Backbase"
+    }
+  ],
+  "provocativeQuestion": "A question that makes the exec think differently",
+  "closingMove": "Suggested next step to propose",
+  "doNots": ["Thing to avoid saying 1", "Thing to avoid saying 2"]
+}`,
+    maxTokens: 2048,
+  },
+};
+
+export async function deepAnalyzeBank(bankName, analysisType, context) {
+  const config = DEEP_ANALYSIS_PROMPTS[analysisType];
+  if (!config) throw new Error(`Unknown analysis type: ${analysisType}`);
+
+  const userMessage = `Bank: ${bankName}
+
+Bank Profile:
+${Object.entries(context).map(([k, v]) => `- ${k}: ${typeof v === 'object' ? JSON.stringify(v) : v}`).join('\n')}
+
+Generate a ${analysisType.replace('_', ' ')} analysis.`;
+
+  try {
+    const response = await callClaude(config.system, userMessage, config.maxTokens);
+    const jsonMatch = response.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      return JSON.parse(jsonMatch[0]);
+    }
+    return null;
+  } catch (err) {
+    return { error: err.message };
+  }
+}
+
 // ── Batch Analysis: process all banks with news ──
 
 export async function analyzeAllBankNews(newsData, onProgress) {

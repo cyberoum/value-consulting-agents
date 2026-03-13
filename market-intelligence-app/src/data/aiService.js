@@ -68,6 +68,43 @@ export async function analyzeWithAI(category, text, bankContext = {}) {
  * @param {Array} articles
  * @returns {object} Structured news analysis
  */
+/**
+ * Deep bank analysis with Claude AI
+ * @param {string} bankName
+ * @param {'competitive'|'pain_points'|'opportunities'|'executive_briefing'} analysisType
+ * @param {object} context - Bank profile data (KPIs, competition, CX, etc.)
+ * @returns {object} Structured analysis result
+ */
+export async function deepAnalyzeBank(bankName, analysisType, context = {}) {
+  const cacheKey = `ai_deep_${bankName}_${analysisType}`;
+  const cached = sessionStorage.getItem(cacheKey);
+  if (cached) {
+    try { return JSON.parse(cached); } catch { /* ignore */ }
+  }
+
+  const res = await fetch(`${API_BASE}/api/deep-analysis`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ bankName, analysisType, context }),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: 'Unknown error' }));
+    throw new Error(err.error || `API error ${res.status}`);
+  }
+
+  const data = await res.json();
+  // Cache in sessionStorage
+  try { sessionStorage.setItem(cacheKey, JSON.stringify(data.result)); } catch { /* quota */ }
+  return data.result;
+}
+
+/**
+ * Analyze news articles for a bank with Claude AI
+ * @param {string} bankName
+ * @param {Array} articles
+ * @returns {object} Structured news analysis
+ */
 export async function analyzeNewsWithAI(bankName, articles) {
   const res = await fetch(`${API_BASE}/api/analyze-news`, {
     method: 'POST',

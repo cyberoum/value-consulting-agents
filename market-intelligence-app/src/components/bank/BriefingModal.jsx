@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Copy, Check, FileText, Download } from 'lucide-react';
+import { X, Copy, Check, FileText, Download, Printer } from 'lucide-react';
 import { BANK_DATA, QUAL_DATA, QUAL_FRAMEWORK, CX_DATA, COMP_DATA, VALUE_SELLING, calcScore, scoreLabel, dataConfidence } from '../../data/utils';
+import { calculateRoi, formatEur } from '../../data/roiEngine';
 
 export default function BriefingModal({ bankKey, isOpen, onClose }) {
   const [copied, setCopied] = useState(false);
@@ -32,6 +33,15 @@ export default function BriefingModal({ bankKey, isOpen, onClose }) {
     a.download = `${bd?.bank_name || bankKey}_Briefing.md`;
     a.click();
     URL.revokeObjectURL(url);
+  };
+
+  const handlePdfExport = () => {
+    const roi = calculateRoi(bankKey);
+    const html = generatePrintableHtml({ bd, qd, cx, comp, vs, score, conf, dims, bankKey, roi });
+    const win = window.open('', '_blank');
+    win.document.write(html);
+    win.document.close();
+    setTimeout(() => win.print(), 500);
   };
 
   return createPortal(
@@ -83,6 +93,13 @@ export default function BriefingModal({ bankKey, isOpen, onClose }) {
             >
               <Download size={14} />
               Download .md
+            </button>
+            <button
+              onClick={handlePdfExport}
+              className="flex items-center gap-2 px-4 py-2 bg-primary-900 text-white rounded-lg text-sm font-semibold hover:bg-primary-900/90 transition-colors"
+            >
+              <Printer size={14} />
+              Print / PDF
             </button>
           </div>
         </motion.div>
@@ -259,4 +276,170 @@ function generateBriefing({ bd, qd, cx, comp, vs, score, conf, dims, bankKey }) 
   add(`*Confidential — Backbase Market Intelligence*`);
 
   return lines.join('\n');
+}
+
+function generatePrintableHtml({ bd, qd, cx, comp, vs, score, conf, dims, bankKey, roi }) {
+  const name = bd?.bank_name || bankKey;
+  const date = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+  const q = bd?.backbase_qualification;
+
+  const s = (label, content) => content ? `<div class="section"><h2>${label}</h2>${content}</div>` : '';
+  const row = (k, v) => v ? `<tr><td class="label">${k}</td><td>${v}</td></tr>` : '';
+
+  // KPIs table
+  const kpiRows = [
+    row('Total Assets', bd?.operational_profile?.total_assets),
+    row('Customers', bd?.operational_profile?.total_customers),
+    row('Employees', bd?.operational_profile?.employees),
+    row('ROE', bd?.operational_profile?.roe),
+    row('Cost/Income', bd?.operational_profile?.cost_income_ratio),
+  ].filter(Boolean).join('');
+
+  // Deal intel
+  const dealRows = [
+    row('Deal Size', q?.deal_size),
+    row('Sales Cycle', q?.sales_cycle),
+    row('Timing', q?.timing),
+    row('Risk', q?.risk),
+  ].filter(Boolean).join('');
+
+  // Value hypothesis
+  const vhSection = vs?.value_hypothesis ? `
+    <div class="highlight">
+      <p class="hypothesis">"${vs.value_hypothesis.one_liner}"</p>
+      <table class="compact">
+        ${row('IF', vs.value_hypothesis.if_condition)}
+        ${row('THEN', vs.value_hypothesis.then_outcome)}
+        ${row('BY', vs.value_hypothesis.by_deploying)}
+        ${row('RESULT', vs.value_hypothesis.resulting_in)}
+      </table>
+    </div>` : '';
+
+  // People
+  const people = (bd?.key_decision_makers || [])
+    .filter(p => p.name && !p.name.startsWith('('))
+    .map(p => `<li><strong>${p.name}</strong> — ${p.role}${p.note ? `<br><small>${p.note}</small>` : ''}</li>`)
+    .join('');
+
+  // ROI
+  const roiSection = roi?.levers?.length > 0 ? `
+    <div class="section">
+      <h2>ROI Estimate (Annual Value)</h2>
+      <table>
+        <tr><th>Scenario</th><th>Value</th></tr>
+        <tr><td>Conservative</td><td>${formatEur(roi.totals.conservative)}</td></tr>
+        <tr class="highlight-row"><td>Base Case</td><td><strong>${formatEur(roi.totals.base)}</strong></td></tr>
+        <tr><td>Optimistic</td><td>${formatEur(roi.totals.optimistic)}</td></tr>
+      </table>
+      <h3>Value Levers</h3>
+      <table>
+        <tr><th>Lever</th><th>Conservative</th><th>Base</th><th>Optimistic</th></tr>
+        ${roi.levers.map(l => `<tr><td>${l.name}</td><td>${formatEur(l.values[0])}</td><td>${formatEur(l.values[1])}</td><td>${formatEur(l.values[2])}</td></tr>`).join('')}
+      </table>
+    </div>` : '';
+
+  // Score breakdown
+  const scoreRows = qd ? Object.entries(dims).map(([dim, config]) => {
+    if (!qd[dim]) return '';
+    return `<tr><td>${config.label}</td><td>${qd[dim].score}/10</td><td>${Math.round(config.weight * 100)}%</td><td>${qd[dim].note}</td></tr>`;
+  }).filter(Boolean).join('') : '';
+
+  // Signals
+  const signals = (bd?.signals || []).map(sig =>
+    `<li><strong>${sig.signal}</strong> — ${sig.implication}</li>`
+  ).join('');
+
+  // Landing zones
+  const lz = (bd?.backbase_landing_zones || []).map(z =>
+    `<li><strong>${z.zone}</strong> (${z.fit_score}/10) — ${z.rationale}</li>`
+  ).join('');
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>${name} — Meeting Briefing</title>
+<style>
+  @page { margin: 1.5cm; size: A4; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; font-size: 11px; color: #1a1a1a; line-height: 1.5; padding: 20px; max-width: 800px; margin: 0 auto; }
+  .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 3px solid #3366FF; padding-bottom: 12px; margin-bottom: 16px; }
+  .header h1 { font-size: 22px; color: #091C35; margin: 0; }
+  .header .meta { text-align: right; font-size: 10px; color: #666; }
+  .score-badge { display: inline-block; background: #3366FF; color: white; padding: 4px 12px; border-radius: 20px; font-size: 14px; font-weight: 800; }
+  .section { margin-bottom: 14px; page-break-inside: avoid; }
+  .section h2 { font-size: 13px; color: #3366FF; border-bottom: 1px solid #e0e0e0; padding-bottom: 3px; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .section h3 { font-size: 11px; color: #091C35; margin: 8px 0 4px; }
+  table { width: 100%; border-collapse: collapse; margin-bottom: 8px; font-size: 10px; }
+  th, td { padding: 4px 8px; text-align: left; border-bottom: 1px solid #f0f0f0; }
+  th { background: #f8f9fa; font-weight: 700; color: #333; }
+  td.label { font-weight: 600; width: 140px; color: #555; }
+  .highlight { background: #091C35; color: white; padding: 12px; border-radius: 8px; margin: 8px 0; }
+  .highlight .label { color: #99b3ff; }
+  .highlight td { border-color: rgba(255,255,255,0.1); }
+  .hypothesis { font-size: 12px; font-style: italic; margin-bottom: 8px; color: #99ccff; }
+  .compact td { padding: 2px 8px; }
+  .highlight-row td { background: #EBF0FF; font-weight: 700; }
+  ul { padding-left: 16px; margin: 4px 0; }
+  li { margin: 2px 0; }
+  small { color: #888; font-size: 9px; }
+  .footer { margin-top: 20px; padding-top: 8px; border-top: 1px solid #ddd; font-size: 9px; color: #999; text-align: center; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media print { body { padding: 0; } .no-print { display: none; } }
+</style>
+</head>
+<body>
+  <div class="header">
+    <div>
+      <h1>${name}</h1>
+      <div style="color:#666;font-size:10px;margin-top:2px">${bd?.country || ''} &bull; ${bd?.tagline || ''}</div>
+    </div>
+    <div class="meta">
+      <span class="score-badge">${score}/10</span>
+      <div style="margin-top:4px">${conf.label} Confidence</div>
+      <div>${date}</div>
+    </div>
+  </div>
+
+  <div class="two-col">
+    ${s('Key Financials', kpiRows ? `<table>${kpiRows}</table>` : '')}
+    ${s('Deal Intelligence', dealRows ? `<table>${dealRows}</table>` : '')}
+  </div>
+
+  ${vs?.value_hypothesis ? s('Value Hypothesis', vhSection) : ''}
+  ${roiSection}
+  ${people ? s('Key Decision Makers', `<ul>${people}</ul>`) : ''}
+  ${signals ? s('Buying Signals', `<ul>${signals}</ul>`) : ''}
+  ${lz ? s('Landing Zones', `<ul>${lz}</ul>`) : ''}
+
+  ${cx ? s('CX Snapshot', `<table>
+    ${row('iOS Rating', cx.app_rating_ios)}
+    ${row('Android Rating', cx.app_rating_android)}
+    ${row('Digital Maturity', cx.digital_maturity)}
+    ${cx.cx_strengths?.length ? row('Strengths', cx.cx_strengths.join(', ')) : ''}
+    ${cx.cx_weaknesses?.length ? row('Weaknesses', cx.cx_weaknesses.join(', ')) : ''}
+  </table>`) : ''}
+
+  ${comp ? s('Competitive Landscape', `<table>
+    ${row('Core Banking', comp.core_banking)}
+    ${row('Digital Platform', comp.digital_platform)}
+    ${comp.key_vendors?.length ? row('Key Vendors', comp.key_vendors.join(', ')) : ''}
+    ${comp.vendor_risk ? row('Vendor Risk', comp.vendor_risk) : ''}
+  </table>`) : ''}
+
+  ${scoreRows ? s('Score Breakdown', `<table><tr><th>Dimension</th><th>Score</th><th>Weight</th><th>Notes</th></tr>${scoreRows}</table>`) : ''}
+
+  ${bd?.pain_points?.length ? s('Pain Points', `<ul>${bd.pain_points.map(p => `<li><strong>${p.title}</strong> — ${p.detail}</li>`).join('')}</ul>`) : ''}
+
+  ${bd?.recommended_approach ? s('Recommended Approach', `<p>${bd.recommended_approach}</p>`) : ''}
+
+  <div class="footer">
+    Confidential &mdash; Backbase Market Intelligence &bull; Generated ${date}
+  </div>
+
+  <button class="no-print" onclick="window.print()" style="position:fixed;bottom:20px;right:20px;padding:10px 24px;background:#3366FF;color:white;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;box-shadow:0 4px 12px rgba(51,102,255,0.3)">
+    Print / Save as PDF
+  </button>
+</body>
+</html>`;
 }

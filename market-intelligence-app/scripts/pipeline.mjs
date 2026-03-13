@@ -1,32 +1,38 @@
 #!/usr/bin/env node
 /**
- * Market Intelligence Data Pipeline
- * ──────────────────────────────────
- * Orchestrates all data fetchers and produces a unified liveData.json
- * consumed by the React app. Run this on a schedule (cron) or manually.
+ * Market Intelligence Data Pipeline — SQLite Edition
+ * ──────────────────────────────────────────────────
+ * Orchestrates all data fetchers and writes results directly into SQLite.
+ * Uses namespaced merge (live_*, pdf_*) so automated data never overwrites
+ * manually curated consultant fields.
  *
  * Usage:
  *   node scripts/pipeline.mjs                  # Run all fetchers
  *   node scripts/pipeline.mjs --ratings        # App ratings only
  *   node scripts/pipeline.mjs --news           # News signals only
  *   node scripts/pipeline.mjs --stocks         # Stock data only
- *   node scripts/pipeline.mjs --dry-run        # Preview without saving
+ *   node scripts/pipeline.mjs --dry-run        # Preview without writing to DB
  *   node scripts/pipeline.mjs --analyze        # Run Claude AI analysis on news
  *   node scripts/pipeline.mjs --news --analyze # Fetch news + AI analysis
+ *   node scripts/pipeline.mjs --all            # Run everything
  */
 
-import { writeFileSync, readFileSync, existsSync, mkdirSync } from 'fs';
-import { resolve, dirname } from 'path';
-import { fileURLToPath } from 'url';
+import { randomUUID } from 'crypto';
+import { getDb, closeDb } from './db.mjs';
+import { BANK_SOURCES } from './config.mjs';
+import {
+  logIngestion,
+  mergeStockData,
+  mergeNewsData,
+  mergeAppRatings,
+  mergeAiAnalysis,
+  resolveBankKey,
+} from './lib/mergeHelpers.mjs';
 
 import { fetchAllAppRatings } from './fetchers/appRatings.mjs';
 import { fetchAllNewsSignals } from './fetchers/newsSignals.mjs';
 import { fetchAllStockData } from './fetchers/stockData.mjs';
 import { analyzeAllBankNews, isClaudeAvailable } from './fetchers/claudeAnalyzer.mjs';
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const OUTPUT_PATH = resolve(__dirname, '../src/data/liveData.json');
-const LOG_DIR = resolve(__dirname, 'logs');
 
 // ── CLI Flags ──
 const args = process.argv.slice(2);
@@ -37,7 +43,7 @@ const runStocks = runAll || args.includes('--stocks');
 const runAnalyze = args.includes('--analyze');
 const dryRun = args.includes('--dry-run');
 
-// ── Pretty logging ──
+// ── Pretty Logging ──
 const log = {
   header: (msg) => console.log(`\n${'═'.repeat(60)}\n  ${msg}\n${'═'.repeat(60)}`),
   section: (msg) => console.log(`\n┌─ ${msg}`),
@@ -48,68 +54,99 @@ const log = {
   info: (msg) => console.log(`│  ${msg}`),
 };
 
+// ── Bank Key Mapping ──
+// The config keys (e.g. "Nordea_Sweden") may differ from DB keys.
+// Build a lookup once at startup so we can translate config → DB keys.
+function buildKeyMap(db) {
+  const keyMap = {};
+  for (const [configKey, cfg] of Object.entries(BANK_SOURCES)) {
+    const dbKey = resolveBankKey(db, configKey, cfg.name);
+    if (dbKey) {
+      keyMap[configKey] = dbKey;
+    }
+  }
+  return keyMap;
+}
+
 // ── Main Pipeline ──
 
 async function runPipeline() {
   const startTime = Date.now();
-  log.header('Market Intelligence Data Pipeline');
+  const runId = randomUUID();
+
+  log.header('Market Intelligence Data Pipeline (SQLite)');
   console.log(`  📅 ${new Date().toISOString()}`);
+  console.log(`  🆔 Run: ${runId.slice(0, 8)}`);
   console.log(`  🎯 Fetchers: ${[runRatings && 'Ratings', runNews && 'News', runStocks && 'Stocks', runAnalyze && 'AI Analysis'].filter(Boolean).join(', ')}`);
-  if (dryRun) console.log('  🧪 DRY RUN — will not save to disk');
+  if (dryRun) console.log('  🧪 DRY RUN — will not write to database');
   if (runAnalyze && !isClaudeAvailable()) {
     log.warn('ANTHROPIC_API_KEY not set — skipping AI analysis');
     log.info('Set it with: export ANTHROPIC_API_KEY=sk-ant-...');
   }
 
-  // Load existing data (merge strategy: update, don't overwrite missing)
-  let existing = {};
-  if (existsSync(OUTPUT_PATH)) {
-    try {
-      existing = JSON.parse(readFileSync(OUTPUT_PATH, 'utf-8'));
-    } catch {
-      log.warn('Could not parse existing liveData.json — starting fresh');
-    }
-  }
+  // Get database connection (skip in dry-run — we still need it for key mapping)
+  const db = getDb();
+  const keyMap = buildKeyMap(db);
+  const mappedBankCount = Object.keys(keyMap).length;
+  log.info(`Mapped ${mappedBankCount}/${Object.keys(BANK_SOURCES).length} config banks to DB keys`);
 
-  const pipeline = {
-    version: '1.0.0',
-    lastRun: new Date().toISOString(),
-    fetchers: {},
-    banks: existing.banks || {},
+  // Track pipeline stats
+  const stats = {
+    stocks: { processed: 0, written: 0, skipped: 0, errors: 0 },
+    news: { processed: 0, written: 0, skipped: 0, errors: 0 },
+    ratings: { processed: 0, written: 0, skipped: 0, errors: 0 },
+    analysis: { processed: 0, written: 0, skipped: 0, errors: 0 },
   };
 
-  // ── 1. App Ratings ──
-  if (runRatings) {
-    log.section('App Ratings Fetcher');
+  // Log pipeline start
+  if (!dryRun) {
+    logIngestion(db, runId, null, 'pipeline', 'start', null, {
+      fetchers: [runRatings && 'ratings', runNews && 'news', runStocks && 'stocks', runAnalyze && 'analyze'].filter(Boolean),
+      dryRun,
+      configBanks: Object.keys(BANK_SOURCES).length,
+      mappedBanks: mappedBankCount,
+    });
+  }
+
+  // Collect news data for potential AI analysis later
+  let collectedNews = {};
+
+  // ── 1. Stock Data ──
+  if (runStocks) {
+    log.section('Stock Data Fetcher');
     const fetcherStart = Date.now();
     try {
-      const ratings = await fetchAllAppRatings(({ completed, total, bank }) => {
+      const stocks = await fetchAllStockData(({ completed, total, bank }) => {
         log.progress(`[${completed}/${total}] ${bank.padEnd(30)}`);
       });
       console.log(''); // Clear progress line
 
-      // Merge into banks
-      let successCount = 0;
-      for (const [bankKey, data] of Object.entries(ratings)) {
-        if (!pipeline.banks[bankKey]) pipeline.banks[bankKey] = {};
-        pipeline.banks[bankKey].appRatings = {
-          android: data.android || null,
-          ios: data.ios || null,
-        };
-        if (data.android?.rating || data.ios?.rating) successCount++;
+      for (const [configKey, stockData] of Object.entries(stocks)) {
+        stats.stocks.processed++;
+        const dbKey = keyMap[configKey];
+        if (!dbKey) {
+          stats.stocks.skipped++;
+          continue;
+        }
+
+        if (!dryRun) {
+          try {
+            const ok = mergeStockData(db, dbKey, stockData, runId);
+            if (ok) stats.stocks.written++;
+            else stats.stocks.skipped++;
+          } catch (err) {
+            stats.stocks.errors++;
+            logIngestion(db, runId, dbKey, 'stock_yahoo', 'error', 'banks', err.message);
+          }
+        } else if (stockData.price) {
+          stats.stocks.written++; // count as "would write"
+        }
       }
 
-      pipeline.fetchers.appRatings = {
-        status: 'success',
-        banksProcessed: Object.keys(ratings).length,
-        banksWithData: successCount,
-        durationMs: Date.now() - fetcherStart,
-        completedAt: new Date().toISOString(),
-      };
-      log.done(`${successCount} banks with ratings (${((Date.now() - fetcherStart) / 1000).toFixed(1)}s)`);
+      log.done(`${stats.stocks.written} stocks written, ${stats.stocks.skipped} skipped (${((Date.now() - fetcherStart) / 1000).toFixed(1)}s)`);
     } catch (err) {
-      pipeline.fetchers.appRatings = { status: 'error', error: err.message, completedAt: new Date().toISOString() };
-      log.error(`App ratings failed: ${err.message}`);
+      log.error(`Stock data failed: ${err.message}`);
+      if (!dryRun) logIngestion(db, runId, null, 'stock_yahoo', 'error', null, err.message);
     }
   }
 
@@ -123,79 +160,79 @@ async function runPipeline() {
       });
       console.log('');
 
-      let withSignals = 0;
-      let totalArticles = 0;
-      for (const [bankKey, data] of Object.entries(news)) {
-        if (!pipeline.banks[bankKey]) pipeline.banks[bankKey] = {};
-        pipeline.banks[bankKey].news = {
-          articles: data.articles,
-          topSignals: data.topSignals,
-          signalCount: data.signalCount,
-          articleCount: data.articleCount,
-          fetchedAt: data.fetchedAt,
-        };
-        if (data.signalCount > 0) withSignals++;
-        totalArticles += data.articleCount;
+      for (const [configKey, newsData] of Object.entries(news)) {
+        stats.news.processed++;
+        const dbKey = keyMap[configKey];
+        if (!dbKey) {
+          stats.news.skipped++;
+          continue;
+        }
+
+        // Collect for AI analysis
+        if (newsData.articles?.length > 0) {
+          collectedNews[configKey] = {
+            name: BANK_SOURCES[configKey]?.name || configKey.split('_')[0],
+            articles: newsData.articles,
+          };
+        }
+
+        if (!dryRun) {
+          try {
+            const ok = mergeNewsData(db, dbKey, newsData, runId);
+            if (ok) stats.news.written++;
+            else stats.news.skipped++;
+          } catch (err) {
+            stats.news.errors++;
+            logIngestion(db, runId, dbKey, 'news_rss', 'error', 'banks', err.message);
+          }
+        } else if (newsData.articleCount > 0) {
+          stats.news.written++;
+        }
       }
 
-      pipeline.fetchers.newsSignals = {
-        status: 'success',
-        banksProcessed: Object.keys(news).length,
-        banksWithSignals: withSignals,
-        totalArticles,
-        durationMs: Date.now() - fetcherStart,
-        completedAt: new Date().toISOString(),
-      };
-      log.done(`${withSignals} banks with signals, ${totalArticles} articles (${((Date.now() - fetcherStart) / 1000).toFixed(1)}s)`);
+      log.done(`${stats.news.written} banks with news, ${stats.news.skipped} skipped (${((Date.now() - fetcherStart) / 1000).toFixed(1)}s)`);
     } catch (err) {
-      pipeline.fetchers.newsSignals = { status: 'error', error: err.message, completedAt: new Date().toISOString() };
       log.error(`News signals failed: ${err.message}`);
+      if (!dryRun) logIngestion(db, runId, null, 'news_rss', 'error', null, err.message);
     }
   }
 
-  // ── 3. Stock Data ──
-  if (runStocks) {
-    log.section('Stock Data Fetcher');
+  // ── 3. App Ratings ──
+  if (runRatings) {
+    log.section('App Ratings Fetcher');
     const fetcherStart = Date.now();
     try {
-      const stocks = await fetchAllStockData(({ completed, total, bank }) => {
+      const ratings = await fetchAllAppRatings(({ completed, total, bank }) => {
         log.progress(`[${completed}/${total}] ${bank.padEnd(30)}`);
       });
       console.log('');
 
-      let successCount = 0;
-      for (const [bankKey, data] of Object.entries(stocks)) {
-        if (!pipeline.banks[bankKey]) pipeline.banks[bankKey] = {};
-        pipeline.banks[bankKey].stock = {
-          ticker: data.ticker,
-          currency: data.currency,
-          price: data.price,
-          dayChange: data.dayChange,
-          dayChangePercent: data.dayChangePercent,
-          fiftyTwoWeekHigh: data.fiftyTwoWeekHigh,
-          fiftyTwoWeekLow: data.fiftyTwoWeekLow,
-          marketCap: data.marketCap,
-          marketCapFormatted: data.marketCapFormatted,
-          peRatio: data.peRatio,
-          dividendYield: data.dividendYield,
-          exchange: data.exchange,
-          fetchedAt: data.fetchedAt,
-          error: data.error || null,
-        };
-        if (data.price) successCount++;
+      for (const [configKey, ratingsData] of Object.entries(ratings)) {
+        stats.ratings.processed++;
+        const dbKey = keyMap[configKey];
+        if (!dbKey) {
+          stats.ratings.skipped++;
+          continue;
+        }
+
+        if (!dryRun) {
+          try {
+            const ok = mergeAppRatings(db, dbKey, ratingsData, runId);
+            if (ok) stats.ratings.written++;
+            else stats.ratings.skipped++;
+          } catch (err) {
+            stats.ratings.errors++;
+            logIngestion(db, runId, dbKey, 'app_ratings', 'error', 'cx', err.message);
+          }
+        } else if (ratingsData.android?.rating || ratingsData.ios?.rating) {
+          stats.ratings.written++;
+        }
       }
 
-      pipeline.fetchers.stockData = {
-        status: 'success',
-        banksProcessed: Object.keys(stocks).length,
-        banksWithData: successCount,
-        durationMs: Date.now() - fetcherStart,
-        completedAt: new Date().toISOString(),
-      };
-      log.done(`${successCount} stocks fetched (${((Date.now() - fetcherStart) / 1000).toFixed(1)}s)`);
+      log.done(`${stats.ratings.written} banks with ratings, ${stats.ratings.skipped} skipped (${((Date.now() - fetcherStart) / 1000).toFixed(1)}s)`);
     } catch (err) {
-      pipeline.fetchers.stockData = { status: 'error', error: err.message, completedAt: new Date().toISOString() };
-      log.error(`Stock data failed: ${err.message}`);
+      log.error(`App ratings failed: ${err.message}`);
+      if (!dryRun) logIngestion(db, runId, null, 'app_ratings', 'error', null, err.message);
     }
   }
 
@@ -204,75 +241,103 @@ async function runPipeline() {
     log.section('Claude AI News Analysis');
     const fetcherStart = Date.now();
     try {
-      // Build news data from pipeline banks
-      const newsData = {};
-      for (const [bankKey, bankData] of Object.entries(pipeline.banks)) {
-        if (bankData.news?.articles?.length > 0) {
-          newsData[bankKey] = {
-            name: bankData.news.articles[0]?.bankName || bankKey.split('_')[0],
-            articles: bankData.news.articles,
-          };
+      // If we didn't run --news this time, try loading from DB
+      if (Object.keys(collectedNews).length === 0) {
+        log.info('No fresh news — loading recent news from database...');
+        for (const [configKey, cfg] of Object.entries(BANK_SOURCES)) {
+          const dbKey = keyMap[configKey];
+          if (!dbKey) continue;
+          const row = db.prepare('SELECT data FROM banks WHERE key = ?').get(dbKey);
+          if (row) {
+            const data = JSON.parse(row.data);
+            if (data.live_news?.articles?.length > 0) {
+              collectedNews[configKey] = {
+                name: cfg.name,
+                articles: data.live_news.articles,
+              };
+            }
+          }
         }
       }
 
-      const bankCount = Object.keys(newsData).length;
+      const bankCount = Object.keys(collectedNews).length;
       if (bankCount === 0) {
         log.warn('No news articles to analyze — run --news first');
       } else {
         log.info(`Analyzing news for ${bankCount} banks...`);
-        const analysis = await analyzeAllBankNews(newsData, ({ completed, total, bank }) => {
+        const analysis = await analyzeAllBankNews(collectedNews, ({ completed, total, bank }) => {
           log.progress(`[${completed}/${total}] 🤖 ${bank.padEnd(30)}`);
         });
         console.log('');
 
-        let withAnalysis = 0;
-        for (const [bankKey, aiResult] of Object.entries(analysis)) {
-          if (!pipeline.banks[bankKey]) pipeline.banks[bankKey] = {};
-          pipeline.banks[bankKey].aiAnalysis = aiResult;
-          withAnalysis++;
+        for (const [configKey, aiResult] of Object.entries(analysis)) {
+          stats.analysis.processed++;
+          const dbKey = keyMap[configKey];
+          if (!dbKey) {
+            stats.analysis.skipped++;
+            continue;
+          }
+
+          if (!dryRun) {
+            try {
+              const ok = mergeAiAnalysis(db, dbKey, aiResult, 'news_intelligence', runId);
+              if (ok) stats.analysis.written++;
+              else stats.analysis.skipped++;
+            } catch (err) {
+              stats.analysis.errors++;
+              logIngestion(db, runId, dbKey, 'ai_analysis', 'error', 'ai_analyses', err.message);
+            }
+          } else {
+            stats.analysis.written++;
+          }
         }
 
-        pipeline.fetchers.aiAnalysis = {
-          status: 'success',
-          banksProcessed: bankCount,
-          banksWithAnalysis: withAnalysis,
-          durationMs: Date.now() - fetcherStart,
-          completedAt: new Date().toISOString(),
-        };
-        log.done(`${withAnalysis} banks analyzed by Claude (${((Date.now() - fetcherStart) / 1000).toFixed(1)}s)`);
+        log.done(`${stats.analysis.written} banks analyzed (${((Date.now() - fetcherStart) / 1000).toFixed(1)}s)`);
       }
     } catch (err) {
-      pipeline.fetchers.aiAnalysis = { status: 'error', error: err.message, completedAt: new Date().toISOString() };
       log.error(`AI analysis failed: ${err.message}`);
+      if (!dryRun) logIngestion(db, runId, null, 'ai_analysis', 'error', null, err.message);
     }
   }
 
-  // ── Write Output ──
+  // ── Pipeline Summary ──
   const totalDuration = ((Date.now() - startTime) / 1000).toFixed(1);
-  pipeline.durationMs = Date.now() - startTime;
+  const totalWritten = stats.stocks.written + stats.news.written + stats.ratings.written + stats.analysis.written;
+  const totalErrors = stats.stocks.errors + stats.news.errors + stats.ratings.errors + stats.analysis.errors;
 
+  // Log pipeline completion
   if (!dryRun) {
-    writeFileSync(OUTPUT_PATH, JSON.stringify(pipeline, null, 2));
-    log.header(`Pipeline Complete — ${totalDuration}s`);
-    console.log(`  💾 Saved to: ${OUTPUT_PATH}`);
-    console.log(`  📊 Banks: ${Object.keys(pipeline.banks).length}`);
+    logIngestion(db, runId, null, 'pipeline', 'complete', null, {
+      durationMs: Date.now() - startTime,
+      stats,
+      totalWritten,
+      totalErrors,
+    });
+  }
 
-    // Write log
-    if (!existsSync(LOG_DIR)) mkdirSync(LOG_DIR, { recursive: true });
-    const logEntry = {
-      timestamp: pipeline.lastRun,
-      durationMs: pipeline.durationMs,
-      fetchers: pipeline.fetchers,
-    };
-    const logPath = resolve(LOG_DIR, 'pipeline.log');
-    const logLine = JSON.stringify(logEntry) + '\n';
-    const existingLog = existsSync(logPath) ? readFileSync(logPath, 'utf-8') : '';
-    writeFileSync(logPath, existingLog + logLine);
-    console.log(`  📝 Log: ${logPath}`);
+  // Close DB
+  closeDb();
+
+  // Print summary
+  if (!dryRun) {
+    log.header(`Pipeline Complete — ${totalDuration}s`);
+    console.log(`  🆔 Run: ${runId.slice(0, 8)}`);
+    console.log(`  💾 Database: data/market-intelligence.db`);
   } else {
-    log.header(`Pipeline Preview — ${totalDuration}s`);
-    console.log(`  📊 Would save ${Object.keys(pipeline.banks).length} banks`);
-    console.log(`  Fetchers: ${JSON.stringify(pipeline.fetchers, null, 2)}`);
+    log.header(`Pipeline Preview (Dry Run) — ${totalDuration}s`);
+  }
+
+  console.log(`  📊 Results:`);
+  if (runStocks) console.log(`     Stocks:   ${stats.stocks.written} written, ${stats.stocks.skipped} skipped, ${stats.stocks.errors} errors`);
+  if (runNews) console.log(`     News:     ${stats.news.written} written, ${stats.news.skipped} skipped, ${stats.news.errors} errors`);
+  if (runRatings) console.log(`     Ratings:  ${stats.ratings.written} written, ${stats.ratings.skipped} skipped, ${stats.ratings.errors} errors`);
+  if (runAnalyze) console.log(`     Analysis: ${stats.analysis.written} written, ${stats.analysis.skipped} skipped, ${stats.analysis.errors} errors`);
+  console.log(`  ─────────────`);
+  console.log(`  Total: ${totalWritten} writes, ${totalErrors} errors`);
+
+  if (totalErrors > 0) {
+    console.log(`\n  ⚠️  Check ingestion_log for error details:`);
+    console.log(`     SELECT * FROM ingestion_log WHERE run_id LIKE '${runId.slice(0, 8)}%' AND action = 'error'`);
   }
 }
 

@@ -23,3 +23,11 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Environment variables (API keys)
+.env
+
+# SQLite database
+data/*.db
+data/*.db-wal
+data/*.db-shm

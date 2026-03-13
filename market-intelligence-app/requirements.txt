@@ -1,0 +1,5 @@
+# Value Consulting Agent System - Python Dependencies
+# Install with: pip install -r requirements.txt
+
+# ROI Excel model generation (tools/roi_excel_generator.py)
+openpyxl>=3.1.0

@@ -1,15 +1,34 @@
-import { getLiveAppRating, getRatingDelta } from '../../data/liveDataProvider';
 import { TrendingUp, TrendingDown, Minus, RefreshCw } from 'lucide-react';
+
+// Compute rating delta locally (was in liveDataProvider)
+function computeDelta(liveRating, staticRating) {
+  if (liveRating == null || staticRating == null) return null;
+  return Math.round((liveRating - staticRating) * 10) / 10;
+}
 
 /**
  * Shows live app ratings with delta vs static data.
- * Compact inline badge for bank headers.
+ * Reads from bankData.live_ratings (populated by pipeline → cx table).
+ * Falls back to cxData for static ratings.
  */
-export default function LiveRatingBadge({ bankKey, staticAndroid, staticIos }) {
-  const live = getLiveAppRating(bankKey);
-  if (!live || (!live.android && !live.ios)) return null;
+export default function LiveRatingBadge({ bankData, cxData, staticAndroid, staticIos }) {
+  const ratings = bankData?.live_ratings || cxData?.live_ratings;
+  if (!ratings) return null;
 
-  const delta = getRatingDelta(bankKey, staticAndroid, staticIos);
+  const live = {
+    android: ratings.android?.rating ?? null,
+    ios: ratings.ios?.rating ?? null,
+    androidReviews: ratings.android?.reviews ?? null,
+    iosReviews: ratings.ios?.reviews ?? null,
+    fetchedAt: ratings.fetchedAt,
+  };
+
+  if (!live.android && !live.ios) return null;
+
+  const delta = {
+    android: computeDelta(live.android, staticAndroid),
+    ios: computeDelta(live.ios, staticIos),
+  };
 
   return (
     <div className="flex items-center gap-2">
@@ -63,11 +82,24 @@ function RatingPill({ label, rating, delta, reviews }) {
 /**
  * Full-width live ratings card for CX tab
  */
-export function LiveRatingsCard({ bankKey, staticAndroid, staticIos }) {
-  const live = getLiveAppRating(bankKey);
-  if (!live || (!live.android && !live.ios)) return null;
+export function LiveRatingsCard({ bankData, cxData, staticAndroid, staticIos }) {
+  const ratings = bankData?.live_ratings || cxData?.live_ratings;
+  if (!ratings) return null;
 
-  const delta = getRatingDelta(bankKey, staticAndroid, staticIos);
+  const live = {
+    android: ratings.android?.rating ?? null,
+    ios: ratings.ios?.rating ?? null,
+    androidReviews: ratings.android?.reviews ?? null,
+    iosReviews: ratings.ios?.reviews ?? null,
+    fetchedAt: ratings.fetchedAt,
+  };
+
+  if (!live.android && !live.ios) return null;
+
+  const delta = {
+    android: computeDelta(live.android, staticAndroid),
+    ios: computeDelta(live.ios, staticIos),
+  };
 
   return (
     <div className="p-4 bg-gradient-to-r from-primary-50 to-blue-50 border border-primary/20 rounded-xl">

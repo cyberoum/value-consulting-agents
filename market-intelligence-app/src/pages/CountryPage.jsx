@@ -1,7 +1,10 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Check, Users } from 'lucide-react';
-import { COUNTRY_DATA, BANK_DATA, QUAL_DATA, getMarketForCountry, getBanksForCountry, calcScore, scoreColor, dataConfidence, VALUE_SELLING, COMP_DATA } from '../data/utils';
+import { useCountry, useCountryBanks } from '../hooks/useData';
+import { calcScoreFromData, scoreColor, dataConfidenceFromData } from '../data/scoring';
+import { getMarketForCountry } from '../data/utils';
+import { LoadingState, ErrorState } from '../components/common/DataState';
 import Card from '../components/common/Card';
 import TabBar from '../components/common/TabBar';
 import Section from '../components/common/Section';
@@ -14,10 +17,16 @@ export default function CountryPage() {
   const { countryName } = useParams();
   const navigate = useNavigate();
   const country = decodeURIComponent(countryName);
-  const data = COUNTRY_DATA[country];
+  const { data: countryData, isLoading, error } = useCountry(country);
+  const { data: countryBanks } = useCountryBanks(country);
   const marketKey = getMarketForCountry(country);
   const { toggle: toggleCompare, isSelected } = useCompare();
   const [filters, setFilters] = useState({ minScore: 0, maxScore: 10, confidence: 'all', hasPowerMap: false, dealSize: 'all', hasValueSelling: false, sortBy: 'score' });
+
+  if (isLoading) return <LoadingState message="Loading country data..." />;
+  if (error) return <ErrorState message={error.message} />;
+
+  const data = countryData?.data;
 
   if (!data) {
     return (
@@ -28,7 +37,19 @@ export default function CountryPage() {
     );
   }
 
-  const allBanks = getBanksForCountry(country);
+  // Build bank list from API data with computed scores
+  const allBanks = (countryBanks || []).map(b => ({
+    key: b.key,
+    name: b.bank_name,
+    country: b.country,
+    type: b.data?.backbase_qualification?.bank_type || '',
+    total_assets: b.data?.operational_profile?.total_assets || '',
+    score: calcScoreFromData(b.qualification),
+    bankData: b.data,
+    qualification: b.data?.backbase_qualification || null,
+    _qualData: b.qualification,
+    _valueSelling: b.value_selling,
+  })).sort((a, b) => b.score - a.score);
 
   // Parse deal value helper
   const parseDealMin = (str) => {
@@ -47,12 +68,12 @@ export default function CountryPage() {
     if (b.score < filters.minScore) return false;
     if (b.score > filters.maxScore) return false;
     if (filters.confidence !== 'all') {
-      const conf = dataConfidence(b.key);
+      const conf = dataConfidenceFromData(b.key, b.bankData);
       if (filters.confidence === 'deep' && conf.level !== 'deep') return false;
       if (filters.confidence === 'standard' && conf.level === 'preliminary') return false;
     }
-    if (filters.hasPowerMap && !QUAL_DATA[b.key]?.power_map?.activated) return false;
-    if (filters.hasValueSelling && !VALUE_SELLING[b.key]) return false;
+    if (filters.hasPowerMap && !b._qualData?.power_map?.activated) return false;
+    if (filters.hasValueSelling && !b._valueSelling) return false;
     if (filters.dealSize !== 'all') {
       const dealMin = parseDealMin(b.qualification?.deal_size);
       if (filters.dealSize === 'large' && dealMin < 10) return false;
@@ -67,9 +88,9 @@ export default function CountryPage() {
     filteredBanks.sort((a, b) => a.name.localeCompare(b.name));
   } else if (filters.sortBy === 'confidence') {
     const confOrder = { deep: 3, standard: 2, preliminary: 1 };
-    filteredBanks.sort((a, b) => (confOrder[dataConfidence(b.key).level] || 0) - (confOrder[dataConfidence(a.key).level] || 0));
+    filteredBanks.sort((a, b) => (confOrder[dataConfidenceFromData(b.key, b.bankData).level] || 0) - (confOrder[dataConfidenceFromData(a.key, a.bankData).level] || 0));
   }
-  // Default is already sorted by score from getBanksForCountry
+  // Default is already sorted by score
 
   const sw = data.strengths_weaknesses;
 
@@ -100,8 +121,7 @@ export default function CountryPage() {
         {/* Bank cards */}
         <div className="flex-1 min-w-0 flex flex-col gap-2">
           {filteredBanks.map(b => {
-            const conf = dataConfidence(b.key);
-            const qd = QUAL_DATA[b.key];
+            const conf = dataConfidenceFromData(b.key, b.bankData);
             return (
               <div key={b.key} className="flex items-center gap-3 p-3 bg-surface border border-border rounded-lg hover:border-primary/30 transition-all cursor-pointer group"
                 onClick={() => navigate(`/bank/${encodeURIComponent(b.key)}`)}>
@@ -117,7 +137,7 @@ export default function CountryPage() {
                 </div>
                 <div className="flex items-center gap-1">
                   <ConfidenceBadge level={conf.level} />
-                  {qd?.power_map?.activated && <span className="w-5 h-5 rounded bg-primary text-white text-[10px] flex items-center justify-center" title="Power Map">✓</span>}
+                  {b._qualData?.power_map?.activated && <span className="w-5 h-5 rounded bg-primary text-white text-[10px] flex items-center justify-center" title="Power Map">✓</span>}
                 </div>
                 {b.bankData && <span className="text-[9px] font-bold text-primary bg-primary/8 px-2 py-0.5 rounded group-hover:bg-primary/15">DEEP DIVE</span>}
               </div>
@@ -174,8 +194,8 @@ export default function CountryPage() {
       <div className="bg-surface border border-border rounded-xl p-4 mb-5">
         <div className="flex gap-5 flex-wrap mb-4">
           <div className="text-center"><div className="text-xl font-black text-primary">{allBanks.filter(b => b.score >= 4).length}</div><div className="text-[10px] text-fg-muted">Prospects</div></div>
-          <div className="text-center"><div className="text-xl font-black text-success">{allBanks.filter(b => QUAL_DATA[b.key]?.power_map?.activated).length}</div><div className="text-[10px] text-fg-muted">Power Maps</div></div>
-          <div className="text-center"><div className="text-xl font-black text-primary-700">{allBanks.filter(b => VALUE_SELLING[b.key]).length}</div><div className="text-[10px] text-fg-muted">Value Hypos</div></div>
+          <div className="text-center"><div className="text-xl font-black text-success">{allBanks.filter(b => b._qualData?.power_map?.activated).length}</div><div className="text-[10px] text-fg-muted">Power Maps</div></div>
+          <div className="text-center"><div className="text-xl font-black text-primary-700">{allBanks.filter(b => b._valueSelling).length}</div><div className="text-[10px] text-fg-muted">Value Hypos</div></div>
         </div>
         <div className="text-[10px] font-bold text-fg-muted uppercase mb-2">Fit Score Distribution</div>
         <BarChart items={allBanks.slice(0, 10).map(b => ({ name: b.name, score: b.score }))} height={allBanks.slice(0, 10).length * 28 + 30} />

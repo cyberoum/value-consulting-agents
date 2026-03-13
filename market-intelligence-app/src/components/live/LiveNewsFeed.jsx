@@ -1,4 +1,3 @@
-import { getLiveNews } from '../../data/liveDataProvider';
 import { Newspaper, ExternalLink, Zap, RefreshCw } from 'lucide-react';
 
 const SIGNAL_LABELS = {
@@ -18,8 +17,8 @@ const SIGNAL_LABELS = {
  * Live news feed for a bank's profile page.
  * Shows recent articles with signal tags and relevance scores.
  */
-export default function LiveNewsFeed({ bankKey }) {
-  const news = getLiveNews(bankKey);
+export default function LiveNewsFeed({ bankData }) {
+  const news = bankData?.live_news;
   if (!news || news.articleCount === 0) return null;
 
   return (
@@ -127,8 +126,8 @@ function NewsArticleCard({ article }) {
 /**
  * Compact news badge for bank card headers
  */
-export function NewsSignalBadge({ bankKey }) {
-  const news = getLiveNews(bankKey);
+export function NewsSignalBadge({ bankData }) {
+  const news = bankData?.live_news;
   if (!news || news.signalCount === 0) return null;
 
   return (

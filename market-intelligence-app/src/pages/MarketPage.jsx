@@ -1,17 +1,24 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
-import { MARKETS_META, MARKET_DATA, getBanksForMarket, VALUE_SELLING, calcScore } from '../data/utils';
+import { useMarket, useMarketBanks } from '../hooks/useData';
+import { calcScoreFromData, scoreColor } from '../data/scoring';
+import { LoadingState, ErrorState } from '../components/common/DataState';
 import Card from '../components/common/Card';
 import TabBar from '../components/common/TabBar';
 import Section from '../components/common/Section';
 import BarChart from '../components/charts/BarChart';
-import { scoreColor } from '../data/utils';
 
 export default function MarketPage() {
   const { marketKey } = useParams();
   const navigate = useNavigate();
-  const meta = MARKETS_META[marketKey];
-  const data = MARKET_DATA[marketKey];
+  const { data: marketData, isLoading, error } = useMarket(marketKey);
+  const { data: marketBanks } = useMarketBanks(marketKey);
+
+  if (isLoading) return <LoadingState message="Loading market..." />;
+  if (error) return <ErrorState message={error.message} />;
+
+  const meta = marketData;
+  const data = marketData?.data;
 
   if (!meta || !data) {
     return (
@@ -22,7 +29,13 @@ export default function MarketPage() {
     );
   }
 
-  const banks = getBanksForMarket(marketKey).filter(b => b.score >= 5).slice(0, 10);
+  // Compute scores and filter top banks
+  const banks = (marketBanks || []).map(b => ({
+    ...b,
+    name: b.bank_name,
+    score: calcScoreFromData(b.qualification),
+    qualification: b.data?.backbase_qualification || null,
+  })).filter(b => b.score >= 5).sort((a, b) => b.score - a.score).slice(0, 10);
 
   const OpportunitiesTab = () => (
     <div>
