@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import SectionErrorBoundary from './SectionErrorBoundary';
 
 export default function TabBar({ tabs, defaultTab = 0, id = 'tab-indicator' }) {
   const [active, setActive] = useState(defaultTab);
@@ -33,7 +34,9 @@ export default function TabBar({ tabs, defaultTab = 0, id = 'tab-indicator' }) {
           exit={{ opacity: 0, y: -8 }}
           transition={{ duration: 0.2 }}
         >
-          {tabs[active]?.content}
+          <SectionErrorBoundary label={tabs[active]?.label}>
+            {tabs[active]?.content}
+          </SectionErrorBoundary>
         </motion.div>
       </AnimatePresence>
     </div>

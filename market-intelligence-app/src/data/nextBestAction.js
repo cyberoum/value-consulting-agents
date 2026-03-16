@@ -12,6 +12,7 @@ import { QUAL_DATA } from './qualification';
 import { CX_DATA } from './cx';
 import { COMP_DATA } from './competition';
 import { VALUE_SELLING } from './valueSelling';
+import { NBA } from './constants';
 
 const ACTION_TYPES = {
   CONTACT: { icon: '📞', label: 'Contact', color: '#3366FF' },
@@ -118,7 +119,7 @@ export function getNextBestActions(bankKey) {
       });
     }
 
-    if (unconnectedKDMs.length > 2) {
+    if (unconnectedKDMs.length > NBA.MIN_UNCONNECTED_KDMS) {
       actions.push({
         type: ACTION_TYPES.RESEARCH,
         urgency: URGENCY.MEDIUM,
@@ -145,7 +146,7 @@ export function getNextBestActions(bankKey) {
   if (qd) {
     const dims = ['firmographics', 'technographics', 'decision_process', 'landing_zones', 'pain_push', 'power_map', 'partner_access'];
     dims.forEach(dim => {
-      if (qd[dim] && qd[dim].score <= 5) {
+      if (qd[dim] && qd[dim].score <= NBA.QUAL_GAP_THRESHOLD) {
         const labels = {
           technographics: 'Deepen tech stack understanding',
           decision_process: 'Map the buying process',
@@ -171,18 +172,18 @@ export function getNextBestActions(bankKey) {
     const iosRating = parseFloat(cx.app_rating_ios);
     const androidRating = parseFloat(cx.app_rating_android);
 
-    if (iosRating && iosRating < 3.5) {
+    if (iosRating && iosRating < NBA.LOW_APP_RATING) {
       actions.push({
         type: ACTION_TYPES.PREPARE,
         urgency: URGENCY.MEDIUM,
         title: 'Use low app ratings as conversation opener',
-        detail: `iOS rating is ${cx.app_rating_ios} — below the 3.5 average. Reference app store reviews to demonstrate CX gap.`,
+        detail: `iOS rating is ${cx.app_rating_ios} — below the ${NBA.LOW_APP_RATING} average. Reference app store reviews to demonstrate CX gap.`,
         evidence: `iOS App Store: ${cx.app_rating_ios}`,
         score: 68,
       });
     }
 
-    if (cx.cx_weaknesses?.length >= 3) {
+    if (cx.cx_weaknesses?.length >= NBA.MIN_CX_WEAKNESSES) {
       actions.push({
         type: ACTION_TYPES.PREPARE,
         urgency: URGENCY.LOW,
@@ -260,7 +261,7 @@ export function getNextBestActions(bankKey) {
       seen.add(a.title);
       return true;
     })
-    .slice(0, 8); // Cap at 8 actions
+    .slice(0, NBA.MAX_ACTIONS);
 }
 
 export { ACTION_TYPES, URGENCY };

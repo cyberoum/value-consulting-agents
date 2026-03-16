@@ -23,54 +23,15 @@ import { readFileSync, existsSync, readdirSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
+import { callClaude, isApiKeyConfigured } from './claudeClient.mjs';
+
 const currentDir = dirname(fileURLToPath(import.meta.url));
 const KNOWLEDGE_DIR = resolve(currentDir, '../../knowledge');
 
-const ANTHROPIC_API_URL = 'https://api.anthropic.com/v1/messages';
-const MODEL = 'claude-sonnet-4-20250514';
-
 
 // ===============================================
-// INFRASTRUCTURE (self-contained per module pattern)
+// INFRASTRUCTURE
 // ===============================================
-
-async function callClaude(systemPrompt, userMessage, maxTokens = 8192) {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) throw new Error('ANTHROPIC_API_KEY not set');
-
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 150000);
-
-  try {
-    const response = await fetch(ANTHROPIC_API_URL, {
-      method: 'POST',
-      signal: controller.signal,
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({
-        model: MODEL,
-        max_tokens: maxTokens,
-        system: systemPrompt,
-        messages: [{ role: 'user', content: userMessage }],
-      }),
-    });
-    clearTimeout(timer);
-
-    if (!response.ok) {
-      const errText = await response.text();
-      throw new Error(`API ${response.status}: ${errText.substring(0, 200)}`);
-    }
-
-    const data = await response.json();
-    return data.content?.[0]?.text || '';
-  } catch (fetchErr) {
-    clearTimeout(timer);
-    throw fetchErr;
-  }
-}
 
 async function searchGoogleNews(query, maxResults = 5) {
   const encoded = encodeURIComponent(query);
@@ -707,7 +668,7 @@ export async function generateDiscoveryStoryline({ bankName, bankKey, bankData, 
   console.log(`   Calling Claude for 7-act storyline synthesis...`);
   let rawResponse;
   try {
-    rawResponse = await callClaude(DISCOVERY_STORYLINE_SYSTEM_PROMPT, userMessage, 8192);
+    rawResponse = await callClaude(DISCOVERY_STORYLINE_SYSTEM_PROMPT, userMessage, { maxTokens: 8192, timeout: 150000 });
     console.log(`   Claude response: ${rawResponse.length} chars`);
   } catch (claudeErr) {
     console.error(`   Claude call failed: ${claudeErr.message}`);
@@ -846,5 +807,5 @@ function getFallbackTalkingPoints(actId) {
 // ===============================================
 
 export function isDiscoveryStorylineAvailable() {
-  return !!process.env.ANTHROPIC_API_KEY;
+  return isApiKeyConfigured();
 }

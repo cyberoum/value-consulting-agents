@@ -10,9 +10,91 @@
 import { BANK_DATA } from './banks';
 import { VALUE_SELLING } from './valueSelling';
 import { getRegionalCosts, getRegionForCountry } from './domainBenchmarks';
+import { ROI } from './constants';
+
+// ─── Types ──────────────────────────────────────────────────────────
+
+type Currency = 'EUR' | 'USD' | 'GBP' | 'SEK' | 'NOK' | 'DKK' | 'CHF';
+
+export interface ParsedKpiPercent {
+  value: number;
+  isPercent: true;
+  raw: string;
+}
+
+export interface ParsedKpiValue {
+  value: number;
+  eurValue: number;
+  currency: Currency;
+  multiplier: number;
+  isPercent: false;
+  raw: string;
+}
+
+export type ParsedKpi = ParsedKpiPercent | ParsedKpiValue;
+
+interface ImprovementFactor {
+  factors: [number, number, number];
+  label: string;
+}
+
+export interface Benchmarks {
+  avg_cost_per_fte_eur: number;
+  avg_branch_interaction_cost_eur: number;
+  avg_digital_interaction_cost_eur: number;
+  interaction_delta_eur: number;
+  avg_revenue_per_retail_customer_eur: number;
+  avg_revenue_per_product_eur: number;
+  avg_products_per_customer: number;
+  net_interest_margin: number;
+  tech_spend_pct_revenue: number;
+  digital_adoption_current: number;
+  annual_interactions_per_customer: number;
+  addressable_fte_pct: number;
+  addressable_customer_pct: number;
+  addressable_interaction_pct: number;
+  cost_to_serve: ImprovementFactor;
+  channel_shift: ImprovementFactor;
+  onboarding_lift: ImprovementFactor;
+  cross_sell: ImprovementFactor;
+  platform_savings: ImprovementFactor;
+  sources: Record<string, string>;
+  _region?: string;
+  _regionalSource?: string;
+}
+
+export interface RoiTotals {
+  conservative: number;
+  base: number;
+  optimistic: number;
+}
+
+export interface RoiLever {
+  id: string;
+  name: string;
+  icon: string;
+  description: string;
+  talkingPoint: string | null;
+  values: [number, number, number];
+  metric: string;
+  source: string;
+  methodology: string;
+}
+
+export interface RoiResult {
+  bankKey: string;
+  bankName: string;
+  metrics: Record<string, unknown>;
+  levers: RoiLever[];
+  totals: RoiTotals;
+  payback: { conservative: number | null; base: number; optimistic: number | null } | null;
+  dealContext: Record<string, string | null>;
+  assumptions: Array<{ assumption: string; source: string; confidence: string }>;
+  generatedAt: string;
+}
 
 // ─── Currency conversion to EUR (approximate, for estimation only) ───
-const FX_TO_EUR = {
+const FX_TO_EUR: Record<Currency, number> = {
   EUR: 1,
   USD: 0.92,
   GBP: 1.17,
@@ -23,37 +105,36 @@ const FX_TO_EUR = {
 };
 
 // ─── Industry benchmarks (European banking, documented sources) ───
-export const BENCHMARKS = {
+export const BENCHMARKS: Benchmarks = {
   // Cost structure
-  avg_cost_per_fte_eur: 95_000,              // Fully-loaded FTE cost (salary+benefits+infra)
-  avg_branch_interaction_cost_eur: 8.50,     // Per-interaction cost: branch/call center
-  avg_digital_interaction_cost_eur: 0.50,    // Per-interaction cost: digital self-service
-  interaction_delta_eur: 8.00,               // Savings per interaction shifted to digital
+  avg_cost_per_fte_eur: 95_000,
+  avg_branch_interaction_cost_eur: 8.50,
+  avg_digital_interaction_cost_eur: 0.50,
+  interaction_delta_eur: 8.00,
 
   // Revenue proxies
-  avg_revenue_per_retail_customer_eur: 380,  // European bank avg annual revenue per retail customer
-  avg_revenue_per_product_eur: 130,          // Revenue per product-holding per year
-  avg_products_per_customer: 2.3,            // Current product density (European avg)
+  avg_revenue_per_retail_customer_eur: 380,
+  avg_revenue_per_product_eur: 130,
+  avg_products_per_customer: 2.3,
 
   // Operating model
-  net_interest_margin: 0.015,                // 1.5% NIM for European banks
-  tech_spend_pct_revenue: 0.12,             // Tech = ~12% of revenue
-  digital_adoption_current: 0.65,            // 65% customers use digital today
-  annual_interactions_per_customer: 30,      // Non-digital interactions per year (branch + call center)
+  net_interest_margin: 0.015,
+  tech_spend_pct_revenue: 0.12,
+  digital_adoption_current: 0.65,
+  annual_interactions_per_customer: 30,
 
-  // ─── Addressability — what % of the base is actually impacted by an engagement platform ───
-  addressable_fte_pct: 0.15,                 // ~15% of FTEs are front-office/customer-facing roles impacted
-  addressable_customer_pct: 0.25,            // ~25% of customer base is "active digital" addressable
-  addressable_interaction_pct: 0.20,         // ~20% of non-digital interactions are realistically shiftable
+  // Addressability
+  addressable_fte_pct: 0.15,
+  addressable_customer_pct: 0.25,
+  addressable_interaction_pct: 0.20,
 
-  // ─── Improvement factors [conservative, base, optimistic] ───
-  cost_to_serve:       { factors: [0.05, 0.10, 0.18], label: 'Cost-to-Serve Reduction' },
-  channel_shift:       { factors: [0.08, 0.15, 0.25], label: 'Digital Channel Shift' },
-  onboarding_lift:     { factors: [0.10, 0.20, 0.35], label: 'Onboarding Conversion Lift' },
-  cross_sell:          { factors: [0.10, 0.20, 0.35], label: 'Cross-Sell Revenue Uplift' },
-  platform_savings:    { factors: [0.05, 0.10, 0.18], label: 'Platform Consolidation' },
+  // Improvement factors [conservative, base, optimistic]
+  cost_to_serve:    { factors: [0.05, 0.10, 0.18], label: 'Cost-to-Serve Reduction' },
+  channel_shift:    { factors: [0.08, 0.15, 0.25], label: 'Digital Channel Shift' },
+  onboarding_lift:  { factors: [0.10, 0.20, 0.35], label: 'Onboarding Conversion Lift' },
+  cross_sell:       { factors: [0.10, 0.20, 0.35], label: 'Cross-Sell Revenue Uplift' },
+  platform_savings: { factors: [0.05, 0.10, 0.18], label: 'Platform Consolidation' },
 
-  // Source documentation
   sources: {
     cost_per_fte: 'McKinsey Global Banking Annual Review 2024',
     interaction_cost: 'BCG Banking Efficiency Benchmarks 2024',
@@ -67,7 +148,7 @@ export const BENCHMARKS = {
  * Get region-aware benchmarks for a bank's country.
  * Overlays real regional costs from domainBenchmarks onto the default BENCHMARKS.
  */
-export function getBenchmarks(country) {
+export function getBenchmarks(country: string): Benchmarks {
   const region = getRegionForCountry(country);
   const rc = getRegionalCosts(country);
   return {
@@ -87,7 +168,7 @@ export function getBenchmarks(country) {
  * Parse a KPI value string into a numeric value in EUR
  * Examples: "€570B" → 570e9, "$340B" → 312.8e9, "~28,000" → 28000, "~46%" → 0.46
  */
-export function parseKpiValue(str) {
+export function parseKpiValue(str: string | null | undefined): ParsedKpi | null {
   if (!str || typeof str !== 'string') return null;
 
   const clean = str.replace(/,/g, '').replace(/~/g, '').replace(/\+/g, '').trim();
@@ -99,7 +180,7 @@ export function parseKpiValue(str) {
   }
 
   // Detect currency
-  let currency = 'EUR';
+  let currency: Currency = 'EUR';
   let numStr = clean;
   if (clean.startsWith('€')) { currency = 'EUR'; numStr = clean.slice(1); }
   else if (clean.startsWith('$')) { currency = 'USD'; numStr = clean.slice(1); }
@@ -128,25 +209,26 @@ export function parseKpiValue(str) {
 /**
  * Extract structured financial metrics from a bank's KPIs array
  */
-export function extractMetrics(bankKey, benchmarksOverride) {
-  const bd = BANK_DATA[bankKey];
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function extractMetrics(bankKey: string, benchmarksOverride?: Benchmarks): any {
+  const bd = (BANK_DATA as Record<string, any>)[bankKey];
   if (!bd) return null;
   const B = benchmarksOverride || BENCHMARKS;
 
-  const kpis = bd.kpis || [];
-  const metrics = {
+  const kpis: Array<{ label?: string; value?: string }> = bd.kpis || [];
+  const metrics: Record<string, any> = {
     bankName: bd.bank_name,
     country: bd.country,
-    totalAssets: null,      // EUR
-    employees: null,        // count
-    customers: null,        // count
-    costIncomeRatio: null,  // decimal
-    roe: null,              // decimal
-    cet1: null,             // decimal
-    techSpend: null,        // EUR
-    marketShare: null,      // decimal
-    digitalUsers: null,     // count
-    _sources: {},           // track which values are from data vs benchmark
+    totalAssets: null,
+    employees: null,
+    customers: null,
+    costIncomeRatio: null,
+    roe: null,
+    cet1: null,
+    techSpend: null,
+    marketShare: null,
+    digitalUsers: null,
+    _sources: {},
   };
 
   kpis.forEach(kpi => {
@@ -155,7 +237,7 @@ export function extractMetrics(bankKey, benchmarksOverride) {
     if (!parsed) return;
 
     if (label.includes('total assets') || label.includes('assets')) {
-      metrics.totalAssets = parsed.eurValue || parsed.value;
+      metrics.totalAssets = !parsed.isPercent ? (parsed.eurValue || parsed.value) : null;
       metrics._sources.totalAssets = 'bank_data';
     }
     else if (label.includes('employees') || label.includes('staff')) {
@@ -189,43 +271,36 @@ export function extractMetrics(bankKey, benchmarksOverride) {
   });
 
   // ─── Derived / estimated metrics ───
-
-  // Estimate revenue from total assets × NIM (if no revenue KPI)
   if (metrics.totalAssets) {
-    metrics.estimatedRevenue = metrics.totalAssets * B.net_interest_margin * 2.5; // NII + fees multiplier
+    metrics.estimatedRevenue = metrics.totalAssets * B.net_interest_margin * ROI.REVENUE_FEE_MULTIPLIER;
     metrics._sources.estimatedRevenue = 'calculated (assets × NIM × 2.5 fee multiplier)';
   }
 
-  // Estimate tech spend
   if (metrics.estimatedRevenue) {
     metrics.techSpend = metrics.estimatedRevenue * B.tech_spend_pct_revenue;
     metrics._sources.techSpend = 'calculated (revenue × 12% tech spend ratio)';
   }
 
-  // Check overview text for explicit tech spend
   const overviewText = (bd.overview || '') + ' ' + (bd.digital_strategy || '');
   const techMatch = overviewText.match(/(?:technology|tech)\s+spend[s]?\s+(?:of\s+)?(?:exceeds?\s+)?([€$][\d.,]+\s*[BMK])/i);
   if (techMatch) {
     const parsed = parseKpiValue(techMatch[1]);
-    if (parsed) {
+    if (parsed && !parsed.isPercent) {
       metrics.techSpend = parsed.eurValue || parsed.value;
       metrics._sources.techSpend = 'bank_data (from overview)';
     }
   }
 
-  // Estimate employee cost base
   if (metrics.employees) {
     metrics.totalEmployeeCost = metrics.employees * B.avg_cost_per_fte_eur;
     metrics._sources.totalEmployeeCost = `calculated (FTE × €${formatNumber(B.avg_cost_per_fte_eur)} avg${B._region ? ' — ' + B._region : ''})`;
   }
 
-  // Estimate customer revenue
   if (metrics.customers) {
     metrics.totalCustomerRevenue = metrics.customers * B.avg_revenue_per_retail_customer_eur;
     metrics._sources.totalCustomerRevenue = 'calculated (customers × €380 avg revenue)';
   }
 
-  // Non-digital interactions estimate (branch + call center per year)
   if (metrics.customers) {
     metrics.nonDigitalInteractions = metrics.customers * B.annual_interactions_per_customer;
     metrics.shiftableInteractions = metrics.nonDigitalInteractions * B.addressable_interaction_pct;
@@ -239,22 +314,20 @@ export function extractMetrics(bankKey, benchmarksOverride) {
 
 /**
  * Calculate all ROI value levers for a bank
- * Returns { levers: [...], totals: {conservative, base, optimistic}, metrics, assumptions }
  */
-export function calculateRoi(bankKey) {
-  const bd = BANK_DATA[bankKey];
+export function calculateRoi(bankKey: string): RoiResult | null {
+  const bd = (BANK_DATA as Record<string, any>)[bankKey];
   if (!bd) return null;
   const B = getBenchmarks(bd.country);
   const metrics = extractMetrics(bankKey, B);
   if (!metrics) return null;
 
-  const vs = VALUE_SELLING[bankKey];
+  const vs = (VALUE_SELLING as Record<string, any>)[bankKey];
   const q = bd?.backbase_qualification;
 
-  const levers = [];
-  const assumptions = [];
+  const levers: RoiLever[] = [];
+  const assumptions: Array<{ assumption: string; source: string; confidence: string }> = [];
 
-  // Record which regional benchmarks are being used
   if (B._region) {
     assumptions.push({
       assumption: `Using ${B._region} regional cost benchmarks (FTE: €${formatNumber(B.avg_cost_per_fte_eur)}, Branch: €${B.avg_branch_interaction_cost_eur}, Digital: €${B.avg_digital_interaction_cost_eur})`,
@@ -264,7 +337,6 @@ export function calculateRoi(bankKey) {
   }
 
   // ─── Lever 1: Cost-to-Serve Reduction ───
-  // Only ~15% of FTEs are front-office/customer-facing roles addressable by engagement platform
   if (metrics.totalEmployeeCost) {
     const addressableCost = metrics.totalEmployeeCost * B.addressable_fte_pct;
     const addressableFTEs = Math.round(metrics.employees * B.addressable_fte_pct);
@@ -294,7 +366,6 @@ export function calculateRoi(bankKey) {
   }
 
   // ─── Lever 2: Digital Channel Shift ───
-  // Only 20% of non-digital interactions are realistically shiftable via engagement platform
   if (metrics.shiftableInteractions) {
     const savingsPerShift = B.interaction_delta_eur;
     const f = B.channel_shift.factors;
@@ -326,12 +397,9 @@ export function calculateRoi(bankKey) {
 
   // ─── Lever 3: Onboarding Conversion Improvement ───
   if (metrics.customers) {
-    // 3% annual new customer acquisition; only digital channel (60%) is addressable
-    const annualNewCustomers = Math.round(metrics.customers * 0.03 * 0.6);
+    const annualNewCustomers = Math.round(metrics.customers * ROI.ACQUISITION_RATE * ROI.DIGITAL_CHANNEL_SHARE);
     const f = B.onboarding_lift.factors;
-    // Better onboarding = more customers from same marketing spend
-    // Use first-year partial revenue (50% of annual) to be conservative
-    const firstYearRevenue = B.avg_revenue_per_retail_customer_eur * 0.5;
+    const firstYearRevenue = B.avg_revenue_per_retail_customer_eur * ROI.FIRST_YEAR_REVENUE_FACTOR;
 
     levers.push({
       id: 'onboarding',
@@ -356,7 +424,6 @@ export function calculateRoi(bankKey) {
   }
 
   // ─── Lever 4: Cross-Sell Revenue Uplift ───
-  // Only 25% of customers are "active digital" addressable for cross-sell
   if (metrics.customers) {
     const f = B.cross_sell.factors;
     const revenuePerProduct = B.avg_revenue_per_product_eur;
@@ -386,8 +453,7 @@ export function calculateRoi(bankKey) {
   // ─── Lever 5: Platform Consolidation ───
   if (metrics.techSpend) {
     const f = B.platform_savings.factors;
-    // Only a portion of tech spend is addressable (engagement layer ~20-30%)
-    const addressableTechSpend = metrics.techSpend * 0.25;
+    const addressableTechSpend = metrics.techSpend * ROI.ADDRESSABLE_TECH_SPEND_PCT;
 
     levers.push({
       id: 'platform',
@@ -412,7 +478,16 @@ export function calculateRoi(bankKey) {
   }
 
   // ─── Totals ───
-  const totals = {
+  for (const lever of levers) {
+    lever.values = lever.values.map(v => {
+      if (!Number.isFinite(v) || v < 0) return 0;
+      return v;
+    }) as [number, number, number];
+    if (lever.values[0] > lever.values[1]) lever.values[0] = lever.values[1];
+    if (lever.values[1] > lever.values[2]) lever.values[2] = lever.values[1];
+  }
+
+  const totals: RoiTotals = {
     conservative: levers.reduce((sum, l) => sum + l.values[0], 0),
     base: levers.reduce((sum, l) => sum + l.values[1], 0),
     optimistic: levers.reduce((sum, l) => sum + l.values[2], 0),
@@ -428,26 +503,24 @@ export function calculateRoi(bankKey) {
   };
 
   // ─── ROI ratio (value / estimated deal cost) ───
-  // Parse deal size to get midpoint for ROI calc
-  let estimatedDealCost = null;
+  let estimatedDealCost: number | null = null;
   if (q?.deal_size) {
     const dealParts = q.deal_size.match(/[€$]?([\d.]+)[-–]?[€$]?([\d.]+)?\s*[MBK]/gi);
     if (dealParts) {
-      const parsed = dealParts.map(p => parseKpiValue(p.trim()));
-      const values = parsed.filter(Boolean).map(p => p.eurValue || p.value);
+      const parsed = dealParts.map((p: string) => parseKpiValue(p.trim()));
+      const values = parsed.filter(Boolean).map((p: ParsedKpi) => !p.isPercent ? (p.eurValue || p.value) : 0);
       if (values.length > 0) {
-        estimatedDealCost = values.reduce((a, b) => a + b, 0) / values.length;
+        estimatedDealCost = values.reduce((a: number, b: number) => a + b, 0) / values.length;
       }
     }
   }
 
-  // Simple payback calculation
-  let payback = null;
-  if (estimatedDealCost && totals.base > 0) {
+  let payback: { conservative: number | null; base: number; optimistic: number | null } | null = null;
+  if (estimatedDealCost && estimatedDealCost > 0 && totals.base > 0) {
     payback = {
-      conservative: Math.round(estimatedDealCost / totals.conservative * 10) / 10,
+      conservative: totals.conservative > 0 ? Math.round(estimatedDealCost / totals.conservative * 10) / 10 : null,
       base: Math.round(estimatedDealCost / totals.base * 10) / 10,
-      optimistic: Math.round(estimatedDealCost / totals.optimistic * 10) / 10,
+      optimistic: totals.optimistic > 0 ? Math.round(estimatedDealCost / totals.optimistic * 10) / 10 : null,
     };
   }
 
@@ -466,12 +539,12 @@ export function calculateRoi(bankKey) {
 
 // ─── Formatting Helpers ──────────────────────────────────────────────
 
-export function formatNumber(n) {
+export function formatNumber(n: number | null | undefined): string {
   if (n == null) return '—';
   return n.toLocaleString('en-US');
 }
 
-export function formatMillions(n) {
+export function formatMillions(n: number | null | undefined): string {
   if (n == null) return '—';
   if (Math.abs(n) >= 1e9) return `${(n / 1e9).toFixed(1)}B`;
   if (Math.abs(n) >= 1e6) return `${(n / 1e6).toFixed(1)}M`;
@@ -479,22 +552,20 @@ export function formatMillions(n) {
   return n.toFixed(0);
 }
 
-export function formatEur(n) {
+export function formatEur(n: number | null | undefined): string {
   if (n == null) return '—';
   return `€${formatMillions(n)}`;
 }
 
 /**
  * Get the "conversation-ready" one-liner for a bank's ROI
- * e.g., "Based on Nordea's 9.3M customers and 28K employees, a conservative estimate
- *         shows €X-YM in annual value from digital engagement."
  */
-export function getConversationSummary(roi) {
+export function getConversationSummary(roi: RoiResult | null): string | null {
   if (!roi) return null;
-  const m = roi.metrics;
+  const m = roi.metrics as Record<string, any>;
   const t = roi.totals;
 
-  const parts = [];
+  const parts: string[] = [];
   if (m.customers) parts.push(`${formatNumber(m.customers)} customers`);
   if (m.employees) parts.push(`${formatNumber(m.employees)} employees`);
   if (m.totalAssets) parts.push(`€${formatMillions(m.totalAssets)} in assets`);

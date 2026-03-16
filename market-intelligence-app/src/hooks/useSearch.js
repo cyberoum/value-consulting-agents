@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { searchAll } from '../data/api';
 
 const RECENT_KEY = 'mi-recent-searches';
@@ -16,6 +16,9 @@ export function useSearch() {
     catch { return []; }
   });
 
+  // AbortController ref to cancel in-flight requests on new searches
+  const abortRef = useRef(null);
+
   // Perform search via API
   const search = useCallback(async (q, filter = 'all') => {
     setQuery(q);
@@ -29,8 +32,15 @@ export function useSearch() {
       return;
     }
 
+    // Cancel any in-flight request before starting a new one
+    if (abortRef.current) {
+      abortRef.current.abort();
+    }
+    const controller = new AbortController();
+    abortRef.current = controller;
+
     try {
-      const data = await searchAll(q);
+      const data = await searchAll(q, { signal: controller.signal });
       const allResults = data.results || [];
       const counts = data.counts || {};
       setTypeCounts(counts);
@@ -52,7 +62,9 @@ export function useSearch() {
 
       setTotalMatches(filtered.length);
       setResults(filtered.slice(0, 20));
-    } catch {
+    } catch (err) {
+      // Silently ignore aborted requests — they're expected
+      if (err.name === 'AbortError') return;
       setResults([]);
       setTotalMatches(0);
       setTypeCounts({});

@@ -16,52 +16,10 @@ import { readFileSync, existsSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { researchPerson } from './personResearch.mjs';
+import { callClaude, isApiKeyConfigured } from './claudeClient.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const KNOWLEDGE_DIR = resolve(__dirname, '../../knowledge');
-
-const ANTHROPIC_API_URL = 'https://api.anthropic.com/v1/messages';
-const MODEL = 'claude-sonnet-4-20250514';
-
-// ── Claude API Call (self-contained per module pattern) ──
-
-async function callClaude(systemPrompt, userMessage, maxTokens = 4096) {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) throw new Error('ANTHROPIC_API_KEY not set');
-
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 90000); // 90s for complex synthesis
-
-  try {
-    const res = await fetch(ANTHROPIC_API_URL, {
-      method: 'POST',
-      signal: controller.signal,
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({
-        model: MODEL,
-        max_tokens: maxTokens,
-        system: systemPrompt,
-        messages: [{ role: 'user', content: userMessage }],
-      }),
-    });
-    clearTimeout(timer);
-
-    if (!res.ok) {
-      const err = await res.text();
-      throw new Error(`API ${res.status}: ${err.substring(0, 200)}`);
-    }
-
-    const data = await res.json();
-    return data.content?.[0]?.text || '';
-  } catch (err) {
-    clearTimeout(timer);
-    throw err;
-  }
-}
 
 // ── Google News RSS Search ──
 
@@ -599,7 +557,7 @@ export async function generateMeetingPrep({
     domainKnowledge, newsResults, generalNews, darkZones,
   });
 
-  const raw = await callClaude(MEETING_PREP_SYSTEM_PROMPT, userMessage, 4096);
+  const raw = await callClaude(MEETING_PREP_SYSTEM_PROMPT, userMessage, { maxTokens: 4096, timeout: 90000 });
 
   try {
     const jsonStr = raw.replace(/```json\n?|\n?```/g, '').trim();
@@ -805,5 +763,5 @@ function buildFallbackBrief({ bankName, attendees, topics, personIntel, topicMat
 // ── Availability Check ──
 
 export function isMeetingPrepAvailable() {
-  return !!process.env.ANTHROPIC_API_KEY;
+  return isApiKeyConfigured();
 }

@@ -18,54 +18,15 @@ import { readFileSync, existsSync } from 'fs';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
+import { callClaude, isApiKeyConfigured } from './claudeClient.mjs';
+
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const KNOWLEDGE_DIR = resolve(__dirname, '../../knowledge');
 
-const ANTHROPIC_API_URL = 'https://api.anthropic.com/v1/messages';
-const MODEL = 'claude-sonnet-4-20250514';
-
 
 // ═══════════════════════════════════════════════
-// INFRASTRUCTURE (self-contained per module pattern)
+// INFRASTRUCTURE
 // ═══════════════════════════════════════════════
-
-async function callClaude(systemPrompt, userMessage, maxTokens = 4096) {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) throw new Error('ANTHROPIC_API_KEY not set');
-
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 120000); // 120s for heavy analysis
-
-  try {
-    const res = await fetch(ANTHROPIC_API_URL, {
-      method: 'POST',
-      signal: controller.signal,
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({
-        model: MODEL,
-        max_tokens: maxTokens,
-        system: systemPrompt,
-        messages: [{ role: 'user', content: userMessage }],
-      }),
-    });
-    clearTimeout(timer);
-
-    if (!res.ok) {
-      const err = await res.text();
-      throw new Error(`API ${res.status}: ${err.substring(0, 200)}`);
-    }
-
-    const data = await res.json();
-    return data.content?.[0]?.text || '';
-  } catch (err) {
-    clearTimeout(timer);
-    throw err;
-  }
-}
 
 async function searchGoogleNews(query, maxResults = 5) {
   const encoded = encodeURIComponent(query);
@@ -470,7 +431,7 @@ ADDITIONAL INSTRUCTIONS for meeting-tailored analysis:
   console.log(`   Calling Claude for 4x5 matrix classification...`);
   let rawResponse;
   try {
-    rawResponse = await callClaude(LANDING_ZONE_SYSTEM_PROMPT, userMessage, 6000);
+    rawResponse = await callClaude(LANDING_ZONE_SYSTEM_PROMPT, userMessage, { maxTokens: 6000, timeout: 120000 });
   } catch (err) {
     console.error(`   Claude call failed: ${err.message}`);
     return buildFallbackResult(bankData, newsItems, startTime);
@@ -675,5 +636,5 @@ function buildFallbackResult(bankData, newsItems, startTime) {
 // ═══════════════════════════════════════════════
 
 export function isLandingZoneAgentAvailable() {
-  return !!process.env.ANTHROPIC_API_KEY;
+  return isApiKeyConfigured();
 }

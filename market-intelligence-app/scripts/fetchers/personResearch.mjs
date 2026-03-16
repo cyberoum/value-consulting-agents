@@ -8,48 +8,7 @@
  * Uses: Google News RSS (free) for real-time signals + Claude API for synthesis.
  */
 
-const ANTHROPIC_API_URL = 'https://api.anthropic.com/v1/messages';
-const MODEL = 'claude-sonnet-4-20250514';
-
-// ── Claude API Call (duplicated to keep module self-contained) ──
-
-async function callClaude(systemPrompt, userMessage, maxTokens = 2048) {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) throw new Error('ANTHROPIC_API_KEY not set');
-
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 45000);
-
-  try {
-    const res = await fetch(ANTHROPIC_API_URL, {
-      method: 'POST',
-      signal: controller.signal,
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({
-        model: MODEL,
-        max_tokens: maxTokens,
-        system: systemPrompt,
-        messages: [{ role: 'user', content: userMessage }],
-      }),
-    });
-    clearTimeout(timer);
-
-    if (!res.ok) {
-      const err = await res.text();
-      throw new Error(`API ${res.status}: ${err.substring(0, 200)}`);
-    }
-
-    const data = await res.json();
-    return data.content?.[0]?.text || '';
-  } catch (err) {
-    clearTimeout(timer);
-    throw err;
-  }
-}
+import { callClaude, isApiKeyConfigured } from './claudeClient.mjs';
 
 // ── Google News RSS Search ──
 
@@ -177,7 +136,7 @@ ${bankNewsContext}
 Generate a comprehensive intelligence brief for a Backbase sales consultant preparing to meet this person.`;
 
   // Step 3: Synthesize with Claude
-  const raw = await callClaude(PERSON_SYSTEM_PROMPT, userMessage, 2048);
+  const raw = await callClaude(PERSON_SYSTEM_PROMPT, userMessage, { maxTokens: 2048, timeout: 45000 });
 
   try {
     // Extract JSON from response (handle markdown code fences)
@@ -287,7 +246,7 @@ ${newsContext ? `\nRELEVANT NEWS:${newsContext}` : ''}
 Based on this, suggest related scope areas and pain points the consultant may not have considered. Ground your suggestions in real banking industry trends and the specific bank's context.`;
 
   // Step 3: Synthesize
-  const raw = await callClaude(CONTEXT_SYSTEM_PROMPT, userMessage, 2048);
+  const raw = await callClaude(CONTEXT_SYSTEM_PROMPT, userMessage, { maxTokens: 2048, timeout: 45000 });
 
   try {
     const jsonStr = raw.replace(/```json\n?|\n?```/g, '').trim();
@@ -317,5 +276,5 @@ Based on this, suggest related scope areas and pain points the consultant may no
 // ── Availability Check ──
 
 export function isResearchAvailable() {
-  return !!process.env.ANTHROPIC_API_KEY;
+  return isApiKeyConfigured();
 }

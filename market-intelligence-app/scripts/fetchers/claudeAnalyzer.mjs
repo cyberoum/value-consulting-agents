@@ -10,52 +10,9 @@
  */
 
 import { BANK_SOURCES, PIPELINE_CONFIG } from '../config.mjs';
+import { callClaude, isApiKeyConfigured } from './claudeClient.mjs';
 
-const ANTHROPIC_API_URL = 'https://api.anthropic.com/v1/messages';
-const MODEL = 'claude-sonnet-4-20250514';
 const DELAY = 1000; // 1s between API calls to respect rate limits
-
-// ── Claude API Call ──
-
-async function callClaude(systemPrompt, userMessage, maxTokens = 1024) {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) {
-    throw new Error('ANTHROPIC_API_KEY not set');
-  }
-
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 30000);
-
-  try {
-    const res = await fetch(ANTHROPIC_API_URL, {
-      method: 'POST',
-      signal: controller.signal,
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({
-        model: MODEL,
-        max_tokens: maxTokens,
-        system: systemPrompt,
-        messages: [{ role: 'user', content: userMessage }],
-      }),
-    });
-    clearTimeout(timer);
-
-    if (!res.ok) {
-      const err = await res.text();
-      throw new Error(`API ${res.status}: ${err.substring(0, 200)}`);
-    }
-
-    const data = await res.json();
-    return data.content?.[0]?.text || '';
-  } catch (err) {
-    clearTimeout(timer);
-    throw err;
-  }
-}
 
 // ── News Insight Extraction ──
 
@@ -89,7 +46,7 @@ export async function analyzeNewsForBank(bankName, articles) {
   const userMessage = `Bank: ${bankName}\n\nRecent news articles:\n${articleText}\n\nAnalyze these articles and extract structured intelligence.`;
 
   try {
-    const response = await callClaude(NEWS_SYSTEM_PROMPT, userMessage, 1024);
+    const response = await callClaude(NEWS_SYSTEM_PROMPT, userMessage, { maxTokens: 1024, timeout: 30000 });
     // Parse JSON from response (handle markdown code blocks)
     const jsonMatch = response.match(/\{[\s\S]*\}/);
     if (jsonMatch) {
@@ -121,7 +78,7 @@ export async function structureIntelWithClaude(category, rawText, bankContext = 
   const userMessage = `Bank: ${bankContext.bankName || 'Unknown'}\nCategory: ${category}\n\nRaw intelligence:\n${rawText}`;
 
   try {
-    const response = await callClaude(INTEL_SYSTEM_PROMPT, userMessage, 1024);
+    const response = await callClaude(INTEL_SYSTEM_PROMPT, userMessage, { maxTokens: 1024, timeout: 30000 });
     const jsonMatch = response.match(/\{[\s\S]*\}/);
     if (jsonMatch) {
       const parsed = JSON.parse(jsonMatch[0]);
@@ -239,7 +196,7 @@ ${Object.entries(context).map(([k, v]) => `- ${k}: ${typeof v === 'object' ? JSO
 Generate a ${analysisType.replace('_', ' ')} analysis.`;
 
   try {
-    const response = await callClaude(config.system, userMessage, config.maxTokens);
+    const response = await callClaude(config.system, userMessage, { maxTokens: config.maxTokens, timeout: 30000 });
     const jsonMatch = response.match(/\{[\s\S]*\}/);
     if (jsonMatch) {
       return JSON.parse(jsonMatch[0]);
@@ -277,7 +234,7 @@ export async function analyzeAllBankNews(newsData, onProgress) {
 // ── Check if API key is available ──
 
 export function isClaudeAvailable() {
-  return !!process.env.ANTHROPIC_API_KEY;
+  return isApiKeyConfigured();
 }
 
 function sleep(ms) {

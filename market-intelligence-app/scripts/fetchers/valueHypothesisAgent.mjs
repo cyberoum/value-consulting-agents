@@ -10,48 +10,7 @@
  * Uses: Claude API only (no news search — keeps it fast ~3-5s).
  */
 
-const ANTHROPIC_API_URL = 'https://api.anthropic.com/v1/messages';
-const MODEL = 'claude-sonnet-4-20250514';
-
-// ── Claude API Call (self-contained per module pattern) ──
-
-async function callClaude(systemPrompt, userMessage, maxTokens = 1024) {
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) throw new Error('ANTHROPIC_API_KEY not set');
-
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 30000); // 30s — this is a lightweight call
-
-  try {
-    const res = await fetch(ANTHROPIC_API_URL, {
-      method: 'POST',
-      signal: controller.signal,
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({
-        model: MODEL,
-        max_tokens: maxTokens,
-        system: systemPrompt,
-        messages: [{ role: 'user', content: userMessage }],
-      }),
-    });
-    clearTimeout(timer);
-
-    if (!res.ok) {
-      const body = await res.text();
-      throw new Error(`Claude API ${res.status}: ${body.slice(0, 200)}`);
-    }
-
-    const data = await res.json();
-    return (data.content?.[0]?.text || '').trim();
-  } catch (err) {
-    clearTimeout(timer);
-    throw err;
-  }
-}
+import { callClaude, isApiKeyConfigured } from './claudeClient.mjs';
 
 // ── System Prompt ──
 
@@ -159,7 +118,7 @@ export async function generateValueHypothesisForMeeting({
   const userMessage = sections.join('\n\n');
 
   try {
-    const raw = await callClaude(SYSTEM_PROMPT, userMessage, 1024);
+    const raw = await callClaude(SYSTEM_PROMPT, userMessage, { maxTokens: 1024, timeout: 30000 });
 
     // Parse JSON from response
     const jsonMatch = raw.match(/\{[\s\S]*\}/);
@@ -217,5 +176,5 @@ function buildFallback(bankName, meetingContext, existingHypothesis) {
  * Check if this agent can run.
  */
 export function isValueHypothesisAvailable() {
-  return !!process.env.ANTHROPIC_API_KEY;
+  return isApiKeyConfigured();
 }
