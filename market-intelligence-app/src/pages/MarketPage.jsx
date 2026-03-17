@@ -1,9 +1,8 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, TrendingUp, Target, Building2, Globe } from 'lucide-react';
 import { useMarket, useMarketBanks } from '../hooks/useData';
 import { calcScoreFromData, scoreColor } from '../data/scoring';
 import { LoadingState, ErrorState } from '../components/common/DataState';
-import Card from '../components/common/Card';
 import TabBar from '../components/common/TabBar';
 import Section from '../components/common/Section';
 import BarChart from '../components/charts/BarChart';
@@ -29,28 +28,96 @@ export default function MarketPage() {
     );
   }
 
-  // Compute scores and filter top banks
+  // Compute scores and filter banks
   const banks = (marketBanks || []).map(b => ({
     ...b,
     name: b.bank_name,
     score: calcScoreFromData(b.qualification),
     qualification: b.data?.backbase_qualification || null,
-  })).filter(b => b.score >= 5).sort((a, b) => b.score - a.score).slice(0, 10);
+  })).sort((a, b) => b.score - a.score);
 
-  const OpportunitiesTab = () => (
-    <div>
-      {banks.length > 0 && (
-        <>
-          <h3 className="text-sm font-bold text-fg mb-3">🎯 Top Opportunities — {meta.name}</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-6">
-            {banks.map(b => (
-              <div key={b.key} onClick={() => navigate(`/bank/${encodeURIComponent(b.key)}`)}
+  const qualifiedBanks = banks.filter(b => b.score >= 5).slice(0, 10);
+
+  // Pipeline metrics
+  const totalProspects = banks.filter(b => b.score >= 5).length;
+  const avgScore = totalProspects > 0
+    ? (banks.filter(b => b.score >= 5).reduce((sum, b) => sum + b.score, 0) / totalProspects).toFixed(1)
+    : '—';
+  const hotOpps = banks.filter(b => b.score >= 8).length;
+
+  // Country pipeline aggregation
+  const countryPipeline = data.countries.map(co => {
+    const countryBanks = banks.filter(b => b.country === co.name);
+    const prospects = countryBanks.filter(b => b.score >= 5);
+    return {
+      ...co,
+      prospectCount: prospects.length,
+      topScore: prospects.length > 0 ? Math.max(...prospects.map(b => b.score)) : 0,
+      totalBanks: countryBanks.length,
+    };
+  }).sort((a, b) => b.prospectCount - a.prospectCount || b.topScore - a.topScore);
+
+  /* ─── PRIORITIZE TAB ─── */
+  const PrioritizeTab = () => (
+    <div className="space-y-5">
+      {/* Hero pipeline metrics */}
+      <div className="grid grid-cols-3 gap-2">
+        <div className="bg-surface border border-border rounded-xl p-3 text-center">
+          <div className="text-2xl font-black text-primary">{totalProspects}</div>
+          <div className="text-[9px] text-fg-muted uppercase tracking-wide">Prospects</div>
+        </div>
+        <div className="bg-surface border border-border rounded-xl p-3 text-center">
+          <div className="text-2xl font-black text-success">{hotOpps}</div>
+          <div className="text-[9px] text-fg-muted uppercase tracking-wide">Hot (8+)</div>
+        </div>
+        <div className="bg-surface border border-border rounded-xl p-3 text-center">
+          <div className="text-2xl font-black text-primary-700">{avgScore}</div>
+          <div className="text-[9px] text-fg-muted uppercase tracking-wide">Avg Score</div>
+        </div>
+      </div>
+
+      {/* Countries ranked by pipeline value */}
+      <div>
+        <h3 className="text-xs font-bold text-fg-muted uppercase tracking-wide mb-2">Countries by Pipeline Strength</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+          {countryPipeline.map(co => (
+            <div key={co.name}
+              onClick={() => navigate(`/country/${encodeURIComponent(co.name)}`)}
+              className="flex items-center gap-3 p-3 bg-surface border border-border rounded-lg cursor-pointer hover:border-primary/40 transition-all group">
+              <div className="w-9 h-9 rounded-lg bg-primary/8 flex items-center justify-center shrink-0">
+                <Building2 size={16} className="text-primary" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="font-bold text-sm text-fg">{co.name}</div>
+                <div className="text-[10px] text-fg-muted">{co.prospectCount} prospects · {co.totalBanks} banks</div>
+              </div>
+              {co.topScore > 0 && (
+                <span className="text-xs font-black px-2 py-0.5 rounded-full"
+                  style={{ color: scoreColor(co.topScore), background: scoreColor(co.topScore) + '12' }}>
+                  Top {co.topScore}
+                </span>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Top opportunities across all countries */}
+      {qualifiedBanks.length > 0 && (
+        <div>
+          <h3 className="text-xs font-bold text-fg-muted uppercase tracking-wide mb-2">Top Opportunities</h3>
+          <div className="flex flex-col gap-1.5">
+            {qualifiedBanks.map(b => (
+              <div key={b.key}
+                onClick={() => navigate(`/bank/${encodeURIComponent(b.key)}`)}
                 className="flex items-center gap-3 p-3 bg-surface border border-border rounded-lg cursor-pointer hover:border-primary/40 transition-all">
                 <span className="w-9 h-9 rounded-lg flex items-center justify-center font-extrabold text-sm shrink-0"
                   style={{ color: scoreColor(b.score), background: scoreColor(b.score) + '12' }}>{b.score}</span>
                 <div className="flex-1 min-w-0">
                   <div className="font-bold text-xs text-fg truncate">{b.name}</div>
-                  <div className="text-[10px] font-semibold truncate" style={{ color: scoreColor(b.score) }}>{b.qualification?.label || ''}</div>
+                  <div className="text-[10px] font-semibold truncate" style={{ color: scoreColor(b.score) }}>
+                    {b.qualification?.label || ''}
+                  </div>
                 </div>
                 <div className="text-right shrink-0">
                   <div className="text-[10px] font-semibold text-primary-700">{b.qualification?.deal_size || ''}</div>
@@ -59,88 +126,105 @@ export default function MarketPage() {
               </div>
             ))}
           </div>
-          <h3 className="text-sm font-bold text-fg mb-3">Score Distribution</h3>
-          <div className="bg-surface border border-border rounded-xl p-4 mb-6">
-            <BarChart items={banks.map(b => ({ name: b.name, score: b.score }))} height={banks.length * 32 + 40} />
-          </div>
-        </>
+        </div>
       )}
-      <h3 className="text-sm font-bold text-fg mb-3">Market Opportunities</h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-        {data.key_opportunities.map((o, i) => (
-          <div key={i} className="p-4 bg-primary-700/5 border border-primary-700/10 rounded-lg">
-            <div className="font-bold text-sm text-primary-700 mb-1">{o.title}</div>
-            <div className="text-xs text-fg-muted leading-relaxed">{o.detail}</div>
-          </div>
-        ))}
-      </div>
+
+      {/* Score distribution */}
+      {qualifiedBanks.length > 0 && (
+        <Section title="Score Distribution" defaultOpen={false}>
+          <BarChart items={qualifiedBanks.map(b => ({ name: b.name, score: b.score }))} height={qualifiedBanks.length * 32 + 40} />
+        </Section>
+      )}
     </div>
   );
 
-  const OverviewTab = () => (
-    <div>
-      <div className="p-4 bg-surface border border-border rounded-xl mb-4">
-        <p className="text-sm text-fg-subtle leading-relaxed">{data.market_overview.split('\n').map((p, i) => <span key={i}>{p}<br /><br /></span>)}</p>
+  /* ─── CONTEXT TAB ─── */
+  const ContextTab = () => (
+    <div className="space-y-4">
+      {/* Market narrative — condensed */}
+      <div className="p-4 bg-surface border border-border rounded-xl">
+        <p className="text-sm text-fg-subtle leading-relaxed">
+          {data.market_overview.split('\n').map((p, i) => <span key={i}>{p}<br /><br /></span>)}
+        </p>
       </div>
-      {data.banking_landscape && <Section title="Banking Landscape"><p className="text-sm text-fg-subtle leading-relaxed">{data.banking_landscape}</p></Section>}
-      {data.digital_maturity && <Section title="Digital Maturity" defaultOpen={false}><p className="text-sm text-fg-subtle leading-relaxed">{data.digital_maturity}</p></Section>}
-    </div>
-  );
 
-  const DeepDiveTab = () => (
-    <div>
-      {data.regulations && <Section title="Regulatory Environment"><p className="text-sm text-fg-subtle leading-relaxed">{data.regulations}</p></Section>}
-      {data.consumer_behavior && <Section title="Consumer Behavior" defaultOpen={false}><p className="text-sm text-fg-subtle leading-relaxed">{data.consumer_behavior}</p></Section>}
+      {/* Market opportunity themes */}
+      <div>
+        <h3 className="text-xs font-bold text-fg-muted uppercase tracking-wide mb-2">Key Market Opportunities</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          {data.key_opportunities.map((o, i) => (
+            <div key={i} className="p-3 bg-primary-700/5 border border-primary-700/10 rounded-lg">
+              <div className="font-bold text-xs text-primary-700 mb-1">{o.title}</div>
+              <div className="text-[11px] text-fg-muted leading-relaxed">{o.detail}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* All reference sections — collapsible */}
+      {data.banking_landscape && (
+        <Section title="Banking Landscape" defaultOpen={false}>
+          <p className="text-sm text-fg-subtle leading-relaxed">{data.banking_landscape}</p>
+        </Section>
+      )}
+      {data.regulations && (
+        <Section title="Regulatory Environment" defaultOpen={false}>
+          <p className="text-sm text-fg-subtle leading-relaxed">{data.regulations}</p>
+        </Section>
+      )}
+      {data.digital_maturity && (
+        <Section title="Digital Maturity" defaultOpen={false}>
+          <p className="text-sm text-fg-subtle leading-relaxed">{data.digital_maturity}</p>
+        </Section>
+      )}
+      {data.consumer_behavior && (
+        <Section title="Consumer Behavior" defaultOpen={false}>
+          <p className="text-sm text-fg-subtle leading-relaxed">{data.consumer_behavior}</p>
+        </Section>
+      )}
       {data.competitive_landscape && (
-        <>
-          <h3 className="text-sm font-bold text-fg mb-3">Vendor Competitive Landscape</h3>
-          <div className="p-4 bg-primary-50 border border-primary/20 rounded-xl">
-            <p className="text-xs text-fg-subtle leading-relaxed">{data.competitive_landscape}</p>
-          </div>
-        </>
+        <Section title="Vendor Competitive Landscape" defaultOpen={false}>
+          <p className="text-sm text-fg-subtle leading-relaxed">{data.competitive_landscape}</p>
+        </Section>
       )}
     </div>
   );
 
   return (
     <div className="animate-fade-in-up">
-      <button onClick={() => navigate('/')} className="flex items-center gap-2 text-sm text-fg-muted hover:text-primary mb-4 transition-colors">
+      <button onClick={() => navigate('/')} className="flex items-center gap-2 text-sm text-fg-muted hover:text-primary mb-3 transition-colors">
         <ArrowLeft size={16} /> Back to Markets
       </button>
 
-      <div className="mb-5">
-        <div className="text-3xl mb-1">{meta.emoji}</div>
-        <h2 className="text-2xl font-black text-fg">{meta.name} Banking Market</h2>
-        <p className="text-fg-muted text-xs mt-1">{data.market_overview.split('.').slice(0, 2).join('.')}.</p>
+      {/* Compact header with inline KPIs */}
+      <div className="flex items-start justify-between mb-1">
+        <div>
+          <div className="text-2xl mb-0.5">{meta.emoji}</div>
+          <h2 className="text-xl font-black text-fg">{meta.name} Banking Market</h2>
+        </div>
       </div>
 
-      {/* KPI strip */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 mb-5">
+      {/* Inline KPI badges */}
+      <div className="flex gap-1.5 flex-wrap mb-4">
         {data.kpis.map((k, i) => (
-          <div key={i} className="bg-surface border border-border rounded-lg px-2.5 sm:px-3 py-2">
-            <div className="text-[8px] sm:text-[9px] text-fg-disabled uppercase tracking-wide">{k.label}</div>
-            <div className="text-base sm:text-lg font-bold text-primary">{k.value}</div>
-            {k.sub && <div className="text-[9px] sm:text-[10px] text-fg-disabled">{k.sub}</div>}
-          </div>
+          <span key={i} className="text-[9px] bg-surface border border-border rounded-full px-2.5 py-1 inline-flex items-center gap-1">
+            <span className="text-fg-disabled">{k.label}:</span> <strong className="text-fg">{k.value}</strong>
+          </span>
         ))}
       </div>
 
-      {/* Countries */}
-      <h3 className="text-sm font-bold text-fg mb-2">Countries</h3>
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2 mb-6">
-        {data.countries.map(co => (
-          <Card key={co.name} hover onClick={() => navigate(`/country/${encodeURIComponent(co.name)}`)}>
-            <div className="font-bold text-sm text-fg">{co.name}</div>
-            <div className="text-[10px] text-fg-muted mt-1 line-clamp-2">{co.headline}</div>
-            <div className="text-primary text-[10px] font-semibold mt-2">Explore →</div>
-          </Card>
-        ))}
-      </div>
-
-      <TabBar tabs={[
-        { label: '🎯 Opportunities', content: <OpportunitiesTab /> },
-        { label: '📊 Overview', content: <OverviewTab /> },
-        { label: '🔍 Deep Dive', content: <DeepDiveTab /> },
+      {/* Task-based tabs */}
+      <TabBar id="market-tabs" sticky tabs={[
+        {
+          label: '🎯 Prioritize',
+          badge: totalProspects || null,
+          content: <PrioritizeTab />,
+        },
+        {
+          label: '🧭 Context',
+          badge: data.key_opportunities?.length || null,
+          content: <ContextTab />,
+        },
       ]} />
     </div>
   );

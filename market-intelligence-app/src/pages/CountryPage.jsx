@@ -1,11 +1,10 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Check, Users } from 'lucide-react';
+import { ArrowLeft, Check } from 'lucide-react';
 import { useCountry, useCountryBanks } from '../hooks/useData';
 import { calcScoreFromData, scoreColor, dataConfidenceFromData } from '../data/scoring';
 import { getMarketForCountry } from '../data/utils';
 import { LoadingState, ErrorState } from '../components/common/DataState';
-import Card from '../components/common/Card';
 import TabBar from '../components/common/TabBar';
 import Section from '../components/common/Section';
 import FilterPanel from '../components/common/FilterPanel';
@@ -37,7 +36,7 @@ export default function CountryPage() {
     );
   }
 
-  // Build bank list from API data with computed scores
+  // Build bank list with computed scores
   const allBanks = (countryBanks || []).map(b => ({
     key: b.key,
     name: b.bank_name,
@@ -90,15 +89,69 @@ export default function CountryPage() {
     const confOrder = { deep: 3, standard: 2, preliminary: 1 };
     filteredBanks.sort((a, b) => (confOrder[dataConfidenceFromData(b.key, b.bankData).level] || 0) - (confOrder[dataConfidenceFromData(a.key, a.bankData).level] || 0));
   }
-  // Default is already sorted by score
+
+  // Pipeline metrics
+  const prospects = allBanks.filter(b => b.score >= 5);
+  const hotBanks = allBanks.filter(b => b.score >= 8);
+  const powerMaps = allBanks.filter(b => b._qualData?.power_map?.activated).length;
+  const valueHypos = allBanks.filter(b => b._valueSelling).length;
+  const avgScore = prospects.length > 0
+    ? (prospects.reduce((sum, b) => sum + b.score, 0) / prospects.length).toFixed(1)
+    : '—';
+
+  // Banks needing attention (low confidence, no power map on high-score banks)
+  const needsAttention = allBanks.filter(b => {
+    if (b.score < 6) return false;
+    const conf = dataConfidenceFromData(b.key, b.bankData);
+    return conf.level === 'preliminary' || (!b._qualData?.power_map?.activated && b.score >= 7);
+  });
 
   const sw = data.strengths_weaknesses;
 
-  const BanksTab = () => (
-    <div>
+  /* ─── TARGET TAB ─── */
+  const TargetTab = () => (
+    <div className="space-y-4">
+      {/* Pipeline hero metrics */}
+      <div className="grid grid-cols-4 gap-2">
+        <div className="bg-surface border border-border rounded-xl p-2.5 text-center">
+          <div className="text-xl font-black text-primary">{prospects.length}</div>
+          <div className="text-[8px] text-fg-muted uppercase tracking-wide">Prospects</div>
+        </div>
+        <div className="bg-surface border border-border rounded-xl p-2.5 text-center">
+          <div className="text-xl font-black text-success">{hotBanks.length}</div>
+          <div className="text-[8px] text-fg-muted uppercase tracking-wide">Hot (8+)</div>
+        </div>
+        <div className="bg-surface border border-border rounded-xl p-2.5 text-center">
+          <div className="text-xl font-black text-primary-700">{powerMaps}</div>
+          <div className="text-[8px] text-fg-muted uppercase tracking-wide">Power Maps</div>
+        </div>
+        <div className="bg-surface border border-border rounded-xl p-2.5 text-center">
+          <div className="text-xl font-black text-fg">{avgScore}</div>
+          <div className="text-[8px] text-fg-muted uppercase tracking-wide">Avg Score</div>
+        </div>
+      </div>
+
+      {/* Needs attention callout */}
+      {needsAttention.length > 0 && (
+        <div className="p-3 bg-warning-subtle border border-warning/20 rounded-lg">
+          <div className="text-[10px] font-bold text-warning uppercase tracking-wide mb-1">Needs Attention ({needsAttention.length})</div>
+          <div className="flex flex-wrap gap-1.5">
+            {needsAttention.map(b => (
+              <span key={b.key}
+                onClick={() => navigate(`/bank/${encodeURIComponent(b.key)}`)}
+                className="text-[10px] bg-warning/10 text-fg-subtle px-2 py-0.5 rounded cursor-pointer hover:bg-warning/20 transition-colors">
+                {b.name} ({b.score})
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Bank list with filters */}
       <FilterPanel onFilter={setFilters} initialFilters={filters} />
+
       <div className="flex flex-col lg:flex-row gap-5">
-        {/* Pipeline sidebar — horizontal scroll on mobile, vertical on desktop */}
+        {/* Pipeline sidebar */}
         {filteredBanks.filter(b => b.score >= 4).length > 0 && (
           <div className="lg:w-52 shrink-0">
             <div className="text-[10px] font-bold text-fg-muted uppercase tracking-wider mb-2">Pipeline Ranking</div>
@@ -145,25 +198,55 @@ export default function CountryPage() {
           })}
         </div>
       </div>
+
+      {/* Score distribution — collapsible */}
+      {allBanks.length > 0 && (
+        <Section title="Score Distribution" defaultOpen={false}>
+          <BarChart items={allBanks.slice(0, 10).map(b => ({ name: b.name, score: b.score }))} height={allBanks.slice(0, 10).length * 28 + 30} />
+        </Section>
+      )}
     </div>
   );
 
-  const OppsTab = () => (
-    <div>
+  /* ─── PITCH TAB ─── */
+  const PitchTab = () => (
+    <div className="space-y-4">
+      {/* SWOT — positioning context */}
+      {sw && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="p-4 bg-primary-50 border border-primary/20 rounded-lg">
+            <h4 className="text-[10px] font-bold text-primary uppercase tracking-wide mb-2">✓ Market Strengths</h4>
+            <div className="flex flex-wrap gap-1">{sw.strengths.map((s, i) => <span key={i} className="text-[10px] bg-primary/8 text-fg-subtle px-2 py-0.5 rounded">{s}</span>)}</div>
+          </div>
+          <div className="p-4 bg-danger-subtle border border-danger/10 rounded-lg">
+            <h4 className="text-[10px] font-bold text-danger uppercase tracking-wide mb-2">✗ Market Gaps (Our Opportunity)</h4>
+            <div className="flex flex-wrap gap-1">{sw.weaknesses.map((w, i) => <span key={i} className="text-[10px] bg-danger/8 text-fg-subtle px-2 py-0.5 rounded">{w}</span>)}</div>
+          </div>
+        </div>
+      )}
+
+      {/* Backbase signals */}
       {data.backbase_opportunities && (
-        <>
-          <h3 className="text-sm font-bold text-fg mb-3">Backbase Signals</h3>
-          <div className="p-4 bg-primary-700/5 border border-primary-700/10 rounded-xl mb-4">
+        <div>
+          <h3 className="text-xs font-bold text-fg-muted uppercase tracking-wide mb-2">Backbase Signals</h3>
+          <div className="p-4 bg-primary-700/5 border border-primary-700/10 rounded-xl">
             <p className="text-xs text-fg-subtle leading-relaxed">{data.backbase_opportunities}</p>
           </div>
-        </>
+        </div>
       )}
-      {data.spending_trends && <Section title="Spending Trends"><p className="text-sm text-fg-subtle leading-relaxed">{data.spending_trends}</p></Section>}
+
+      {/* Spending trends */}
+      {data.spending_trends && (
+        <Section title="Spending Trends">
+          <p className="text-sm text-fg-subtle leading-relaxed">{data.spending_trends}</p>
+        </Section>
+      )}
     </div>
   );
 
-  const MarketIntelTab = () => (
-    <div>
+  /* ─── INTEL TAB ─── */
+  const IntelTab = () => (
+    <div className="space-y-1">
       {data.demographics && <Section title="Demographics"><p className="text-sm text-fg-subtle leading-relaxed">{data.demographics}</p></Section>}
       {data.banking_sector && <Section title="Banking Sector"><p className="text-sm text-fg-subtle leading-relaxed">{data.banking_sector}</p></Section>}
       {data.digital_banking && <Section title="Digital Banking" defaultOpen={false}><p className="text-sm text-fg-subtle leading-relaxed">{data.digital_banking}</p></Section>}
@@ -173,52 +256,39 @@ export default function CountryPage() {
 
   return (
     <div className="animate-fade-in-up">
-      <button onClick={() => navigate(marketKey ? `/market/${marketKey}` : '/')} className="flex items-center gap-2 text-sm text-fg-muted hover:text-primary mb-4 transition-colors">
+      <button onClick={() => navigate(marketKey ? `/market/${marketKey}` : '/')} className="flex items-center gap-2 text-sm text-fg-muted hover:text-primary mb-3 transition-colors">
         <ArrowLeft size={16} /> Back
       </button>
 
-      <h2 className="text-2xl font-black text-fg">{country}</h2>
-      <p className="text-primary text-xs italic mb-4">{data.tagline}</p>
+      {/* Compact header */}
+      <h2 className="text-xl font-black text-fg">{country}</h2>
+      <p className="text-primary text-xs italic mb-2">{data.tagline}</p>
 
-      {/* KPI grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 mb-5">
+      {/* Inline KPI badges */}
+      <div className="flex gap-1.5 flex-wrap mb-4">
         {data.kpis.map((k, i) => (
-          <div key={i} className="text-center p-2 sm:p-3 bg-surface border border-border rounded-lg">
-            <div className="text-base sm:text-lg font-black text-primary">{k.value}</div>
-            <div className="text-[8px] sm:text-[9px] text-fg-muted uppercase tracking-wide">{k.label}</div>
-          </div>
+          <span key={i} className="text-[9px] bg-surface border border-border rounded-full px-2.5 py-1 inline-flex items-center gap-1">
+            <span className="text-fg-disabled">{k.label}:</span> <strong className="text-fg">{k.value}</strong>
+          </span>
         ))}
       </div>
 
-      {/* Country analytics summary */}
-      <div className="bg-surface border border-border rounded-xl p-4 mb-5">
-        <div className="flex gap-5 flex-wrap mb-4">
-          <div className="text-center"><div className="text-xl font-black text-primary">{allBanks.filter(b => b.score >= 4).length}</div><div className="text-[10px] text-fg-muted">Prospects</div></div>
-          <div className="text-center"><div className="text-xl font-black text-success">{allBanks.filter(b => b._qualData?.power_map?.activated).length}</div><div className="text-[10px] text-fg-muted">Power Maps</div></div>
-          <div className="text-center"><div className="text-xl font-black text-primary-700">{allBanks.filter(b => b._valueSelling).length}</div><div className="text-[10px] text-fg-muted">Value Hypos</div></div>
-        </div>
-        <div className="text-[10px] font-bold text-fg-muted uppercase mb-2">Fit Score Distribution</div>
-        <BarChart items={allBanks.slice(0, 10).map(b => ({ name: b.name, score: b.score }))} height={allBanks.slice(0, 10).length * 28 + 30} />
-      </div>
-
-      {/* SWOT */}
-      {sw && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-5">
-          <div className="p-4 bg-primary-50 border border-primary/20 rounded-lg">
-            <h4 className="text-[10px] font-bold text-primary uppercase tracking-wide mb-2">✓ Strengths</h4>
-            <div className="flex flex-wrap gap-1">{sw.strengths.map((s, i) => <span key={i} className="text-[10px] bg-primary/8 text-fg-subtle px-2 py-0.5 rounded">{s}</span>)}</div>
-          </div>
-          <div className="p-4 bg-danger-subtle border border-danger/10 rounded-lg">
-            <h4 className="text-[10px] font-bold text-danger uppercase tracking-wide mb-2">✗ Gaps</h4>
-            <div className="flex flex-wrap gap-1">{sw.weaknesses.map((w, i) => <span key={i} className="text-[10px] bg-danger/8 text-fg-subtle px-2 py-0.5 rounded">{w}</span>)}</div>
-          </div>
-        </div>
-      )}
-
-      <TabBar tabs={[
-        { label: '🏦 Banks', content: <BanksTab /> },
-        { label: '🎯 Opportunities', content: <OppsTab /> },
-        { label: '📊 Market Intel', content: <MarketIntelTab /> },
+      {/* Task-based tabs */}
+      <TabBar id="country-tabs" sticky tabs={[
+        {
+          label: '🎯 Target',
+          badge: prospects.length || null,
+          content: <TargetTab />,
+        },
+        {
+          label: '⚡ Pitch',
+          badge: sw ? 'dot' : null,
+          content: <PitchTab />,
+        },
+        {
+          label: '📊 Intel',
+          content: <IntelTab />,
+        },
       ]} />
     </div>
   );
