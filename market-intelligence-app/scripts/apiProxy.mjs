@@ -25,6 +25,7 @@ import { setCorsHeaders, jsonResponse, ALLOWED_ORIGINS } from './routes/helpers.
 import { handleAiRoute } from './routes/ai.mjs';
 import { handleDataRoute } from './routes/data.mjs';
 import { handleIngestionRoute } from './routes/ingestion.mjs';
+import { handleKnowledgeRoute } from './routes/knowledge.mjs';
 
 const PORT = process.env.API_PORT || 3001;
 
@@ -51,6 +52,7 @@ async function handleRequest(req, res) {
     if (await handleAiRoute(req, res, ctx)) return;
     if (await handleDataRoute(req, res, ctx)) return;
     if (await handleIngestionRoute(req, res, ctx)) return;
+    if (await handleKnowledgeRoute(req, res, ctx)) return;
 
     // ── 404 ──
     return jsonResponse(res, 404, { error: `Not found: ${path}` });
@@ -90,5 +92,13 @@ server.listen(PORT, () => {
   console.log(`    GET  /api/ingestion-log          — Pipeline audit trail`);
   console.log(`    GET  /api/banks/:key/freshness   — Data freshness per source`);
   console.log(`    GET  /api/banks/:key/ai-analyses — AI analysis results`);
+  console.log(`\n  Knowledge Endpoints:`);
+  console.log(`    GET  /api/knowledge/domains               — List domains`);
+  console.log(`    GET  /api/knowledge/domains/:domain       — Full domain knowledge`);
+  console.log(`    GET  /api/knowledge/domains/:domain/:file — Specific file`);
+  console.log(`    GET  /api/knowledge/capability-taxonomy/:d — Maturity framework`);
+  console.log(`    GET  /api/knowledge/benchmarks-csv        — Playbook benchmarks`);
+  console.log(`    GET  /api/knowledge/for-bank/:key         — Bank-relevant knowledge`);
+  console.log(`    GET  /api/knowledge/standards/:name       — Consulting standards`);
   console.log(`${'═'.repeat(50)}\n`);
 });

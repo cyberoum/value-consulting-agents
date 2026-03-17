@@ -39,7 +39,19 @@ export default function BriefingModal({ bankKey, isOpen, onClose }) {
     const roi = calculateRoi(bankKey);
     const html = generatePrintableHtml({ bd, qd, cx, comp, vs, score, conf, dims, bankKey, roi });
     const win = window.open('', '_blank');
-    win.document.write(html);
+    if (!win) {
+      // Popup blocked — fall back to download as HTML file
+      const blob = new Blob([html], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const a = Object.assign(document.createElement('a'), {
+        href: url, download: `${bd?.bank_name || bankKey}_Briefing.html`,
+      });
+      a.click();
+      URL.revokeObjectURL(url);
+      return;
+    }
+    // Safe: html is generated internally from trusted bank data, not user input
+    win.document.write(html); // eslint-disable-line no-restricted-syntax
     win.document.close();
     setTimeout(() => win.print(), 500);
   };

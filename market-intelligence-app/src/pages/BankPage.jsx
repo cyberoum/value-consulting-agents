@@ -6,12 +6,9 @@ import { QUAL_FRAMEWORK, calcScoreFromData, scoreColor, parseBankKey, dataConfid
 import { getMarketForCountry } from '../data/utils';
 import { LoadingState, ErrorState } from '../components/common/DataState';
 import TabBar from '../components/common/TabBar';
-import Section from '../components/common/Section';
 import { ConfidenceBadge, FavoriteButton } from '../components/common/Badge';
-import RadarChart from '../components/charts/RadarChart';
 import BriefingModal from '../components/bank/BriefingModal';
 import QuickPrepModal from '../components/bank/QuickPrepModal';
-import ScoreExplainer from '../components/bank/ScoreExplainer';
 import ExportBar from '../components/bank/ExportBar';
 import { useFavorites } from '../context/FavoritesContext';
 import useFeedback from '../hooks/useFeedback';
@@ -19,20 +16,15 @@ import FreshnessBadge from '../components/common/FreshnessBadge';
 import { BANK_METADATA, bankFreshness } from '../data/metadata';
 import { getIntelForBank, getPendingCount } from '../data/userIntel';
 import IntelPanel from '../components/intel/IntelPanel';
-import IntelFeed from '../components/intel/IntelFeed';
 import { NewsSignalBadge } from '../components/live/LiveNewsFeed';
 import LiveStockTicker from '../components/live/LiveStockTicker';
 import { AiSignalBadge } from '../components/live/AiInsightsCard';
-import RoiPanel from '../components/bank/RoiPanel';
-import BattleCardsPanel from '../components/bank/BattleCardsPanel';
-import NextBestActionPanel from '../components/bank/NextBestActionPanel';
-import AiAnalysisPanel from '../components/bank/AiAnalysisPanel';
 import { matchZonesToLandingZones } from '../utils/zoneMatching';
 import MeetingContextBar from '../components/bank/MeetingContextBar';
 import MeetingPrepBrief from '../components/bank/MeetingPrepBrief';
 import DiscoveryStoryline from '../components/bank/DiscoveryStoryline';
 import CascadeProgressBar from '../components/bank/CascadeProgressBar';
-import { CxTab, ProfileTab, PeopleTab, OpportunityTab, ValueTab, DiscoveryQuestionsTab, ContextTab } from '../components/bank/tabs';
+import { PrepareTab, PositionTab, QualifyTab } from '../components/bank/tabs';
 import { MeetingProvider, useMeeting } from '../context/MeetingContext';
 import { useLandingZoneMatrix, useDiscoveryStoryline } from '../hooks/useData';
 import { analyzeLandingZones as apiAnalyzeLandingZones, generateDiscoveryStoryline as apiGenerateDiscoveryStoryline, generateMeetingPrep as apiGenerateMeetingPrep, generateValueHypothesis as apiGenerateValueHypothesis } from '../data/api';
@@ -331,8 +323,8 @@ function BankPageContent({ bankKey: key }) {
   return (
     <div className="animate-fade-in-up">
 
-      {/* ── COMPACT HEADER ─────────────────────────────────────────── */}
-      {/* Row 1: Identity + Actions */}
+      {/* ── HEADER ─────────────────────────────────────────────────── */}
+      {/* Row 1: Back + Identity + Score */}
       <div className="flex items-center gap-2 mb-1">
         <button onClick={() => navigate(-1)} className="p-1 text-fg-muted hover:text-primary transition-colors shrink-0">
           <ArrowLeft size={16} />
@@ -343,52 +335,10 @@ function BankPageContent({ bankKey: key }) {
           {score}/10
         </span>
         <FavoriteButton active={isFavorite(key, 'bank')} onClick={() => toggleFav({ key, type: 'bank', name: data.bank_name })} />
-        {/* Utility icon buttons */}
-        <div className="flex items-center gap-0.5 shrink-0">
-          <button onClick={() => setQuickPrepOpen(true)} title="2-Min Prep" className="p-2 rounded-lg hover:bg-surface-2 text-fg-muted transition-colors">
-            <Clock size={15} />
-          </button>
-          <button onClick={() => setBriefingOpen(true)} title="Full Briefing" className="p-2 rounded-lg hover:bg-surface-2 text-fg-muted transition-colors">
-            <FileText size={15} />
-          </button>
-          <ExportBar bankName={data.bank_name} />
-          <button
-            onClick={async () => {
-              const { generateDiscoveryPresentation } = await import('../utils/generateDiscoveryPresentation');
-              generateDiscoveryPresentation({
-                bankName: data.bank_name,
-                storyline: storylineData?.storyline || null,
-                meetingBrief: meetingContext.meetingPrepBrief,
-                attendees: meetingContext.attendees,
-                topics: meetingContext.topics,
-              });
-            }}
-            title="Discovery Meeting Presentation"
-            className={`p-2 rounded-lg transition-colors ${storylineData || meetingContext.meetingPrepBrief ? 'text-primary hover:bg-primary/10' : 'text-fg-muted hover:bg-surface-2 opacity-40'}`}
-            disabled={!storylineData && !meetingContext.meetingPrepBrief}
-          >
-            <Presentation size={15} />
-          </button>
-          <button
-            onClick={async () => {
-              const { generateAssessmentHtml } = await import('../utils/generateAssessmentHtml');
-              generateAssessmentHtml({ bankKey: key, bankData: data, qualData: qd, cxData: cx, compData: comp, valueSelling: vs, score });
-            }}
-            title="Export Dashboard"
-            className="p-2 rounded-lg hover:bg-surface-2 text-fg-muted transition-colors"
-          >
-            <LayoutDashboard size={15} />
-          </button>
-          <button onClick={() => setIntelOpen(true)} title="Add Intel" className="p-2 rounded-lg hover:bg-surface-2 text-fg-muted transition-colors relative">
-            <Plus size={15} />
-            {pendingIntel > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 bg-danger text-white text-[7px] font-black w-3.5 h-3.5 rounded-full flex items-center justify-center">{pendingIntel}</span>
-            )}
-          </button>
-        </div>
       </div>
+
       {/* Row 2: Metadata badges */}
-      <div className="flex items-center gap-2 flex-wrap mb-3 pl-8">
+      <div className="flex items-center gap-2 flex-wrap mb-2 pl-8">
         <ConfidenceBadge level={conf.level} />
         <FreshnessBadge date={meta?.as_of || '2026-03-10'} label={meta?.kpis_period || 'Dataset'} compact />
         <LiveStockTicker bankData={data} />
@@ -397,51 +347,78 @@ function BankPageContent({ bankKey: key }) {
         {grp && <span className="text-[9px] font-bold text-primary bg-primary-50 px-2 py-0.5 rounded shrink-0">🔗 {grp.group_name}</span>}
       </div>
 
-      {/* ── BANK SNAPSHOT — collapsed by default ───────────────────── */}
-      <Section title="Bank Snapshot" defaultOpen={false}>
-        <p className="text-xs text-fg-muted italic mb-3">{data.tagline}</p>
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="flex-1">
-            <div className="flex gap-2 flex-wrap mb-3">
-              {data.kpis?.map((k, i) => (
-                <div key={i} className="bg-surface border border-border rounded-lg px-2.5 sm:px-3 py-1.5">
-                  <div className="text-[8px] text-fg-disabled uppercase">{k.label}</div>
-                  <div className="text-xs sm:text-sm font-bold text-fg">{k.value}</div>
-                </div>
-              ))}
-            </div>
-            {q && (
-              <div className="flex flex-col sm:flex-row gap-1 sm:gap-3 text-xs text-fg-subtle">
-                {q.deal_size && <span><strong>Deal:</strong> {q.deal_size}</span>}
-                {q.sales_cycle && <span><strong>Cycle:</strong> {q.sales_cycle}</span>}
-                {q.timing && <span><strong>Timing:</strong> {q.timing}</span>}
-              </div>
-            )}
-          </div>
-          {radarScores.length > 0 && (
-            <div className="shrink-0">
-              <RadarChart scores={radarScores} labels={radarLabels} size={200} />
-            </div>
-          )}
-        </div>
-        <div className="mt-3">
-          <ScoreExplainer bankKey={key} />
-        </div>
-      </Section>
+      {/* Row 3: Action buttons — labeled, grouped by function */}
+      <div className="flex items-center gap-1.5 flex-wrap pl-8 mb-3">
+        {/* Prep actions */}
+        <button onClick={() => setQuickPrepOpen(true)}
+          className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[10px] font-bold bg-primary/5 text-primary hover:bg-primary/10 transition-colors border border-primary/10">
+          <Clock size={12} /> 2-Min Prep
+        </button>
+        <button onClick={() => setBriefingOpen(true)}
+          className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[10px] font-bold bg-primary/5 text-primary hover:bg-primary/10 transition-colors border border-primary/10">
+          <FileText size={12} /> Full Briefing
+        </button>
 
-      {/* ── STEP 1: Meeting Setup ──────────────────────────────────── */}
-      <div className="flex items-center gap-2 mb-2 mt-4">
-        <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black shrink-0 ${
-          meetingActive ? 'bg-emerald-500 text-white' : 'bg-primary text-white'
-        }`}>
-          {meetingActive ? '✓' : '1'}
-        </span>
-        <span className="text-xs font-bold text-fg">
-          {meetingActive ? 'Meeting configured' : 'Set up your meeting'}
-        </span>
-        <div className="flex-1 h-px bg-border" />
+        {/* Divider */}
+        <div className="w-px h-4 bg-border mx-0.5" />
+
+        {/* Export actions */}
+        <ExportBar bankName={data.bank_name} />
+        <button
+          onClick={async () => {
+            const { generateDiscoveryPresentation } = await import('../utils/generateDiscoveryPresentation');
+            generateDiscoveryPresentation({
+              bankName: data.bank_name,
+              storyline: storylineData?.storyline || null,
+              meetingBrief: meetingContext.meetingPrepBrief,
+              attendees: meetingContext.attendees,
+              topics: meetingContext.topics,
+            });
+          }}
+          title="Discovery Meeting Presentation"
+          disabled={!storylineData && !meetingContext.meetingPrepBrief}
+          className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[10px] font-bold transition-colors border
+            ${storylineData || meetingContext.meetingPrepBrief
+              ? 'bg-violet-50 text-violet-600 hover:bg-violet-100 border-violet-100 dark:bg-violet-900/20 dark:text-violet-400 dark:border-violet-800'
+              : 'bg-surface-2 text-fg-disabled border-border opacity-50 cursor-not-allowed'}`}
+        >
+          <Presentation size={12} /> Presentation
+        </button>
+        <button
+          onClick={async () => {
+            const { generateAssessmentHtml } = await import('../utils/generateAssessmentHtml');
+            generateAssessmentHtml({ bankKey: key, bankData: data, qualData: qd, cxData: cx, compData: comp, valueSelling: vs, score });
+          }}
+          className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[10px] font-bold bg-surface-2 text-fg-muted hover:bg-surface-3 transition-colors border border-border"
+        >
+          <LayoutDashboard size={12} /> Dashboard
+        </button>
+
+        {/* Divider */}
+        <div className="w-px h-4 bg-border mx-0.5" />
+
+        {/* Intel */}
+        <button onClick={() => setIntelOpen(true)}
+          className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[10px] font-bold bg-surface-2 text-fg-muted hover:bg-surface-3 transition-colors border border-border relative">
+          <Plus size={12} /> Add Intel
+          {pendingIntel > 0 && (
+            <span className="ml-0.5 px-1.5 py-0.5 rounded-full text-[8px] font-black bg-danger text-white">{pendingIntel}</span>
+          )}
+        </button>
       </div>
 
+      {/* ── INLINE KPIs — always visible ────────────────────────────── */}
+      {data.kpis?.length > 0 && (
+        <div className="flex gap-1.5 flex-wrap pl-8 mb-3">
+          {data.kpis.slice(0, 5).map((k, i) => (
+            <span key={i} className="text-[9px] text-fg-muted bg-surface-2 border border-border rounded px-2 py-0.5">
+              <span className="text-fg-disabled">{k.label}:</span> <strong className="text-fg">{k.value}</strong>
+            </span>
+          ))}
+        </div>
+      )}
+
+      {/* ── MEETING SETUP — compact bar ─────────────────────────────── */}
       <MeetingContextBar
         kdms={data.key_decision_makers || []}
         meetingContext={meetingContext}
@@ -457,15 +434,9 @@ function BankPageContent({ bankKey: key }) {
         <CascadeProgressBar status={cascadeStatus} />
       )}
 
-      {/* ── STEP 2: AI Outputs ─────────────────────────────────────── */}
+      {/* ── AI Outputs (Meeting Prep + Storyline) ───────────────────── */}
       {(meetingContext.meetingPrepBrief || storylineData) && (
-        <div className="mt-4">
-          <div className="flex items-center gap-2 mb-3">
-            <span className="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-white text-[10px] font-black shrink-0">2</span>
-            <span className="text-xs font-bold text-fg">Review AI Brief</span>
-            <div className="flex-1 h-px bg-border" />
-          </div>
-
+        <div className="mt-3">
           {meetingContext.meetingPrepBrief && (
             <MeetingPrepBrief
               brief={meetingContext.meetingPrepBrief}
@@ -473,7 +444,6 @@ function BankPageContent({ bankKey: key }) {
               onClear={() => handleContextChange(prev => ({ ...prev, meetingPrepBrief: null }))}
             />
           )}
-
           <DiscoveryStoryline
             storyline={storylineData}
             bankName={data?.bank_name || parseBankKey(key).bank}
@@ -484,8 +454,6 @@ function BankPageContent({ bankKey: key }) {
           />
         </div>
       )}
-
-      {/* Show DiscoveryStoryline standalone if no AI brief but no storyline data yet */}
       {!meetingContext.meetingPrepBrief && !storylineData && (
         <DiscoveryStoryline
           storyline={storylineData}
@@ -497,62 +465,57 @@ function BankPageContent({ bankKey: key }) {
         />
       )}
 
-      {/* ── STEP 3: Review Intelligence (Tabbed Content) ───────────── */}
-      <div className="mt-6">
-        <div className="flex items-center gap-2 mb-4">
-          <span className="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-white text-[10px] font-black shrink-0">
-            {meetingContext.meetingPrepBrief || storylineData ? '3' : '2'}
-          </span>
-          <span className="text-xs font-bold text-fg">Review Intelligence</span>
-          <div className="flex-1 h-px bg-border" />
-        </div>
-
-        <TabBar id="main-tabs" tabs={[
-          { label: '👥 People', content: <PeopleTab bankKey={key} meetingActive={meetingActive} meetingContext={meetingContext} meetingTips={meetingTips} allPeople={allPeople} topPeople={topPeople} scrollToDeepDive={scrollToDeepDive} /> },
-          { label: '🎯 Opportunity', content: <OpportunityTab bankKey={key} data={data} bankName={bankName} vs={vs} meetingActive={meetingActive} tailoredHypothesis={tailoredHypothesis} lzData={lzData} handleAnalyzeLandingZones={handleAnalyzeLandingZones} lzAnalyzing={lzAnalyzing} researchAvailable={researchAvailable} enrichedZones={enrichedZones} prioritizedZones={prioritizedZones} unmatchedLandingZones={unmatchedLandingZones} zoneJustifications={zoneJustifications} allSignals={allSignals} prioritizedSignals={prioritizedSignals} getFeedback={getFeedback} setFeedbackFor={setFeedbackFor} /> },
-          { label: '💰 Value', content: <ValueTab bankKey={key} meetingActive={meetingActive} meetingContext={meetingContext} roiFraming={roiFraming} scrollToDeepDive={scrollToDeepDive} /> },
-          { label: '🔍 Discovery', content: <DiscoveryQuestionsTab bankKey={key} meetingActive={meetingActive} tailoredQuestions={tailoredQuestions} discoveryQuestions={discoveryQuestions} /> },
-          { label: '📋 Context', content: <ContextTab bankKey={key} data={data} q={q} comp={comp} aiAnalysis={aiAnalysis} liveNews={liveNews} topPainPoints={topPainPoints} /> },
-        ]} />
-      </div>
-
-      {/* ── DEEP DIVE — Power User Tabs ────────────────────────────── */}
-      <div ref={deepDiveRef} id="deep-dive" className="mt-6 pt-6 border-t-2 border-primary/10">
-        <div className="flex items-center gap-2 mb-4">
-          <span className="text-[10px] font-bold text-fg-disabled uppercase tracking-widest">Deep Dive</span>
-          <div className="flex-1 h-px bg-border" />
-        </div>
-        <TabBar id="deep-dive-tabs" tabs={[
-          { label: '📱 CX', content: <CxTab bankKey={key} data={data} cx={cx} meta={meta} getFeedback={getFeedback} setFeedbackFor={setFeedbackFor} /> },
-          { label: '🛡️ Battle Cards', content: <BattleCardsPanel bankKey={key} /> },
-          { label: '💰 Full ROI', content: <RoiPanel bankKey={key} /> },
-          { label: '💡 Actions', content: <NextBestActionPanel bankKey={key} /> },
-          { label: '🤖 AI Analysis', content: <AiAnalysisPanel bankKey={key} /> },
-          { label: '📋 Profile', content: <ProfileTab bankKey={key} data={data} meta={meta} aiAnalysis={aiAnalysis} sources={sources} /> },
-          { label: `🧠 Intel${intelEntries.length > 0 ? ` (${intelEntries.length})` : ''}`, content: (
-            <div>
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h3 className="text-sm font-bold text-fg">User-Contributed Intelligence</h3>
-                  <p className="text-[10px] text-fg-disabled mt-0.5">Insights captured from meetings, research, and observations</p>
-                </div>
-                <button
-                  onClick={() => setIntelOpen(true)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-primary text-white rounded-lg text-[11px] font-bold hover:bg-primary/90 transition-colors"
-                >
-                  <Plus size={12} /> Add
-                </button>
-              </div>
-              {pendingIntel > 0 && (
-                <div className="p-3 bg-warning/10 border border-warning/20 rounded-lg mb-4 flex items-center gap-2">
-                  <span className="text-warning text-sm">⏳</span>
-                  <span className="text-xs text-warning font-bold">{pendingIntel} pending review</span>
-                  <span className="text-[10px] text-fg-disabled">— approve or dismiss to update bank intelligence</span>
-                </div>
-              )}
-              <IntelFeed entries={intelEntries} onUpdate={refreshIntel} />
-            </div>
-          )},
+      {/* ═══════════════════════════════════════════════════════════════
+       *  MAIN INTELLIGENCE — 3 Task-Based Tabs
+       *  Prepare (get ready) → Position (sell) → Qualify (close)
+       * ═══════════════════════════════════════════════════════════════ */}
+      <div className="mt-4">
+        <TabBar id="phase-tabs" sticky tabs={[
+          {
+            label: '🎯 Prepare',
+            badge: meetingActive ? 'dot' : null,
+            content: (
+              <PrepareTab
+                bankKey={key} data={data} meta={meta} aiAnalysis={aiAnalysis} sources={sources}
+                q={q} comp={comp} liveNews={liveNews} topPainPoints={topPainPoints}
+                meetingActive={meetingActive} meetingContext={meetingContext} meetingTips={meetingTips}
+                allPeople={allPeople} topPeople={topPeople}
+                tailoredQuestions={tailoredQuestions} discoveryQuestions={discoveryQuestions}
+                cx={cx}
+              />
+            ),
+          },
+          {
+            label: '⚡ Position',
+            badge: allSignals.length || null,
+            content: (
+              <PositionTab
+                bankKey={key} data={data} bankName={bankName} vs={vs}
+                meetingActive={meetingActive} meetingContext={meetingContext}
+                tailoredHypothesis={tailoredHypothesis} lzData={lzData}
+                handleAnalyzeLandingZones={handleAnalyzeLandingZones} lzAnalyzing={lzAnalyzing}
+                researchAvailable={researchAvailable} enrichedZones={enrichedZones}
+                prioritizedZones={prioritizedZones} unmatchedLandingZones={unmatchedLandingZones}
+                zoneJustifications={zoneJustifications} allSignals={allSignals}
+                prioritizedSignals={prioritizedSignals} getFeedback={getFeedback}
+                setFeedbackFor={setFeedbackFor} roiFraming={roiFraming} comp={comp}
+              />
+            ),
+          },
+          {
+            label: '✅ Qualify',
+            badge: intelEntries.length || null,
+            content: (
+              <QualifyTab
+                bankKey={key} data={data} qd={qd} q={q}
+                radarScores={radarScores} radarLabels={radarLabels}
+                meetingActive={meetingActive} tailoredQuestions={tailoredQuestions}
+                discoveryQuestions={discoveryQuestions}
+                intelEntries={intelEntries} pendingIntel={pendingIntel}
+                onAddIntel={() => setIntelOpen(true)} refreshIntel={refreshIntel}
+              />
+            ),
+          },
         ]} />
       </div>
 

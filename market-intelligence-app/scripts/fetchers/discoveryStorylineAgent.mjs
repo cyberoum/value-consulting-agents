@@ -164,7 +164,7 @@ function loadDomainKnowledge(lobKey) {
   if (!domainDir) return '';
 
   const basePath = resolve(KNOWLEDGE_DIR, 'domains', domainDir);
-  const files = ['pain_points.md', 'use_cases.md', 'value_propositions.md', 'roi_levers.md'];
+  const files = ['pain_points.md', 'use_cases.md', 'value_propositions.md', 'roi_levers.md', 'personas.md', 'journey_maps.md', 'benchmarks.md'];
 
   const sections = [];
   for (const file of files) {

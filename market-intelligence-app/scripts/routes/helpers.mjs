@@ -38,4 +38,27 @@ export function jsonResponse(res, status, data) {
   res.end(JSON.stringify(data));
 }
 
+/**
+ * Simple in-memory rate limiter for expensive AI endpoints.
+ * Prevents accidental token burn from runaway requests.
+ * @param {number} maxRequests - Max requests in the time window
+ * @param {number} windowMs - Time window in milliseconds
+ */
+export function createRateLimiter(maxRequests = 10, windowMs = 60_000) {
+  const hits = [];
+  return function checkRate(res) {
+    const now = Date.now();
+    // Evict expired entries
+    while (hits.length > 0 && hits[0] <= now - windowMs) hits.shift();
+    if (hits.length >= maxRequests) {
+      jsonResponse(res, 429, {
+        error: `Rate limit exceeded: max ${maxRequests} AI requests per ${windowMs / 1000}s. Please wait.`,
+      });
+      return false; // blocked
+    }
+    hits.push(now);
+    return true; // allowed
+  };
+}
+
 export { ALLOWED_ORIGINS };

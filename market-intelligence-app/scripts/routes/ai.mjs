@@ -21,7 +21,10 @@ import { generateMeetingPrep, isMeetingPrepAvailable } from '../fetchers/meeting
 import { analyzeLandingZones, isLandingZoneAgentAvailable } from '../fetchers/landingZoneAgent.mjs';
 import { generateDiscoveryStoryline, isDiscoveryStorylineAvailable } from '../fetchers/discoveryStorylineAgent.mjs';
 import { generateValueHypothesisForMeeting, isValueHypothesisAvailable } from '../fetchers/valueHypothesisAgent.mjs';
-import { jsonResponse, parseBody } from './helpers.mjs';
+import { jsonResponse, parseBody, createRateLimiter } from './helpers.mjs';
+
+// Rate limit: max 20 AI requests per minute (generous for normal use, blocks runaways)
+const aiRateCheck = createRateLimiter(20, 60_000);
 
 /**
  * Try to handle an AI/research route. Returns true if handled, false if not matched.
@@ -39,6 +42,7 @@ export async function handleAiRoute(req, res, { path, db, parseRow }) {
 
   // ── POST /api/analyze ──
   if (path === '/api/analyze' && req.method === 'POST') {
+    if (!aiRateCheck(res)) return true; // 429 already sent
     if (!isClaudeAvailable()) {
       jsonResponse(res, 503, { error: 'ANTHROPIC_API_KEY not configured' });
       return true;
@@ -57,6 +61,7 @@ export async function handleAiRoute(req, res, { path, db, parseRow }) {
 
   // ── POST /api/analyze-news ──
   if (path === '/api/analyze-news' && req.method === 'POST') {
+    if (!aiRateCheck(res)) return true;
     if (!isClaudeAvailable()) {
       jsonResponse(res, 503, { error: 'ANTHROPIC_API_KEY not configured' });
       return true;
@@ -75,6 +80,7 @@ export async function handleAiRoute(req, res, { path, db, parseRow }) {
 
   // ── POST /api/deep-analysis ──
   if (path === '/api/deep-analysis' && req.method === 'POST') {
+    if (!aiRateCheck(res)) return true;
     if (!isClaudeAvailable()) {
       jsonResponse(res, 503, { error: 'ANTHROPIC_API_KEY not configured' });
       return true;
@@ -99,6 +105,7 @@ export async function handleAiRoute(req, res, { path, db, parseRow }) {
 
   // ── POST /api/research/person ──
   if (path === '/api/research/person' && req.method === 'POST') {
+    if (!aiRateCheck(res)) return true;
     if (!isResearchAvailable()) {
       jsonResponse(res, 503, { error: 'ANTHROPIC_API_KEY not configured. Person research requires AI.' });
       return true;
@@ -117,6 +124,7 @@ export async function handleAiRoute(req, res, { path, db, parseRow }) {
 
   // ── POST /api/research/context ──
   if (path === '/api/research/context' && req.method === 'POST') {
+    if (!aiRateCheck(res)) return true;
     if (!isResearchAvailable()) {
       jsonResponse(res, 503, { error: 'ANTHROPIC_API_KEY not configured. Context enrichment requires AI.' });
       return true;
@@ -135,6 +143,7 @@ export async function handleAiRoute(req, res, { path, db, parseRow }) {
 
   // ── POST /api/research/meeting-prep ──
   if (path === '/api/research/meeting-prep' && req.method === 'POST') {
+    if (!aiRateCheck(res)) return true;
     if (!isMeetingPrepAvailable()) {
       jsonResponse(res, 503, { error: 'ANTHROPIC_API_KEY not configured. Meeting prep requires AI.' });
       return true;
@@ -158,6 +167,7 @@ export async function handleAiRoute(req, res, { path, db, parseRow }) {
 
   // ── POST /api/research/landing-zones ──
   if (path === '/api/research/landing-zones' && req.method === 'POST') {
+    if (!aiRateCheck(res)) return true;
     if (!isLandingZoneAgentAvailable()) {
       jsonResponse(res, 503, { error: 'ANTHROPIC_API_KEY not configured. Landing zone analysis requires AI.' });
       return true;
@@ -195,6 +205,7 @@ export async function handleAiRoute(req, res, { path, db, parseRow }) {
 
   // ── POST /api/research/discovery-storyline ──
   if (path === '/api/research/discovery-storyline' && req.method === 'POST') {
+    if (!aiRateCheck(res)) return true;
     if (!isDiscoveryStorylineAvailable()) {
       jsonResponse(res, 503, { error: 'ANTHROPIC_API_KEY not configured. Discovery storyline requires AI.' });
       return true;
@@ -231,6 +242,7 @@ export async function handleAiRoute(req, res, { path, db, parseRow }) {
 
   // ── POST /api/research/value-hypothesis ──
   if (path === '/api/research/value-hypothesis' && req.method === 'POST') {
+    if (!aiRateCheck(res)) return true;
     if (!isValueHypothesisAvailable()) {
       jsonResponse(res, 503, { error: 'ANTHROPIC_API_KEY not configured.' });
       return true;

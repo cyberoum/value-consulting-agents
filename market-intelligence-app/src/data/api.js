@@ -1,45 +1,84 @@
 /**
  * REST API Client — fetches data from the SQLite-backed API proxy
+ *
+ * Features:
+ *   - Automatic timeout with clear error messages
+ *   - Retry with exponential backoff for transient failures (network, 5xx, 429)
+ *   - Caller-initiated abort support (e.g., search cancellation)
  */
 const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:3001';
 
 const DEFAULT_TIMEOUT = 15000; // 15s for data reads
 const AI_TIMEOUT = 150000;    // 150s for AI-powered endpoints
+const MAX_RETRIES = 2;        // Up to 2 retries (3 total attempts)
+const RETRY_BASE_MS = 1000;   // 1s, 2s exponential backoff
+
+/** Check if an error is retryable (network failure, server error, rate limit) */
+function isRetryable(err, status) {
+  if (err.name === 'TypeError') return true;           // Network failure (fetch throws TypeError)
+  if (status >= 500 && status < 600) return true;      // Server errors
+  if (status === 429) return true;                     // Rate limited
+  return false;
+}
 
 async function request(path, options = {}) {
-  const { signal: externalSignal, timeout, ...rest } = options;
+  const { signal: externalSignal, timeout, retries = MAX_RETRIES, ...rest } = options;
 
-  // Create timeout abort if no external signal provided
-  const controller = new AbortController();
-  const timeoutMs = timeout || DEFAULT_TIMEOUT;
-  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    const controller = new AbortController();
+    const timeoutMs = timeout || DEFAULT_TIMEOUT;
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
 
-  // If caller provides their own signal (e.g., useSearch), link it
-  if (externalSignal) {
-    externalSignal.addEventListener('abort', () => controller.abort());
-  }
+    // Link caller's abort signal
+    if (externalSignal) {
+      if (externalSignal.aborted) { clearTimeout(timer); throw new DOMException('Aborted', 'AbortError'); }
+      externalSignal.addEventListener('abort', () => controller.abort(), { once: true });
+    }
 
-  try {
-    const res = await fetch(`${API_BASE}${path}`, {
-      headers: { 'Content-Type': 'application/json', ...rest.headers },
-      signal: controller.signal,
-      ...rest,
-    });
-    clearTimeout(timer);
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
-      throw new Error(err.error || `Request failed: ${res.status}`);
+    try {
+      const res = await fetch(`${API_BASE}${path}`, {
+        headers: { 'Content-Type': 'application/json', ...rest.headers },
+        signal: controller.signal,
+        ...rest,
+      });
+      clearTimeout(timer);
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
+        const error = new Error(err.error || `Request failed: ${res.status}`);
+        error.status = res.status;
+
+        // Retry on transient server errors
+        if (attempt < retries && isRetryable(error, res.status)) {
+          const delay = RETRY_BASE_MS * Math.pow(2, attempt);
+          console.warn(`[API] ${path} failed (${res.status}), retrying in ${delay}ms... (${attempt + 1}/${retries})`);
+          await new Promise(r => setTimeout(r, delay));
+          continue;
+        }
+        throw error;
+      }
+      return res.json();
+    } catch (err) {
+      clearTimeout(timer);
+
+      // Never retry caller-initiated aborts
+      if (err.name === 'AbortError' && externalSignal?.aborted) throw err;
+
+      // Timeout — clear message
+      if (err.name === 'AbortError') {
+        throw new Error(`Request timed out after ${timeoutMs / 1000}s: ${path}`);
+      }
+
+      // Retry on network errors (TypeError from fetch)
+      if (attempt < retries && isRetryable(err)) {
+        const delay = RETRY_BASE_MS * Math.pow(2, attempt);
+        console.warn(`[API] ${path} network error, retrying in ${delay}ms... (${attempt + 1}/${retries})`);
+        await new Promise(r => setTimeout(r, delay));
+        continue;
+      }
+
+      throw err;
     }
-    return res.json();
-  } catch (err) {
-    clearTimeout(timer);
-    if (err.name === 'AbortError' && externalSignal?.aborted) {
-      throw err; // Re-throw caller-initiated aborts (e.g., search cancellation)
-    }
-    if (err.name === 'AbortError') {
-      throw new Error(`Request timed out after ${timeoutMs / 1000}s: ${path}`);
-    }
-    throw err;
   }
 }
 
@@ -82,7 +121,6 @@ export const fetchIngestionLog = ({ bankKey, source, limit = 50 } = {}) => {
   return request(`/api/ingestion-log?${params}`);
 };
 
-export const fetchBankFreshness = (key) => request(`/api/banks/${encodeURIComponent(key)}/freshness`);
 export const fetchBankAiAnalyses = (key) => request(`/api/banks/${encodeURIComponent(key)}/ai-analyses`);
 
 // ── Meeting Research (AI-powered — longer timeouts) ──
@@ -101,3 +139,17 @@ export const generateDiscoveryStoryline = (data) => request('/api/research/disco
 
 // ── Value Hypothesis (meeting-tailored) ──
 export const generateValueHypothesis = (data) => request('/api/research/value-hypothesis', { method: 'POST', body: JSON.stringify(data), timeout: AI_TIMEOUT });
+
+// ── Consulting Knowledge ──
+export const fetchKnowledgeDomains = () => request('/api/knowledge/domains');
+export const fetchDomainKnowledge = (domain) => request(`/api/knowledge/domains/${domain}`);
+export const fetchDomainFile = (domain, file) => request(`/api/knowledge/domains/${domain}/${file}`);
+export const fetchCapabilityTaxonomy = (domain) => request(`/api/knowledge/capability-taxonomy/${domain}`);
+export const fetchPlaybookBenchmarks = (journey) =>
+  journey ? request(`/api/knowledge/benchmarks-csv/${encodeURIComponent(journey)}`) : request('/api/knowledge/benchmarks-csv');
+export const fetchBankKnowledge = (key, domains) => {
+  const params = domains ? `?domains=${domains.join(',')}` : '';
+  return request(`/api/knowledge/for-bank/${encodeURIComponent(key)}${params}`);
+};
+export const fetchRoiExamples = () => request('/api/knowledge/roi-examples');
+export const fetchConsultingStandard = (name) => request(`/api/knowledge/standards/${name}`);

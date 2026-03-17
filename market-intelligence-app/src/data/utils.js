@@ -8,55 +8,31 @@ import { VALUE_SELLING } from './valueSelling';
 import { SOURCES } from './sources';
 import { GROUP_RELATIONSHIPS } from './relationships';
 
-// Re-export everything for convenience
+// ── Pure scoring functions from scoring.ts (single source of truth) ──
+import {
+  calcScoreFromData,
+  scoreColor,
+  scoreBg,
+  scoreLabel,
+  dataConfidenceFromData,
+} from './scoring';
+
+// Re-export data stores for convenience
 export { MARKETS_META, MARKET_DATA, COUNTRY_DATA, BANK_DATA, QUAL_FRAMEWORK, QUAL_DATA, CX_DATA, COMP_DATA, VALUE_SELLING, SOURCES, GROUP_RELATIONSHIPS };
 
-// Calculate weighted qualification score for a bank key
+// Re-export pure scoring functions (consumers can import from either file)
+export { scoreColor, scoreBg, scoreLabel };
+
+// ── Lookup-based wrappers (delegate to scoring.ts) ──
+
+/** Calculate score from a bank key by looking up QUAL_DATA */
 export function calcScore(bankKey) {
-  const qd = QUAL_DATA[bankKey];
-  if (!qd) return 0;
-  const fw = QUAL_FRAMEWORK.dimensions;
-  let w = 0;
-  Object.keys(fw).forEach(dim => {
-    if (qd[dim]) w += qd[dim].score * fw[dim].weight;
-  });
-  if (qd.power_map?.activated) w += 1.0;
-  if (qd.partner_access?.backbase_access) w += 0.5;
-  return Math.round(Math.min(w, 10) * 10) / 10;
+  return calcScoreFromData(QUAL_DATA[bankKey]);
 }
 
-// Get score color
-export function scoreColor(score) {
-  if (score >= 8) return '#3366FF';
-  if (score >= 6) return '#1F3D99';
-  if (score >= 4) return '#F57F17';
-  return '#FF7262';
-}
-
-// Get score background color
-export function scoreBg(score) {
-  if (score >= 8) return '#EBF0FF';
-  if (score >= 6) return '#F0F4FA';
-  if (score >= 4) return '#FFF8E1';
-  return '#FFF0EE';
-}
-
-// Get score label
-export function scoreLabel(score) {
-  if (score >= 8) return 'Strong Fit';
-  if (score >= 6) return 'Good Fit';
-  if (score >= 4) return 'Moderate Fit';
-  return 'Low Fit';
-}
-
-// Get data confidence level for a bank key
+/** Get data confidence from a bank key by looking up BANK_DATA */
 export function dataConfidence(bankKey) {
-  const origBanks = ['Nordea_Sweden','SEB_Sweden','DNB_Norway','Handelsbanken_Sweden','Swedbank_Sweden','Danske Bank_Denmark','OP Financial Group_Finland','TF Bank_Sweden'];
-  const bd = BANK_DATA[bankKey];
-  const hasFullOp = bd?.operational_profile?.employees_breakdown || bd?.operational_profile?.tech_stack;
-  if (origBanks.includes(bankKey)) return { level: 'deep', label: 'Deep', color: '#2E7D32', bg: '#E8F5E9' };
-  if (hasFullOp) return { level: 'standard', label: 'Standard', color: '#F57F17', bg: '#FFF8E1' };
-  return { level: 'preliminary', label: 'Preliminary', color: '#FF7262', bg: '#FFF0EE' };
+  return dataConfidenceFromData(bankKey, BANK_DATA[bankKey]);
 }
 
 // Get market key for a country name

@@ -120,7 +120,7 @@ function loadDomainKnowledge(domainKey) {
   if (!domainConfig) return null;
 
   const domainDir = resolve(KNOWLEDGE_DIR, 'domains', domainConfig.dir);
-  const files = ['pain_points.md', 'use_cases.md', 'value_propositions.md', 'benchmarks.md'];
+  const files = ['pain_points.md', 'use_cases.md', 'value_propositions.md', 'benchmarks.md', 'personas.md', 'journey_maps.md', 'roi_levers.md'];
   const sections = [];
 
   for (const file of files) {

@@ -11,6 +11,79 @@
  */
 
 import { callClaude, isApiKeyConfigured } from './claudeClient.mjs';
+import { readFileSync, existsSync } from 'fs';
+import { resolve, dirname } from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const KNOWLEDGE_DIR = resolve(__dirname, '../../knowledge');
+
+// ── Domain mapping for knowledge lookups ──
+
+const ZONE_DOMAIN_MAP = {
+  retail: 'retail', consumer: 'retail', personal: 'retail', 'digital banking': 'retail',
+  onboarding: 'retail', origination: 'retail', 'mobile banking': 'retail',
+  sme: 'sme', 'small business': 'sme', 'business banking': 'sme',
+  wealth: 'wealth', 'private banking': 'wealth', advisory: 'wealth',
+  commercial: 'commercial', corporate: 'corporate', 'trade finance': 'commercial',
+  investing: 'investing',
+};
+
+function detectDomains(bankData, meetingContext) {
+  const domains = new Set();
+
+  // From landing zones
+  if (bankData.backbase_landing_zones?.length) {
+    for (const z of bankData.backbase_landing_zones) {
+      const zl = (z.zone || '').toLowerCase();
+      for (const [kw, domain] of Object.entries(ZONE_DOMAIN_MAP)) {
+        if (zl.includes(kw)) domains.add(domain);
+      }
+    }
+  }
+
+  // From meeting topics
+  if (meetingContext.topics?.length) {
+    for (const topic of meetingContext.topics) {
+      const tl = topic.toLowerCase();
+      for (const [kw, domain] of Object.entries(ZONE_DOMAIN_MAP)) {
+        if (tl.includes(kw)) domains.add(domain);
+      }
+    }
+  }
+
+  return domains.size > 0 ? [...domains] : ['retail'];
+}
+
+function loadFile(filePath) {
+  try {
+    if (existsSync(filePath)) return readFileSync(filePath, 'utf-8');
+  } catch { /* ignore */ }
+  return '';
+}
+
+function loadDomainKnowledge(domains) {
+  const files = ['value_propositions.md', 'pain_points.md', 'use_cases.md', 'roi_levers.md', 'benchmarks.md'];
+  const sections = [];
+
+  for (const domain of domains.slice(0, 2)) { // cap at 2 domains to limit tokens
+    const basePath = resolve(KNOWLEDGE_DIR, 'domains', domain);
+    const domainSections = [];
+    for (const file of files) {
+      const content = loadFile(resolve(basePath, file));
+      if (content && content.length > 50) {
+        // Trim to keep total prompt reasonable (~2KB per file)
+        domainSections.push(`#### ${file.replace('.md', '').replace(/_/g, ' ').toUpperCase()}\n${content.substring(0, 2000)}`);
+      }
+    }
+    if (domainSections.length > 0) {
+      sections.push(`### ${domain.toUpperCase()} Domain Knowledge\n${domainSections.join('\n\n')}`);
+    }
+  }
+
+  return sections.join('\n\n---\n\n');
+}
 
 // ── System Prompt ──
 
@@ -32,6 +105,8 @@ Rules:
 7. Incorporate any known scope or pain points into the IF condition
 8. Keep each field concise (1-3 sentences max)
 9. The one_liner should be provocative and memorable (under 25 words)
+10. Use provided DOMAIN KNOWLEDGE (value propositions, benchmarks, ROI levers, pain points) to ground the hypothesis in real data — cite specific metrics or benchmarks when available
+11. Reference relevant use cases from the domain knowledge to make the BY section concrete
 
 Return ONLY valid JSON with this exact structure:
 {
@@ -63,10 +138,19 @@ export async function generateValueHypothesisForMeeting({
 }) {
   const start = Date.now();
 
+  // Load consulting domain knowledge for detected domains
+  const domains = detectDomains(bankData, meetingContext);
+  const domainKnowledge = loadDomainKnowledge(domains);
+
   // Build context sections
   const sections = [];
 
   sections.push(`## Bank: ${bankName}`);
+
+  // Inject domain knowledge early so Claude can reference it
+  if (domainKnowledge) {
+    sections.push(`## CONSULTING DOMAIN KNOWLEDGE (use this to ground your hypothesis in real value propositions, benchmarks, and ROI levers)\n\n${domainKnowledge}`);
+  }
 
   if (bankData.overview) {
     sections.push(`### Bank Overview\n${bankData.overview.substring(0, 500)}`);

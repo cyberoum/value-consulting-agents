@@ -48,3 +48,37 @@ export const NBA = {
 export type ScoreConstants = typeof SCORE;
 export type RoiConstants = typeof ROI;
 export type NbaConstants = typeof NBA;
+
+// ─── UI display limits ──────────────────────────────────────────────
+export const UI = {
+  /** Max search results to display */
+  SEARCH_RESULTS_LIMIT: 20,
+  /** Top KDMs shown in default (non-meeting) view */
+  TOP_KDMS: 4,
+  /** Top signals shown in context tab */
+  TOP_SIGNALS: 5,
+  /** Max items shown in compact lists before "show more" */
+  COMPACT_LIST_MAX: 4,
+  /** Deep banks with full operational profiles */
+  DEEP_BANKS: [
+    'Nordea_Sweden', 'SEB_Sweden', 'DNB_Norway', 'Handelsbanken_Sweden',
+    'Swedbank_Sweden', 'Danske Bank_Denmark', 'OP Financial Group_Finland', 'TF Bank_Sweden',
+  ],
+} as const;
+
+// ─── API configuration ──────────────────────────────────────────────
+export const API_CONFIG = {
+  /** Default timeout for data reads (ms) */
+  DEFAULT_TIMEOUT_MS: 15_000,
+  /** Timeout for AI-powered endpoints (ms) */
+  AI_TIMEOUT_MS: 150_000,
+  /** Max retries for transient failures */
+  MAX_RETRIES: 2,
+  /** Base delay for exponential backoff (ms) */
+  RETRY_BASE_MS: 1_000,
+  /** Max AI requests per minute (rate limiter) */
+  RATE_LIMIT_PER_MIN: 20,
+} as const;
+
+export type UiConstants = typeof UI;
+export type ApiConfigConstants = typeof API_CONFIG;

@@ -3,7 +3,7 @@
  * These work with data passed as arguments (from API or static imports)
  */
 import { QUAL_FRAMEWORK } from './qualification';
-import { SCORE } from './constants';
+import { SCORE, UI } from './constants';
 
 export { QUAL_FRAMEWORK };
 
@@ -98,11 +98,11 @@ export function parseBankKey(key: string): { bankName: string; country: string }
 /**
  * Compute data confidence from bank data object
  */
-const DEEP_BANKS = ['Nordea_Sweden','SEB_Sweden','DNB_Norway','Handelsbanken_Sweden','Swedbank_Sweden','Danske Bank_Denmark','OP Financial Group_Finland','TF Bank_Sweden'];
+// DEEP_BANKS is now sourced from constants.ts via UI.DEEP_BANKS
 
 export function dataConfidenceFromData(bankKey: string, bankData: BankData | null | undefined): DataConfidence {
   const hasFullOp = bankData?.operational_profile?.employees_breakdown || bankData?.operational_profile?.tech_stack;
-  if (DEEP_BANKS.includes(bankKey)) return { level: 'deep', label: 'Deep', color: '#2E7D32', bg: '#E8F5E9' };
+  if ((UI.DEEP_BANKS as readonly string[]).includes(bankKey)) return { level: 'deep', label: 'Deep', color: '#2E7D32', bg: '#E8F5E9' };
   if (hasFullOp) return { level: 'standard', label: 'Standard', color: '#F57F17', bg: '#FFF8E1' };
   return { level: 'preliminary', label: 'Preliminary', color: '#FF7262', bg: '#FFF0EE' };
 }
