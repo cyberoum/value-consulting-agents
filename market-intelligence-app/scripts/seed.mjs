@@ -4,6 +4,8 @@
  * Run: npm run seed (or node scripts/seed.mjs)
  */
 import { getDb, closeDb } from './db.mjs';
+import { extractAllEntities } from './lib/entityExtractor.mjs';
+import { resolveAllPersonAliases } from './lib/entityResolver.mjs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 
@@ -29,6 +31,9 @@ const seed = db.transaction(() => {
   db.exec('DELETE FROM ai_analyses');
   db.exec('DELETE FROM meeting_packs');
   db.exec('DELETE FROM sources');
+  db.exec('DELETE FROM persons');
+  db.exec('DELETE FROM pain_points');
+  db.exec('DELETE FROM landing_zones');
   db.exec('DELETE FROM relationships');
   db.exec('DELETE FROM value_selling');
   db.exec('DELETE FROM competition');
@@ -182,6 +187,26 @@ const seed = db.transaction(() => {
     }
   }
   console.log(`  Sources: ${sourceCount}`);
+
+  // ── Entity Extraction (Layer 2) ──
+  console.log('\n  Extracting entities...');
+  let totalPersons = 0, totalPainPoints = 0, totalLandingZones = 0;
+  for (const [key, bankData] of Object.entries(BANK_DATA)) {
+    const vsData = VALUE_SELLING[key] || {};
+    const counts = extractAllEntities(key, bankData, vsData);
+    totalPersons += counts.persons;
+    totalPainPoints += counts.painPoints;
+    totalLandingZones += counts.landingZones;
+  }
+  console.log(`  Persons: ${totalPersons}`);
+  console.log(`  Pain Points: ${totalPainPoints}`);
+  console.log(`  Landing Zones: ${totalLandingZones}`);
+
+  // ── Entity Resolution (Layer 2) ──
+  const resolverResult = resolveAllPersonAliases();
+  if (resolverResult.clustersFound > 0) {
+    console.log(`  Alias Resolution: ${resolverResult.clustersFound} clusters, ${resolverResult.aliasesWritten} aliases`);
+  }
 });
 
 console.log('\nSeeding database...');

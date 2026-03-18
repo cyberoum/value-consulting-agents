@@ -60,6 +60,265 @@ export async function handleDataRoute(req, res, { path, url, db, parseRow, parse
     return true;
   }
 
+  // ── GET /api/signals ── Blended live + static signals for homepage
+  if (path === '/api/signals' && req.method === 'GET') {
+    const limit = parseInt(url.searchParams.get('limit') || '8', 10);
+    const minScore = parseFloat(url.searchParams.get('min_score') || '5');
+    const sourceFilter = url.searchParams.get('source'); // 'live', 'static', or null (both)
+    const bankFilter = url.searchParams.get('bank_key'); // filter to one bank
+    const typeFilter = url.searchParams.get('type'); // 'strategic,hiring' etc.
+
+    const signals = [];
+    const priorityOrder = { high: 3, medium: 2, low: 1 };
+
+    // ── 1. Live signals from live_signals table (AI-classified) ──
+    if (sourceFilter !== 'static') {
+      try {
+        let liveQuery = `
+          SELECT ls.*, b.bank_name, b.country, q.data as qual_data
+          FROM live_signals ls
+          JOIN banks b ON b.key = ls.bank_key
+          LEFT JOIN qualification q ON q.bank_key = ls.bank_key
+          WHERE ls.relevance_score >= ?
+            AND ls.classified_at IS NOT NULL
+        `;
+        const params = [minScore];
+
+        if (bankFilter) {
+          liveQuery += ' AND ls.bank_key = ?';
+          params.push(bankFilter);
+        }
+        if (typeFilter) {
+          const types = typeFilter.split(',').map(t => t.trim());
+          liveQuery += ` AND ls.signal_type IN (${types.map(() => '?').join(',')})`;
+          params.push(...types);
+        }
+
+        liveQuery += ' ORDER BY ls.relevance_score DESC, ls.published_at DESC LIMIT 50';
+
+        const liveRows = db.prepare(liveQuery).all(...params);
+        for (const row of liveRows) {
+          const qd = row.qual_data ? JSON.parse(row.qual_data) : null;
+          const bankScore = calcBankScore(qd);
+          signals.push({
+            type: row.signal_type || 'signal',
+            bank: row.bank_name,
+            bankKey: row.bank_key,
+            country: row.country,
+            score: bankScore,
+            text: row.title,
+            detail: row.implication || row.snippet || '',
+            source: `${row.source} (Live)`,
+            sourceUrl: row.source_url,
+            priority: row.priority || (row.relevance_score >= 8 ? 'high' : row.relevance_score >= 6 ? 'medium' : 'low'),
+            relevanceScore: row.relevance_score,
+            publishedAt: row.published_at,
+            isLive: true,
+          });
+        }
+
+        // ── Adaptive threshold: fill in underrepresented banks ──
+        // If a bank has zero signals at the normal threshold, surface their
+        // best signal at a lower threshold (score >= 3) so every tracked bank
+        // gets at least some coverage. This prevents large-cap bias.
+        if (!bankFilter) {
+          const banksWithSignals = new Set(liveRows.map(r => r.bank_key));
+          const allBankKeys = db.prepare('SELECT key FROM banks').all().map(r => r.key);
+          const underrepresented = allBankKeys.filter(k => !banksWithSignals.has(k));
+
+          if (underrepresented.length > 0) {
+            const placeholders = underrepresented.map(() => '?').join(',');
+            const fallbackRows = db.prepare(`
+              SELECT ls.*, b.bank_name, b.country, q.data as qual_data
+              FROM live_signals ls
+              JOIN banks b ON b.key = ls.bank_key
+              LEFT JOIN qualification q ON q.bank_key = ls.bank_key
+              WHERE ls.bank_key IN (${placeholders})
+                AND ls.relevance_score >= 3
+                AND ls.classified_at IS NOT NULL
+              ORDER BY ls.relevance_score DESC, ls.published_at DESC
+            `).all(...underrepresented);
+
+            // Take the single best signal per underrepresented bank
+            const seenBanks = new Set();
+            for (const row of fallbackRows) {
+              if (seenBanks.has(row.bank_key)) continue;
+              seenBanks.add(row.bank_key);
+
+              const qd = row.qual_data ? JSON.parse(row.qual_data) : null;
+              const bankScore = calcBankScore(qd);
+              signals.push({
+                type: row.signal_type || 'signal',
+                bank: row.bank_name,
+                bankKey: row.bank_key,
+                country: row.country,
+                score: bankScore,
+                text: row.title,
+                detail: row.implication || row.snippet || '',
+                source: `${row.source} (Live)`,
+                sourceUrl: row.source_url,
+                priority: 'low',
+                relevanceScore: row.relevance_score,
+                publishedAt: row.published_at,
+                isLive: true,
+                isFallback: true, // Flag so UI can optionally style differently
+              });
+            }
+          }
+        }
+      } catch {
+        // live_signals table may not exist yet — graceful fallback
+      }
+    }
+
+    // ── 2. Static signals from bank profile data ──
+    if (sourceFilter !== 'live') {
+      const bankQuery = bankFilter
+        ? db.prepare(`SELECT b.key, b.bank_name, b.country, b.data as bank_data, q.data as qual_data
+            FROM banks b LEFT JOIN qualification q ON q.bank_key = b.key
+            WHERE b.key = ? AND b.data IS NOT NULL AND b.data != '{}'`).all(bankFilter)
+        : db.prepare(`SELECT b.key, b.bank_name, b.country, b.data as bank_data, q.data as qual_data
+            FROM banks b LEFT JOIN qualification q ON q.bank_key = b.key
+            WHERE b.data IS NOT NULL AND b.data != '{}'
+            ORDER BY b.updated_at DESC`).all();
+
+      for (const row of bankQuery) {
+        const bd = row.bank_data ? JSON.parse(row.bank_data) : {};
+        const qd = row.qual_data ? JSON.parse(row.qual_data) : null;
+        const score = calcBankScore(qd);
+
+        // Strategic signals
+        if (bd.signals && Array.isArray(bd.signals)) {
+          for (const sig of bd.signals.slice(0, 2)) {
+            signals.push({
+              type: 'signal',
+              bank: row.bank_name,
+              bankKey: row.key,
+              country: row.country,
+              score,
+              text: sig.signal || sig.text || '',
+              detail: sig.implication || '',
+              source: 'Strategic Signal',
+              priority: score >= 8 ? 'high' : score >= 6 ? 'medium' : 'low',
+              isLive: false,
+            });
+          }
+        }
+
+        // Pain points
+        if (bd.pain_points && Array.isArray(bd.pain_points)) {
+          for (const pp of bd.pain_points.slice(0, 1)) {
+            signals.push({
+              type: 'pain_point',
+              bank: row.bank_name,
+              bankKey: row.key,
+              country: row.country,
+              score,
+              text: pp.title || '',
+              detail: pp.detail || '',
+              source: 'Pain Point',
+              priority: score >= 8 ? 'high' : 'medium',
+              isLive: false,
+            });
+          }
+        }
+
+        // Stock movements
+        if (bd.live_stock?.price && bd.live_stock?.dayChangePercent) {
+          const pct = bd.live_stock.dayChangePercent;
+          if (Math.abs(pct) > 3) {
+            signals.push({
+              type: 'stock',
+              bank: row.bank_name,
+              bankKey: row.key,
+              country: row.country,
+              score,
+              text: `Stock ${pct > 0 ? '↑' : '↓'} ${Math.abs(pct).toFixed(1)}% — ${bd.live_stock.ticker} at ${bd.live_stock.currency} ${bd.live_stock.price}`,
+              detail: '',
+              source: 'Stock Movement',
+              priority: Math.abs(pct) > 5 ? 'high' : 'medium',
+              isLive: false,
+            });
+          }
+        }
+      }
+    }
+
+    // Deduplicate: live signals take precedence over static with similar text
+    const seen = new Set();
+    const deduped = signals.filter(s => {
+      const key = `${s.bankKey}|${s.text.substring(0, 50).toLowerCase()}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+
+    // Sort: live first, then by score, then by priority
+    deduped.sort((a, b) =>
+      (b.isLive ? 1 : 0) - (a.isLive ? 1 : 0)
+      || (b.score - a.score)
+      || (priorityOrder[b.priority] || 0) - (priorityOrder[a.priority] || 0)
+    );
+
+    jsonResponse(res, 200, deduped.slice(0, limit));
+    return true;
+  }
+
+  // ── POST /api/signals/refresh ── Trigger on-demand signal refresh
+  if (path === '/api/signals/refresh' && req.method === 'POST') {
+    // Check cooldown (10 min between refreshes)
+    const lastRun = db.prepare(
+      `SELECT completed_at FROM signal_refresh_log WHERE status = 'complete' ORDER BY id DESC LIMIT 1`
+    ).get();
+
+    if (lastRun?.completed_at) {
+      const elapsed = Date.now() - new Date(lastRun.completed_at + 'Z').getTime();
+      if (elapsed < 10 * 60 * 1000) {
+        jsonResponse(res, 429, {
+          error: 'Signal refresh on cooldown',
+          retryAfterMs: 10 * 60 * 1000 - elapsed,
+          lastRefresh: lastRun.completed_at,
+        });
+        return true;
+      }
+    }
+
+    // Run refresh in background (non-blocking)
+    const { runSignalRefresh } = await import('../fetchers/signalIngestion.mjs');
+    runSignalRefresh(db, { skipNews: false }).catch(err =>
+      console.error('[signals/refresh] Error:', err.message)
+    );
+
+    jsonResponse(res, 202, { status: 'started', message: 'Signal refresh started in background' });
+    return true;
+  }
+
+  // ── GET /api/signals/status ── Refresh status
+  if (path === '/api/signals/status' && req.method === 'GET') {
+    const lastRun = db.prepare(
+      `SELECT * FROM signal_refresh_log ORDER BY id DESC LIMIT 1`
+    ).get();
+
+    let totalLiveSignals = 0;
+    let topSources = [];
+    try {
+      totalLiveSignals = db.prepare('SELECT COUNT(*) as cnt FROM live_signals WHERE relevance_score >= 5').get()?.cnt || 0;
+      topSources = db.prepare(`
+        SELECT source, COUNT(*) as cnt FROM live_signals
+        WHERE relevance_score >= 5 GROUP BY source ORDER BY cnt DESC LIMIT 5
+      `).all();
+    } catch {
+      // Table may not exist yet
+    }
+
+    jsonResponse(res, 200, {
+      lastRefresh: lastRun || null,
+      totalLiveSignals,
+      topSources,
+    });
+    return true;
+  }
+
   // ── GET /api/search?q= ──
   if (path === '/api/search' && req.method === 'GET') {
     const q = url.searchParams.get('q');
@@ -312,6 +571,11 @@ export async function handleDataRoute(req, res, { path, url, db, parseRow, parse
     const rel = db.prepare('SELECT * FROM relationships WHERE bank_key = ?').get(key);
     const sources = db.prepare('SELECT * FROM sources WHERE ref_key = ?').all(key);
 
+    // Layer 2: normalized entities
+    const personsRows = db.prepare('SELECT * FROM persons WHERE bank_key = ? ORDER BY role_category, canonical_name').all(key);
+    const painPointsRows = db.prepare('SELECT * FROM pain_points WHERE bank_key = ?').all(key);
+    const landingZonesRows = db.prepare('SELECT * FROM landing_zones WHERE bank_key = ? ORDER BY source, fit_score DESC').all(key);
+
     const result = {
       ...parseRow('banks', bank),
       qualification: qual ? parseRow('qualification', qual).data : null,
@@ -320,6 +584,10 @@ export async function handleDataRoute(req, res, { path, url, db, parseRow, parse
       value_selling: vs ? parseRow('value_selling', vs).data : null,
       relationship: rel ? parseRow('relationships', rel).data : null,
       sources,
+      // Layer 2: normalized entity arrays (backward-compatible — new top-level keys)
+      persons: parseRows('persons', personsRows),
+      pain_points_normalized: parseRows('pain_points', painPointsRows),
+      landing_zones_normalized: parseRows('landing_zones', landingZonesRows),
     };
     jsonResponse(res, 200, result);
     return true;
@@ -390,6 +658,67 @@ export async function handleDataRoute(req, res, { path, url, db, parseRow, parse
     const result = db.prepare('DELETE FROM banks WHERE key = ?').run(key);
     if (result.changes === 0) { jsonResponse(res, 404, { error: 'Bank not found' }); return true; }
     jsonResponse(res, 200, { ok: true, deleted: key });
+    return true;
+  }
+
+  // ── POST /api/feedback/brief — Submit brief feedback ──
+  if (path === '/api/feedback/brief' && req.method === 'POST') {
+    const { bankKey, bankName, persona, sectionsUsed, accuracyRating, comment } = await parseBody(req);
+    if (!bankName || !sectionsUsed || !accuracyRating) {
+      jsonResponse(res, 400, { error: 'Missing required fields: bankName, sectionsUsed, accuracyRating' });
+      return true;
+    }
+    const stmt = db.prepare(`
+      INSERT INTO brief_feedback (bank_key, bank_name, persona, sections_used, accuracy_rating, comment)
+      VALUES (?, ?, ?, ?, ?, ?)
+    `);
+    const result = stmt.run(
+      bankKey || null,
+      bankName,
+      persona || null,
+      JSON.stringify(sectionsUsed),
+      accuracyRating,
+      comment || null
+    );
+    jsonResponse(res, 200, { ok: true, id: result.lastInsertRowid });
+    return true;
+  }
+
+  // ── GET /api/feedback/brief — Read all brief feedback (admin) ──
+  if (path === '/api/feedback/brief' && req.method === 'GET') {
+    const rows = db.prepare(`
+      SELECT * FROM brief_feedback ORDER BY created_at DESC LIMIT 200
+    `).all();
+    const parsed = rows.map(r => parseRow('brief_feedback', r));
+    jsonResponse(res, 200, { feedback: parsed });
+    return true;
+  }
+
+  // ── GET /api/feedback/brief/stats — Aggregate feedback stats (admin) ──
+  if (path === '/api/feedback/brief/stats' && req.method === 'GET') {
+    const totalCount = db.prepare('SELECT COUNT(*) as count FROM brief_feedback').get().count;
+    const avgRating = db.prepare('SELECT AVG(accuracy_rating) as avg FROM brief_feedback').get().avg;
+    const ratingDist = db.prepare('SELECT accuracy_rating, COUNT(*) as count FROM brief_feedback GROUP BY accuracy_rating ORDER BY accuracy_rating').all();
+    const allSections = db.prepare('SELECT sections_used FROM brief_feedback').all();
+
+    // Aggregate section usage counts
+    const sectionCounts = {};
+    for (const row of allSections) {
+      let sections;
+      try { sections = JSON.parse(row.sections_used); } catch { sections = []; }
+      for (const s of sections) {
+        sectionCounts[s] = (sectionCounts[s] || 0) + 1;
+      }
+    }
+
+    jsonResponse(res, 200, {
+      totalCount,
+      avgRating: avgRating ? Math.round(avgRating * 10) / 10 : null,
+      ratingDistribution: ratingDist,
+      sectionUsage: Object.entries(sectionCounts)
+        .sort((a, b) => b[1] - a[1])
+        .map(([section, count]) => ({ section, count, pct: totalCount > 0 ? Math.round((count / totalCount) * 100) : 0 })),
+    });
     return true;
   }
 

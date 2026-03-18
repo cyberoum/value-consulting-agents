@@ -235,6 +235,59 @@ function initSchema(db) {
       ON entity_history(entity_type, entity_key);
     CREATE INDEX IF NOT EXISTS idx_history_date
       ON entity_history(changed_at);
+
+    -- ── Persons (Layer 2: normalized from banks.data.key_decision_makers[]) ──
+    CREATE TABLE IF NOT EXISTS persons (
+      id TEXT PRIMARY KEY,
+      bank_key TEXT NOT NULL,
+      canonical_name TEXT NOT NULL,
+      role TEXT,
+      role_category TEXT,
+      aliases TEXT,
+      linkedin_url TEXT,
+      note TEXT,
+      source_url TEXT,
+      source_date TEXT,
+      confidence_tier INTEGER DEFAULT 2,
+      verified_at TEXT,
+      created_at TEXT DEFAULT (datetime('now')),
+      updated_at TEXT DEFAULT (datetime('now')),
+      UNIQUE(bank_key, canonical_name)
+    );
+    CREATE INDEX IF NOT EXISTS idx_persons_bank ON persons(bank_key);
+
+    -- ── Pain Points (Layer 2: normalized from banks.data.pain_points[]) ──
+    CREATE TABLE IF NOT EXISTS pain_points (
+      id TEXT PRIMARY KEY,
+      bank_key TEXT NOT NULL,
+      canonical_text TEXT NOT NULL,
+      category TEXT,
+      detail TEXT,
+      source_url TEXT,
+      source_date TEXT,
+      confidence_tier INTEGER DEFAULT 2,
+      created_at TEXT DEFAULT (datetime('now')),
+      UNIQUE(bank_key, canonical_text)
+    );
+    CREATE INDEX IF NOT EXISTS idx_pain_points_bank ON pain_points(bank_key);
+
+    -- ── Landing Zones (Layer 2: normalized from 2 curated sources) ──
+    CREATE TABLE IF NOT EXISTS landing_zones (
+      id TEXT PRIMARY KEY,
+      bank_key TEXT NOT NULL,
+      zone_name TEXT NOT NULL,
+      fit_score INTEGER,
+      rationale TEXT,
+      entry_strategy TEXT,
+      source TEXT NOT NULL,
+      details TEXT,
+      source_url TEXT,
+      confidence_tier INTEGER DEFAULT 2,
+      created_at TEXT DEFAULT (datetime('now')),
+      updated_at TEXT DEFAULT (datetime('now')),
+      UNIQUE(bank_key, zone_name, source)
+    );
+    CREATE INDEX IF NOT EXISTS idx_landing_zones_bank ON landing_zones(bank_key);
   `);
 }
 
@@ -256,6 +309,9 @@ const JSON_FIELDS = {
   brief_feedback: new Set(['sections_used']),
   field_provenance: new Set([]),
   entity_history: new Set([]),
+  persons: new Set(['aliases']),
+  pain_points: new Set([]),
+  landing_zones: new Set(['details']),
 };
 
 /**

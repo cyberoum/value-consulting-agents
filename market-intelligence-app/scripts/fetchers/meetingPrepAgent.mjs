@@ -713,6 +713,7 @@ export async function generateMeetingPrep({
         role: att.role,
         customRole: att.customRole,
         bankName,
+        bankKey,
         bankContext: {
           overview: bankData.overview,
           strategy: bankData.digital_strategy,

@@ -216,8 +216,9 @@ export const STALENESS_THRESHOLDS = {
 **Depends on: nothing — can start immediately**
 
 ### Layer 2 — Entity normalization
-**Status: NOT STARTED**
+**Status: COMPLETE (2026-03-18)**
 **Depends on: Layer 1 complete (entities need provenance fields from day one)**
+**Result: 107 persons, 75 pain points (79% categorized), 87 landing zones (32 sales + 55 implementation). Resolver wired and functional, 0 alias clusters in current curated data — will activate when person research introduces name variants. API returns normalized entities alongside existing data blob.**
 
 ### Layer 3 — Change detection
 **Status: NOT STARTED**

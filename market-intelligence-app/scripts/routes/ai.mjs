@@ -112,13 +112,13 @@ export async function handleAiRoute(req, res, { path, db, parseRow }) {
       jsonResponse(res, 503, { error: 'ANTHROPIC_API_KEY not configured. Person research requires AI.' });
       return true;
     }
-    const { name, role, customRole, bankName, bankContext } = await parseBody(req);
+    const { name, role, customRole, bankName, bankKey, bankContext } = await parseBody(req);
     if (!name || !bankName) {
       jsonResponse(res, 400, { error: 'Missing required fields: name, bankName' });
       return true;
     }
     console.log(`🔍 Person research: ${name} at ${bankName}...`);
-    const result = await researchPerson({ name, role, customRole, bankName, bankContext });
+    const result = await researchPerson({ name, role, customRole, bankName, bankKey, bankContext });
     console.log(`   ✅ Person research complete`);
     jsonResponse(res, 200, { result });
     return true;

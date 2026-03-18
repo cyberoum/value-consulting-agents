@@ -9,6 +9,7 @@
  */
 
 import { callClaude, isApiKeyConfigured } from './claudeClient.mjs';
+import { getDb } from '../db.mjs';
 
 // ── Google News RSS Search ──
 
@@ -103,7 +104,7 @@ Return ONLY valid JSON with this structure:
 Be specific and actionable. Tailor everything to the banking/fintech context and Backbase's engagement banking platform. Aim for 3-5 priorities, 3-4 conversation topics, 2-4 context points, and 1-3 watch-outs.`;
 
 
-export async function researchPerson({ name, role, customRole, bankName, bankContext }) {
+export async function researchPerson({ name, role, customRole, bankName, bankKey, bankContext }) {
   console.log(`  Researching ${name} (${role || customRole}) at ${bankName}...`);
 
   // Step 1: Search for recent news about this person
@@ -145,6 +146,26 @@ Generate a comprehensive intelligence brief for a Backbase sales consultant prep
     result._newsFound = newsResults.length;
     result._bankNewsFound = bankNewsResults.length;
     result._source = 'claude-research';
+
+    // Layer 2: write research results back to persons table
+    if (bankKey && name && \!result._error) {
+      try {
+        const db = getDb();
+        db.prepare(`
+          UPDATE persons
+          SET note = ?, source_date = ?, verified_at = datetime('now'), updated_at = datetime('now')
+          WHERE bank_key = ? AND canonical_name = ?
+        `).run(
+          result.personSummary || null,
+          new Date().toISOString().slice(0, 10),
+          bankKey,
+          name,
+        );
+      } catch (err) {
+        console.error(`   Warning: Failed to update persons table for ${name}: ${err.message}`);
+      }
+    }
+
     return result;
   } catch (err) {
     console.error('   Warning: Failed to parse Claude response:', err.message);
