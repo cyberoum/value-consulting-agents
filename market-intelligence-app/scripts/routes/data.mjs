@@ -3,6 +3,7 @@
  */
 
 import { jsonResponse, parseBody } from './helpers.mjs';
+import { getChangesForBank } from '../lib/changeWriter.mjs';
 
 // ── Qualification Score Calculator (mirrors client-side calcScoreFromData) ──
 const QUAL_WEIGHTS = {
@@ -486,6 +487,17 @@ export async function handleDataRoute(req, res, { path, url, db, parseRow, parse
   }
 
   // ── Bank sub-resources ──
+
+  // GET /api/banks/:key/changes — Layer 3 change history
+  match = path.match(/^\/api\/banks\/([^/]+)\/changes$/);
+  if (match && req.method === 'GET') {
+    const key = decodeURIComponent(match[1]);
+    const since = url.searchParams.get('since') || null;
+    const limit = parseInt(url.searchParams.get('limit') || '20', 10);
+    const changes = getChangesForBank(key, { since, limit });
+    jsonResponse(res, 200, { bank_key: key, changes, total: changes.length, since });
+    return true;
+  }
 
   // GET /api/banks/:key/qualification
   match = path.match(/^\/api\/banks\/([^/]+)\/qualification$/);

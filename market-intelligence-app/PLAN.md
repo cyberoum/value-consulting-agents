@@ -221,8 +221,9 @@ export const STALENESS_THRESHOLDS = {
 **Result: 107 persons, 75 pain points (79% categorized), 87 landing zones (32 sales + 55 implementation). Resolver wired and functional, 0 alias clusters in current curated data — will activate when person research introduces name variants. API returns normalized entities alongside existing data blob.**
 
 ### Layer 3 — Change detection
-**Status: NOT STARTED**
+**Status: COMPLETE (2026-03-18)**
 **Depends on: Layer 1 (need field provenance to detect changes), Layer 2 partial (at minimum persons table)**
+**Result: changeWriter.mjs with detection helpers for stock >10% moves, app rating drops, high-impact signals (score 8+). GET /api/banks/:key/changes endpoint. formatChangesForPrompt() injected into brief as ## RECENT CHANGES section. Verified with simulated 20% stock drop.**
 
 ### Layer 4 — Deal context integration
 **Status: NOT STARTED**

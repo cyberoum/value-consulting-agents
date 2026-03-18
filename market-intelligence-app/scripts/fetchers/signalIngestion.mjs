@@ -26,6 +26,7 @@ import { fetchAllPressReleases } from './pressReleaseFeeds.mjs';
 import { preFilterArticles, classifySignals } from './signalClassifier.mjs';
 import { BANK_SOURCES } from '../config.mjs';
 import { bulkWriteProvenance } from '../lib/provenanceWriter.mjs';
+import { recordChange } from '../lib/changeWriter.mjs';
 
 const PRUNE_DAYS = 90;
 const MIN_RELEVANCE = 5; // Only store signals scoring 5+
@@ -370,6 +371,26 @@ export async function runSignalRefresh(db, options = {}) {
       if (provenanceRecords.length > 0) {
         bulkWriteProvenance(provenanceRecords);
         log(`Provenance: ${provenanceRecords.length} records written for ${actionable.length} signals`);
+      }
+
+      // Layer 3: record high-impact signals (score >= 8) as changes
+      const HIGH_IMPACT_THRESHOLD = 8;
+      const highImpact = actionable.filter(c => c.relevance_score >= HIGH_IMPACT_THRESHOLD);
+      for (const sig of highImpact) {
+        const bk = sig.bankKey;
+        if (!bk) continue;
+        recordChange({
+          entityType: 'signal',
+          entityKey: bk,
+          fieldPath: 'signals.high_impact',
+          oldValue: null,
+          newValue: sig.title,
+          source: 'signal_ingestion',
+          pipelineRunId: null,
+        });
+      }
+      if (highImpact.length > 0) {
+        log(`Changes: ${highImpact.length} high-impact signals (score ${HIGH_IMPACT_THRESHOLD}+) recorded`);
       }
 
       log(`Classified: ${stats.stored} actionable (score ${MIN_RELEVANCE}+), ${stats.belowThreshold} below threshold`);

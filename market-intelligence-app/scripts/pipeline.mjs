@@ -31,6 +31,7 @@ import {
   resolveBankKey,
 } from './lib/mergeHelpers.mjs';
 import { writeProvenance, bulkWriteProvenance, runStalenessCheck } from './lib/provenanceWriter.mjs';
+import { detectStockPriceChange, detectAppRatingChanges, recordChange } from './lib/changeWriter.mjs';
 
 import { fetchAllAppRatings } from './fetchers/appRatings.mjs';
 import { fetchAllNewsSignals } from './fetchers/newsSignals.mjs';
@@ -136,6 +137,14 @@ async function runPipeline() {
 
         if (!dryRun) {
           try {
+            // Layer 3: detect stock price change >10% before overwriting
+            if (stockData.price != null) {
+              const stockChange = detectStockPriceChange(dbKey, stockData.price, { pipelineRunId: runId });
+              if (stockChange) {
+                recordChange(stockChange);
+                log.info(`  Change detected: ${dbKey} stock price ${stockChange.oldValue} → ${stockChange.newValue}`);
+              }
+            }
             const ok = mergeStockData(db, dbKey, stockData, runId);
             if (ok) {
               stats.stocks.written++;
@@ -239,6 +248,12 @@ async function runPipeline() {
 
         if (!dryRun) {
           try {
+            // Layer 3: detect app rating drops before overwriting
+            const ratingChanges = detectAppRatingChanges(dbKey, ratingsData, { pipelineRunId: runId });
+            for (const rc of ratingChanges) {
+              recordChange(rc);
+              log.info(`  Change detected: ${dbKey} ${rc.fieldPath} ${rc.oldValue} → ${rc.newValue}`);
+            }
             const ok = mergeAppRatings(db, dbKey, ratingsData, runId);
             if (ok) {
               stats.ratings.written++;

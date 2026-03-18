@@ -20,6 +20,7 @@ import { structureIntelWithClaude, analyzeNewsForBank, deepAnalyzeBank, isClaude
 import { researchPerson, enrichContext, isResearchAvailable } from '../fetchers/personResearch.mjs';
 import { generateMeetingPrep, generateEngagementPlan, isMeetingPrepAvailable, formatProvenanceForPrompt } from '../fetchers/meetingPrepAgent.mjs';
 import { getProvenanceForEntity } from '../lib/provenanceWriter.mjs';
+import { getChangesForBank, formatChangesForPrompt } from '../lib/changeWriter.mjs';
 import { analyzeLandingZones, isLandingZoneAgentAvailable } from '../fetchers/landingZoneAgent.mjs';
 import { generateDiscoveryStoryline, isDiscoveryStorylineAvailable } from '../fetchers/discoveryStorylineAgent.mjs';
 import { generateValueHypothesisForMeeting, isValueHypothesisAvailable } from '../fetchers/valueHypothesisAgent.mjs';
@@ -160,13 +161,17 @@ export async function handleAiRoute(req, res, { path, db, parseRow }) {
     // Layer 1: fetch provenance records and format for prompt injection
     const provenanceRows = getProvenanceForEntity('bank', bankKey);
     const provenanceContext = formatProvenanceForPrompt(provenanceRows);
+    // Layer 3: fetch recent changes (last 30 days) for brief context
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+    const recentChanges = getChangesForBank(bankKey, { since: thirtyDaysAgo, limit: 10 });
+    const changesContext = formatChangesForPrompt(recentChanges);
     const isPositionMode = mode === 'position';
-    console.log(`📋 Meeting prep${isPositionMode ? ' [POSITION MODE]' : ''}: ${bankName} | ${isPositionMode ? `Product: ${positionProduct}` : `Topics: ${topics.join(', ')}`}${provenanceRows.length > 0 ? ` | ${provenanceRows.length} provenance records` : ''}`);
+    console.log(`📋 Meeting prep${isPositionMode ? ' [POSITION MODE]' : ''}: ${bankName} | ${isPositionMode ? `Product: ${positionProduct}` : `Topics: ${topics.join(', ')}`}${provenanceRows.length > 0 ? ` | ${provenanceRows.length} provenance records` : ''}${recentChanges.length > 0 ? ` | ${recentChanges.length} recent changes` : ''}`);
     const result = await generateMeetingPrep({
       bankName, bankKey, attendees, topics,
       scopeKnown, painPointKnown, scopeText, painText, bankData,
       mode, positionProduct, positionPainPoints,
-      competitors, region, provenanceContext,
+      competitors, region, provenanceContext, changesContext,
     });
     console.log(`   ✅ Meeting prep complete`);
     jsonResponse(res, 200, { result });

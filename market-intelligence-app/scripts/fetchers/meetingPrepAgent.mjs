@@ -694,7 +694,7 @@ export async function generateMeetingPrep({
   bankData = {},
   mode = 'stakeholder', positionProduct, positionPainPoints,
   competitors = [], region = '',
-  provenanceContext = '',
+  provenanceContext = '', changesContext = '',
 }) {
   const isPositionMode = mode === 'position' && positionProduct;
   console.log(`\n📋 Meeting Prep Agent${isPositionMode ? ' [POSITION MODE]' : ''}: ${bankName}`);
@@ -789,7 +789,7 @@ export async function generateMeetingPrep({
     bankData, personIntel, topicMatches,
     domainKnowledge, newsResults, generalNews, darkZones,
     isPositionMode, positionProduct, positionPainPoints,
-    competitors, region, provenanceContext,
+    competitors, region, provenanceContext, changesContext,
   });
 
   const raw = await callClaude(systemPrompt, userMessage, { maxTokens: 4096, timeout: 90000 });
@@ -832,7 +832,7 @@ function buildSynthesisPrompt({
   bankData, personIntel, topicMatches,
   domainKnowledge, newsResults, generalNews, darkZones,
   isPositionMode, positionProduct, positionPainPoints,
-  competitors = [], region = '', provenanceContext = '',
+  competitors = [], region = '', provenanceContext = '', changesContext = '',
 }) {
   const sections = [];
 
@@ -959,6 +959,13 @@ function buildSynthesisPrompt({
   // Provenance context (Layer 1) — injected before instructions so Claude can reference tiers
   if (provenanceContext) {
     sections.push(`\n## DATA CONFIDENCE\n${provenanceContext}`);
+  }
+
+  // Changes context (Layer 3) — recent account changes for the brief
+  if (changesContext) {
+    sections.push(`
+## RECENT CHANGES
+${changesContext}`);
   }
 
   if (isPositionMode && positionProduct) {
