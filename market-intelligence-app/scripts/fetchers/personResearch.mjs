@@ -148,7 +148,7 @@ Generate a comprehensive intelligence brief for a Backbase sales consultant prep
     result._source = 'claude-research';
 
     // Layer 2: write research results back to persons table
-    if (bankKey && name && \!result._error) {
+    if (bankKey && name && !result._error) {
       try {
         const db = getDb();
         db.prepare(`

@@ -18,7 +18,7 @@
 
 import { structureIntelWithClaude, analyzeNewsForBank, deepAnalyzeBank, isClaudeAvailable } from '../fetchers/claudeAnalyzer.mjs';
 import { researchPerson, enrichContext, isResearchAvailable } from '../fetchers/personResearch.mjs';
-import { generateMeetingPrep, generateEngagementPlan, isMeetingPrepAvailable, formatProvenanceForPrompt } from '../fetchers/meetingPrepAgent.mjs';
+import { generateMeetingPrep, generateEngagementPlan, isMeetingPrepAvailable, formatProvenanceForPrompt, formatMeetingHistoryForPrompt } from '../fetchers/meetingPrepAgent.mjs';
 import { getProvenanceForEntity } from '../lib/provenanceWriter.mjs';
 import { getChangesForBank, formatChangesForPrompt } from '../lib/changeWriter.mjs';
 import { analyzeLandingZones, isLandingZoneAgentAvailable } from '../fetchers/landingZoneAgent.mjs';
@@ -165,13 +165,16 @@ export async function handleAiRoute(req, res, { path, db, parseRow }) {
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
     const recentChanges = getChangesForBank(bankKey, { since: thirtyDaysAgo, limit: 10 });
     const changesContext = formatChangesForPrompt(recentChanges);
+    // Layer 4: fetch prior meeting history for deal context
+    const meetingRows = db.prepare('SELECT * FROM meeting_history WHERE bank_key = ? ORDER BY meeting_date DESC LIMIT 3').all(bankKey);
+    const meetingHistoryContext = formatMeetingHistoryForPrompt(meetingRows.map(r => parseRow('meeting_history', r)));
     const isPositionMode = mode === 'position';
-    console.log(`📋 Meeting prep${isPositionMode ? ' [POSITION MODE]' : ''}: ${bankName} | ${isPositionMode ? `Product: ${positionProduct}` : `Topics: ${topics.join(', ')}`}${provenanceRows.length > 0 ? ` | ${provenanceRows.length} provenance records` : ''}${recentChanges.length > 0 ? ` | ${recentChanges.length} recent changes` : ''}`);
+    console.log(`📋 Meeting prep${isPositionMode ? ' [POSITION MODE]' : ''}: ${bankName} | ${isPositionMode ? `Product: ${positionProduct}` : `Topics: ${topics.join(', ')}`}${provenanceRows.length > 0 ? ` | ${provenanceRows.length} provenance records` : ''}${recentChanges.length > 0 ? ` | ${recentChanges.length} recent changes` : ''}${meetingRows.length > 0 ? ` | ${meetingRows.length} prior meetings` : ''}`);
     const result = await generateMeetingPrep({
       bankName, bankKey, attendees, topics,
       scopeKnown, painPointKnown, scopeText, painText, bankData,
       mode, positionProduct, positionPainPoints,
-      competitors, region, provenanceContext, changesContext,
+      competitors, region, provenanceContext, changesContext, meetingHistoryContext,
     });
     console.log(`   ✅ Meeting prep complete`);
     jsonResponse(res, 200, { result });
@@ -276,6 +279,93 @@ export async function handleAiRoute(req, res, { path, db, parseRow }) {
     });
     console.log(`   ✅ Value hypothesis complete`);
     jsonResponse(res, 200, { result });
+    return true;
+  }
+
+  // ── POST /api/banks/:key/meetings/extract — AI transcript extraction (Layer 4) ──
+  const extractMatch = path.match(/^\/api\/banks\/([^/]+)\/meetings\/extract$/);
+  if (extractMatch && req.method === 'POST') {
+    if (!aiRateCheck(res)) return true;
+    if (!isClaudeAvailable()) {
+      jsonResponse(res, 503, { error: 'ANTHROPIC_API_KEY not configured. Transcript extraction requires AI.' });
+      return true;
+    }
+    const bankKey = decodeURIComponent(extractMatch[1]);
+    const { transcript } = await parseBody(req);
+    if (!transcript) {
+      jsonResponse(res, 400, { error: 'Missing required field: transcript' });
+      return true;
+    }
+    if (transcript.length > 50000) {
+      jsonResponse(res, 400, { error: 'Transcript too long — please trim to the relevant portion (max 50,000 characters)' });
+      return true;
+    }
+
+    console.log(`📝 Transcript extraction: ${bankKey} (${transcript.length} chars)...`);
+
+    const extractionPrompt = `You are a meeting transcript analyzer for B2B fintech sales. Extract structured meeting data from the raw transcript below.
+
+TRANSCRIPT FORMAT HANDLING:
+- Ignore speaker labels (e.g., "Speaker 1:", "Oumaima:", "John Smith:")
+- Ignore timestamps (e.g., "00:14:32", "[14:32]", "2:30 PM")
+- Ignore filler words, greetings, and small talk
+- Focus ONLY on substantive business content
+- If the transcript is messy, incomplete, or has formatting artifacts, extract what you can and note gaps
+
+EXTRACTION RULES:
+- attendees: Extract names and roles mentioned. If only first names appear, use them. If roles aren't stated, infer from context or use null.
+- key_topics: Maximum 5 topics. Use short, specific labels (e.g., "digital onboarding timeline" not "technology discussion").
+- objections_raised: Only include genuine concerns or pushback from the CLIENT side, not questions or clarifications.
+- commitments_made: Each commitment must have an owner. If the owner isn't clear, use "unclear". All commitments start with fulfilled: false. Include deadline if mentioned.
+- outcome: Infer from the overall tone and ending:
+  "progressed" = positive momentum, next steps agreed
+  "stalled" = no clear next step, unresolved blockers
+  "lost" = explicit rejection or deal-ending language
+  "won" = explicit agreement to proceed with purchase/POC
+  If truly ambiguous, use "progressed" as default.
+- notes: 2-3 sentence summary capturing the key takeaway a rep needs before the next meeting.
+
+Return ONLY valid JSON. No markdown code fences. No preamble. No explanation.
+
+{
+  "meeting_date": "YYYY-MM-DD or null if not mentioned",
+  "attendees": [
+    { "name": "Person Name", "role": "Their Role or null" }
+  ],
+  "key_topics": ["topic1", "topic2"],
+  "objections_raised": ["objection text"],
+  "commitments_made": [
+    { "commitment": "What was committed", "owner": "Who owns it", "deadline": "By when or null", "fulfilled": false }
+  ],
+  "outcome": "progressed",
+  "notes": "2-3 sentence summary"
+}`;
+
+    const { callClaude } = await import('../fetchers/claudeClient.mjs');
+    const raw = await callClaude(extractionPrompt, transcript, { maxTokens: 2048, timeout: 60000 });
+
+    try {
+      const jsonStr = raw.replace(/```json\n?|\n?```/g, '').trim();
+      const result = JSON.parse(jsonStr);
+      result._source = 'transcript_extraction';
+      console.log(`   ✅ Transcript extraction complete: ${result.attendees?.length || 0} attendees, ${result.key_topics?.length || 0} topics`);
+      jsonResponse(res, 200, { result });
+    } catch (err) {
+      console.error(`   Warning: Failed to parse extraction response: ${err.message}`);
+      jsonResponse(res, 200, {
+        result: {
+          meeting_date: null,
+          attendees: [],
+          key_topics: [],
+          objections_raised: [],
+          commitments_made: [],
+          outcome: 'progressed',
+          notes: 'Transcript extraction failed — please enter meeting details manually.',
+          _source: 'extraction_fallback',
+          _error: err.message,
+        }
+      });
+    }
     return true;
   }
 

@@ -85,6 +85,85 @@ export function formatProvenanceForPrompt(provenanceRows) {
   ].join('\n');
 }
 
+/**
+ * Format meeting history records into a human-readable prompt block.
+ * Surfaces outstanding commitments at the top, then individual meeting details.
+ *
+ * @param {Array} meetings — parsed meeting_history rows, ordered by meeting_date DESC
+ * @returns {string} formatted prompt block or empty string
+ */
+export function formatMeetingHistoryForPrompt(meetings) {
+  if (!meetings || meetings.length === 0) return '';
+
+  // Collect outstanding commitments across all meetings
+  const outstanding = [];
+  for (const m of meetings) {
+    const commitments = Array.isArray(m.commitments_made) ? m.commitments_made : [];
+    for (const c of commitments) {
+      if (!c.fulfilled) {
+        const parts = [c.commitment];
+        if (c.owner) parts.push(`owner: ${c.owner}`);
+        if (c.deadline) parts.push(`due: ${c.deadline}`);
+        outstanding.push(`- ${parts.join(', ')} — from meeting ${m.meeting_date}`);
+      }
+    }
+  }
+
+  const sections = [];
+
+  // Outstanding commitments block (top of output)
+  if (outstanding.length > 0) {
+    sections.push('OUTSTANDING COMMITMENTS (not yet fulfilled):');
+    sections.push(...outstanding);
+    sections.push('');
+  }
+
+  // Individual meeting details
+  sections.push(`PRIOR MEETING HISTORY (last ${meetings.length} meetings):`);
+  sections.push('');
+
+  for (let i = 0; i < meetings.length; i++) {
+    const m = meetings[i];
+    const attendeeStr = Array.isArray(m.attendees) && m.attendees.length > 0
+      ? m.attendees.map(a => `${a.name}${a.role ? ` (${a.role})` : ''}`).join(', ')
+      : 'Unknown';
+    const topicsStr = Array.isArray(m.key_topics) && m.key_topics.length > 0
+      ? m.key_topics.join(', ')
+      : 'Not recorded';
+
+    sections.push(`Meeting ${i + 1} — ${m.meeting_date} (${m.outcome || 'unknown'})`);
+    sections.push(`  Attendees: ${attendeeStr}`);
+    sections.push(`  Topics: ${topicsStr}`);
+
+    const objections = Array.isArray(m.objections_raised) ? m.objections_raised : [];
+    if (objections.length > 0) {
+      sections.push(`  Objections: ${objections.map(o => `"${o}"`).join('; ')}`);
+    }
+
+    const commitments = Array.isArray(m.commitments_made) ? m.commitments_made : [];
+    if (commitments.length > 0) {
+      for (const c of commitments) {
+        const status = c.fulfilled ? '[FULFILLED]' : '[OUTSTANDING]';
+        const ownerStr = c.owner ? ` (owner: ${c.owner}${c.deadline ? `, by ${c.deadline}` : ''})` : '';
+        sections.push(`  Commitment: ${c.commitment}${ownerStr} ${status}`);
+      }
+    }
+
+    if (m.notes) {
+      sections.push(`  Notes: ${m.notes}`);
+    }
+    sections.push('');
+  }
+
+  sections.push('ADDRESS THESE IN THE BRIEF:');
+  sections.push('- Reference prior discussions with returning attendees by name');
+  sections.push('- Acknowledge and address open objections from previous meetings');
+  sections.push('- Follow up on outstanding commitments — note which are fulfilled vs outstanding');
+  sections.push('- If outcome was "stalled", suggest re-engagement angles');
+
+  return sections.join('\n');
+}
+
 // ── Google News RSS Search ──
 
 async function searchGoogleNews(query, maxResults = 5) {
@@ -694,7 +773,7 @@ export async function generateMeetingPrep({
   bankData = {},
   mode = 'stakeholder', positionProduct, positionPainPoints,
   competitors = [], region = '',
-  provenanceContext = '', changesContext = '',
+  provenanceContext = '', changesContext = '', meetingHistoryContext = '',
 }) {
   const isPositionMode = mode === 'position' && positionProduct;
   console.log(`\n📋 Meeting Prep Agent${isPositionMode ? ' [POSITION MODE]' : ''}: ${bankName}`);
@@ -789,7 +868,7 @@ export async function generateMeetingPrep({
     bankData, personIntel, topicMatches,
     domainKnowledge, newsResults, generalNews, darkZones,
     isPositionMode, positionProduct, positionPainPoints,
-    competitors, region, provenanceContext, changesContext,
+    competitors, region, provenanceContext, changesContext, meetingHistoryContext,
   });
 
   const raw = await callClaude(systemPrompt, userMessage, { maxTokens: 4096, timeout: 90000 });
@@ -832,7 +911,7 @@ function buildSynthesisPrompt({
   bankData, personIntel, topicMatches,
   domainKnowledge, newsResults, generalNews, darkZones,
   isPositionMode, positionProduct, positionPainPoints,
-  competitors = [], region = '', provenanceContext = '', changesContext = '',
+  competitors = [], region = '', provenanceContext = '', changesContext = '', meetingHistoryContext = '',
 }) {
   const sections = [];
 
@@ -966,6 +1045,11 @@ function buildSynthesisPrompt({
     sections.push(`
 ## RECENT CHANGES
 ${changesContext}`);
+  }
+
+  // Meeting history context (Layer 4) — prior meetings for deal context
+  if (meetingHistoryContext) {
+    sections.push(`\n## PRIOR MEETINGS\n${meetingHistoryContext}`);
   }
 
   if (isPositionMode && positionProduct) {

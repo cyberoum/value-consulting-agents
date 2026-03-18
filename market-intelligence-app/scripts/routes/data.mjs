@@ -2,6 +2,7 @@
  * Data CRUD route handlers — banks, markets, countries, search, stats.
  */
 
+import crypto from 'node:crypto';
 import { jsonResponse, parseBody } from './helpers.mjs';
 import { getChangesForBank } from '../lib/changeWriter.mjs';
 
@@ -496,6 +497,79 @@ export async function handleDataRoute(req, res, { path, url, db, parseRow, parse
     const limit = parseInt(url.searchParams.get('limit') || '20', 10);
     const changes = getChangesForBank(key, { since, limit });
     jsonResponse(res, 200, { bank_key: key, changes, total: changes.length, since });
+    return true;
+  }
+
+  // ── Meeting History CRUD (Layer 4) ──
+
+  // POST /api/banks/:key/meetings — create meeting record
+  match = path.match(/^\/api\/banks\/([^/]+)\/meetings$/);
+  if (match && req.method === 'POST') {
+    const key = decodeURIComponent(match[1]);
+    const body = await parseBody(req);
+    if (\!body.meeting_date) {
+      jsonResponse(res, 400, { error: 'Missing required field: meeting_date' });
+      return true;
+    }
+    const id = crypto.randomUUID();
+    db.prepare(`
+      INSERT INTO meeting_history (id, bank_key, meeting_date, attendees, key_topics, objections_raised, commitments_made, outcome, notes, source)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(
+      id, key, body.meeting_date,
+      body.attendees ? JSON.stringify(body.attendees) : null,
+      body.key_topics ? JSON.stringify(body.key_topics) : null,
+      body.objections_raised ? JSON.stringify(body.objections_raised) : null,
+      body.commitments_made ? JSON.stringify(body.commitments_made) : null,
+      body.outcome || null,
+      body.notes || null,
+      body.source || 'manual',
+    );
+    const created = db.prepare('SELECT * FROM meeting_history WHERE id = ?').get(id);
+    jsonResponse(res, 201, parseRow('meeting_history', created));
+    return true;
+  }
+
+  // GET /api/banks/:key/meetings — list meetings for bank
+  if (match && req.method === 'GET') {
+    const key = decodeURIComponent(match[1]);
+    const limit = parseInt(url.searchParams.get('limit') || '10', 10);
+    const rows = db.prepare('SELECT * FROM meeting_history WHERE bank_key = ? ORDER BY meeting_date DESC LIMIT ?').all(key, limit);
+    jsonResponse(res, 200, { bank_key: key, meetings: parseRows('meeting_history', rows), total: rows.length });
+    return true;
+  }
+
+  // PUT /api/banks/:key/meetings/:id — partial update
+  match = path.match(/^\/api\/banks\/([^/]+)\/meetings\/([^/]+)$/);
+  if (match && req.method === 'PUT') {
+    const key = decodeURIComponent(match[1]);
+    const id = decodeURIComponent(match[2]);
+    const body = await parseBody(req);
+
+    const allowedFields = ['meeting_date', 'attendees', 'key_topics', 'objections_raised', 'commitments_made', 'outcome', 'notes', 'source'];
+    const jsonFieldSet = new Set(['attendees', 'key_topics', 'objections_raised', 'commitments_made']);
+    const updates = [];
+    const values = [];
+
+    for (const field of allowedFields) {
+      if (body[field] \!== undefined) {
+        updates.push(field + ' = ?');
+        values.push(jsonFieldSet.has(field) && typeof body[field] === 'object' ? JSON.stringify(body[field]) : body[field]);
+      }
+    }
+
+    if (updates.length === 0) {
+      jsonResponse(res, 400, { error: 'No valid fields to update' });
+      return true;
+    }
+
+    values.push(id, key);
+    const result = db.prepare('UPDATE meeting_history SET ' + updates.join(', ') + ' WHERE id = ? AND bank_key = ?').run(...values);
+    if (result.changes === 0) {
+      jsonResponse(res, 404, { error: 'Meeting not found' });
+      return true;
+    }
+    jsonResponse(res, 200, { ok: true });
     return true;
   }
 

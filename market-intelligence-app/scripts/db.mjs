@@ -288,6 +288,23 @@ function initSchema(db) {
       UNIQUE(bank_key, zone_name, source)
     );
     CREATE INDEX IF NOT EXISTS idx_landing_zones_bank ON landing_zones(bank_key);
+
+    -- ── Meeting History (Layer 4: deal context for brief enrichment) ──
+    CREATE TABLE IF NOT EXISTS meeting_history (
+      id TEXT PRIMARY KEY,
+      bank_key TEXT NOT NULL,
+      meeting_date TEXT NOT NULL,
+      attendees TEXT,
+      key_topics TEXT,
+      objections_raised TEXT,
+      commitments_made TEXT,
+      outcome TEXT,
+      notes TEXT,
+      source TEXT DEFAULT 'manual',
+      created_at TEXT DEFAULT (datetime('now'))
+    );
+    CREATE INDEX IF NOT EXISTS idx_meeting_history_bank ON meeting_history(bank_key);
+    CREATE INDEX IF NOT EXISTS idx_meeting_history_date ON meeting_history(meeting_date);
   `);
 }
 
@@ -312,6 +329,7 @@ const JSON_FIELDS = {
   persons: new Set(['aliases']),
   pain_points: new Set([]),
   landing_zones: new Set(['details']),
+  meeting_history: new Set(['attendees', 'key_topics', 'objections_raised', 'commitments_made']),
 };
 
 /**

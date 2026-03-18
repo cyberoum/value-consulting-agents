@@ -226,8 +226,9 @@ export const STALENESS_THRESHOLDS = {
 **Result: changeWriter.mjs with detection helpers for stock >10% moves, app rating drops, high-impact signals (score 8+). GET /api/banks/:key/changes endpoint. formatChangesForPrompt() injected into brief as ## RECENT CHANGES section. Verified with simulated 20% stock drop.**
 
 ### Layer 4 — Deal context integration
-**Status: NOT STARTED**
+**Status: COMPLETE (2026-03-18)**
 **Depends on: Layer 2 (persons table needed for attendee linking)**
+**Result: meeting_history table with source field for multi-integration support. CRUD API (POST/GET/PUT) with partial update. AI transcript extraction endpoint with messy format handling. formatMeetingHistoryForPrompt with outstanding commitments aggregation. Brief receives ## PRIOR MEETINGS section. Client API methods for all 4 endpoints.**
 
 ---
 

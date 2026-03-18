@@ -108,8 +108,18 @@ export const fetchCountries = () => request('/api/countries');
 export const fetchCountry = (name) => request(`/api/countries/${encodeURIComponent(name)}`);
 export const fetchCountryBanks = (name) => request(`/api/countries/${encodeURIComponent(name)}/banks`);
 
-// ── Stats & Search ──
+// ── Stats, Search & Signals ──
 export const fetchStats = () => request('/api/stats');
+export const fetchSignals = (limit = 8, options = {}) => {
+  const params = new URLSearchParams({ limit: String(limit) });
+  if (options.source) params.set('source', options.source);
+  if (options.bankKey) params.set('bank_key', options.bankKey);
+  if (options.type) params.set('type', options.type);
+  if (options.minScore) params.set('min_score', String(options.minScore));
+  return request(`/api/signals?${params}`);
+};
+export const refreshSignals = () => request('/api/signals/refresh', { method: 'POST', timeout: 5000 });
+export const fetchSignalStatus = () => request('/api/signals/status');
 export const searchAll = (query, options) => request(`/api/search?q=${encodeURIComponent(query)}`, options);
 
 // ── Ingestion Pipeline ──
@@ -128,6 +138,7 @@ export const checkResearchStatus = () => request('/api/research/status');
 export const researchPerson = (data) => request('/api/research/person', { method: 'POST', body: JSON.stringify(data), timeout: AI_TIMEOUT });
 export const enrichContext = (data) => request('/api/research/context', { method: 'POST', body: JSON.stringify(data), timeout: AI_TIMEOUT });
 export const generateMeetingPrep = (data) => request('/api/research/meeting-prep', { method: 'POST', body: JSON.stringify(data), timeout: AI_TIMEOUT });
+export const generateEngagementPlan = (data) => request('/api/research/engagement-plan', { method: 'POST', body: JSON.stringify(data), timeout: AI_TIMEOUT });
 
 // ── Landing Zones ──
 export const fetchLandingZoneMatrix = (key) => request(`/api/banks/${encodeURIComponent(key)}/landing-zones`);
@@ -153,3 +164,14 @@ export const fetchBankKnowledge = (key, domains) => {
 };
 export const fetchRoiExamples = () => request('/api/knowledge/roi-examples');
 export const fetchConsultingStandard = (name) => request(`/api/knowledge/standards/${name}`);
+
+// ── Brief Feedback ──
+export const submitBriefFeedback = (data) => request('/api/feedback/brief', { method: 'POST', body: JSON.stringify(data) });
+export const fetchBriefFeedback = () => request('/api/feedback/brief');
+export const fetchBriefFeedbackStats = () => request('/api/feedback/brief/stats');
+
+// ── Meeting History (Layer 4) ──
+export const createMeeting = (bankKey, data) => request(`/api/banks/${encodeURIComponent(bankKey)}/meetings`, { method: 'POST', body: JSON.stringify(data) });
+export const getMeetings = (bankKey, { limit } = {}) => request(`/api/banks/${encodeURIComponent(bankKey)}/meetings${limit ? `?limit=${limit}` : ''}`);
+export const updateMeeting = (bankKey, meetingId, data) => request(`/api/banks/${encodeURIComponent(bankKey)}/meetings/${encodeURIComponent(meetingId)}`, { method: 'PUT', body: JSON.stringify(data) });
+export const extractMeetingFromTranscript = (bankKey, transcript) => request(`/api/banks/${encodeURIComponent(bankKey)}/meetings/extract`, { method: 'POST', body: JSON.stringify({ transcript }), timeout: AI_TIMEOUT });
