@@ -40,7 +40,7 @@ export const BANK_SOURCES = {
     googlePlayId: 'com.nordea.mobilebank',
     appStoreId: '393498075',
     ticker: 'NDA-FI.HE',     // Helsinki exchange
-    rssFeed: 'https://www.nordea.com/en/rss/press',
+    rssFeed: 'https://www.nordea.com/en/data_export/articles_xml/305',
     irUrl: 'https://www.nordea.com/en/investors',
   },
   SEB_Sweden: {
@@ -49,7 +49,7 @@ export const BANK_SOURCES = {
     googlePlayId: 'se.seb.privat',
     appStoreId: '390498745',
     ticker: 'SEB-A.ST',
-    rssFeed: 'https://sebgroup.com/press/rss',
+    rssFeed: 'https://news.google.com/rss/search?q=site:sebgroup.com+press+release&hl=en',
     irUrl: 'https://sebgroup.com/investor-relations',
   },
   Handelsbanken_Sweden: {
@@ -114,7 +114,7 @@ export const BANK_SOURCES = {
     googlePlayId: 'no.dnb.mobile',
     appStoreId: '390224987',
     ticker: 'DNB.OL',
-    rssFeed: 'https://www.dnb.no/en/about-us/press/rss',
+    rssFeed: 'https://news.google.com/rss/search?q=site:dnb.no+press+release&hl=en',
     irUrl: 'https://www.dnb.no/en/about-us/investor-relations',
   },
   Sbanken_Norway: {
@@ -152,7 +152,7 @@ export const BANK_SOURCES = {
     googlePlayId: 'com.danskebank.mobilebank3.dk',
     appStoreId: '477444950',
     ticker: 'DANSKE.CO',
-    rssFeed: 'https://danskebank.com/news-and-insights/rss',
+    rssFeed: 'https://news.google.com/rss/search?q=site:danskebank.com+press+release&hl=en',
     irUrl: 'https://danskebank.com/investor-relations',
   },
   Nykredit_Denmark: {
@@ -258,6 +258,39 @@ export const BANK_SOURCES = {
     rssFeed: null,
     irUrl: null,
   },
+};
+
+/**
+ * Staleness thresholds by field type (in days).
+ * Used by provenanceWriter.runStalenessCheck() to flag outdated records.
+ * A field is stale when: now - source_date > threshold.
+ */
+export const STALENESS_THRESHOLDS = {
+  financial_kpis: 180,        // annual report cycle
+  leadership: 90,             // executive tenures change faster
+  strategy: 180,
+  app_ratings: 30,
+  stock_data: 1,
+  signals: 30,
+  qualification_scores: 365,  // manual scores stay valid longer
+  pain_points: 180,
+};
+
+/**
+ * Maps field_path prefixes to staleness categories.
+ * provenanceWriter uses this to look up the right threshold for each field.
+ */
+export const FIELD_STALENESS_MAP = {
+  'operational_profile.': 'financial_kpis',
+  'live_stock.': 'stock_data',
+  'app_rating_': 'app_ratings',
+  'key_decision_makers.': 'leadership',
+  'digital_strategy': 'strategy',
+  'strategic_initiatives': 'strategy',
+  'pain_points.': 'pain_points',
+  'live_news.': 'signals',
+  'signals.': 'signals',
+  'qualification.': 'qualification_scores',
 };
 
 // Helper: get all banks with a specific source

@@ -13,11 +13,13 @@
  *   POST /api/research/landing-zones    — Landing zone matrix
  *   POST /api/research/discovery-storyline — Discovery storyline
  *   POST /api/research/value-hypothesis — Value hypothesis
+ *   POST /api/research/engagement-plan  — Post-meeting engagement plan
  */
 
 import { structureIntelWithClaude, analyzeNewsForBank, deepAnalyzeBank, isClaudeAvailable } from '../fetchers/claudeAnalyzer.mjs';
 import { researchPerson, enrichContext, isResearchAvailable } from '../fetchers/personResearch.mjs';
-import { generateMeetingPrep, isMeetingPrepAvailable } from '../fetchers/meetingPrepAgent.mjs';
+import { generateMeetingPrep, generateEngagementPlan, isMeetingPrepAvailable, formatProvenanceForPrompt } from '../fetchers/meetingPrepAgent.mjs';
+import { getProvenanceForEntity } from '../lib/provenanceWriter.mjs';
 import { analyzeLandingZones, isLandingZoneAgentAvailable } from '../fetchers/landingZoneAgent.mjs';
 import { generateDiscoveryStoryline, isDiscoveryStorylineAvailable } from '../fetchers/discoveryStorylineAgent.mjs';
 import { generateValueHypothesisForMeeting, isValueHypothesisAvailable } from '../fetchers/valueHypothesisAgent.mjs';
@@ -148,17 +150,23 @@ export async function handleAiRoute(req, res, { path, db, parseRow }) {
       jsonResponse(res, 503, { error: 'ANTHROPIC_API_KEY not configured. Meeting prep requires AI.' });
       return true;
     }
-    const { bankName, bankKey, attendees, topics, scopeKnown, painPointKnown, scopeText, painText } = await parseBody(req);
+    const { bankName, bankKey, attendees, topics, scopeKnown, painPointKnown, scopeText, painText, mode, positionProduct, positionPainPoints, competitors, region } = await parseBody(req);
     if (!bankName || !bankKey || !topics?.length) {
       jsonResponse(res, 400, { error: 'Missing required fields: bankName, bankKey, topics[]' });
       return true;
     }
     const bankRow = db.prepare('SELECT data FROM banks WHERE key = ?').get(bankKey);
     const bankData = bankRow?.data ? JSON.parse(bankRow.data) : {};
-    console.log(`📋 Meeting prep: ${bankName} | Topics: ${topics.join(', ')}`);
+    // Layer 1: fetch provenance records and format for prompt injection
+    const provenanceRows = getProvenanceForEntity('bank', bankKey);
+    const provenanceContext = formatProvenanceForPrompt(provenanceRows);
+    const isPositionMode = mode === 'position';
+    console.log(`📋 Meeting prep${isPositionMode ? ' [POSITION MODE]' : ''}: ${bankName} | ${isPositionMode ? `Product: ${positionProduct}` : `Topics: ${topics.join(', ')}`}${provenanceRows.length > 0 ? ` | ${provenanceRows.length} provenance records` : ''}`);
     const result = await generateMeetingPrep({
       bankName, bankKey, attendees, topics,
       scopeKnown, painPointKnown, scopeText, painText, bankData,
+      mode, positionProduct, positionPainPoints,
+      competitors, region, provenanceContext,
     });
     console.log(`   ✅ Meeting prep complete`);
     jsonResponse(res, 200, { result });
@@ -262,6 +270,28 @@ export async function handleAiRoute(req, res, { path, db, parseRow }) {
       bankName, bankData, meetingContext, existingHypothesis,
     });
     console.log(`   ✅ Value hypothesis complete`);
+    jsonResponse(res, 200, { result });
+    return true;
+  }
+
+  // ── POST /api/research/engagement-plan ──
+  if (path === '/api/research/engagement-plan' && req.method === 'POST') {
+    if (!aiRateCheck(res)) return true;
+    if (!isMeetingPrepAvailable()) {
+      jsonResponse(res, 503, { error: 'ANTHROPIC_API_KEY not configured. Engagement plan requires AI.' });
+      return true;
+    }
+    const { bankName, originalBrief, outcome, resonatedPriorities, clientAskedFor, agreedNextStep, attendees } = await parseBody(req);
+    if (!bankName || !outcome) {
+      jsonResponse(res, 400, { error: 'Missing required fields: bankName, outcome' });
+      return true;
+    }
+    console.log(`📋 Engagement plan: ${bankName} (${outcome})`);
+    const result = await generateEngagementPlan({
+      bankName, originalBrief, outcome, resonatedPriorities,
+      clientAskedFor, agreedNextStep, attendees,
+    });
+    console.log(`   ✅ Engagement plan complete`);
     jsonResponse(res, 200, { result });
     return true;
   }

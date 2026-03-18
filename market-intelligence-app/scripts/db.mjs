@@ -153,6 +153,88 @@ function initSchema(db) {
       created_at TEXT DEFAULT (datetime('now')),
       updated_at TEXT DEFAULT (datetime('now'))
     );
+
+    -- ── Live Signals (AI-classified from external sources) ──
+    CREATE TABLE IF NOT EXISTS live_signals (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      bank_key TEXT REFERENCES banks(key) ON DELETE CASCADE,
+      source TEXT NOT NULL,
+      source_url TEXT,
+      title TEXT NOT NULL,
+      snippet TEXT,
+      published_at TEXT,
+      fetched_at TEXT NOT NULL DEFAULT (datetime('now')),
+      relevance_score REAL,
+      signal_type TEXT,
+      implication TEXT,
+      priority TEXT DEFAULT 'medium',
+      classified_at TEXT,
+      content_hash TEXT UNIQUE
+    );
+    CREATE INDEX IF NOT EXISTS idx_live_signals_bank ON live_signals(bank_key);
+    CREATE INDEX IF NOT EXISTS idx_live_signals_score ON live_signals(relevance_score);
+    CREATE INDEX IF NOT EXISTS idx_live_signals_date ON live_signals(published_at);
+
+    CREATE TABLE IF NOT EXISTS signal_refresh_log (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      source TEXT NOT NULL,
+      status TEXT DEFAULT 'running',
+      articles_fetched INTEGER DEFAULT 0,
+      articles_classified INTEGER DEFAULT 0,
+      errors INTEGER DEFAULT 0,
+      duration_ms INTEGER,
+      started_at TEXT DEFAULT (datetime('now')),
+      completed_at TEXT
+    );
+
+    -- ── Brief Feedback (post-meeting quality tracking) ──
+    CREATE TABLE IF NOT EXISTS brief_feedback (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      bank_key TEXT REFERENCES banks(key) ON DELETE CASCADE,
+      bank_name TEXT NOT NULL,
+      persona TEXT,
+      sections_used TEXT NOT NULL,
+      accuracy_rating INTEGER NOT NULL CHECK(accuracy_rating BETWEEN 1 AND 5),
+      comment TEXT,
+      created_at TEXT DEFAULT (datetime('now'))
+    );
+    CREATE INDEX IF NOT EXISTS idx_brief_feedback_bank ON brief_feedback(bank_key);
+    CREATE INDEX IF NOT EXISTS idx_brief_feedback_date ON brief_feedback(created_at);
+
+    -- ── Field Provenance (Layer 1: per-field source lineage + confidence) ──
+    CREATE TABLE IF NOT EXISTS field_provenance (
+      id TEXT PRIMARY KEY,
+      entity_type TEXT NOT NULL,
+      entity_key TEXT NOT NULL,
+      field_path TEXT NOT NULL,
+      value TEXT NOT NULL,
+      source_type TEXT NOT NULL,
+      source_url TEXT,
+      source_date TEXT,
+      confidence_tier INTEGER NOT NULL CHECK(confidence_tier BETWEEN 1 AND 3),
+      is_stale INTEGER DEFAULT 0,
+      captured_at TEXT DEFAULT (datetime('now')),
+      UNIQUE(entity_type, entity_key, field_path)
+    );
+    CREATE INDEX IF NOT EXISTS idx_provenance_entity
+      ON field_provenance(entity_type, entity_key);
+
+    -- ── Entity History (Layer 3 schema, populated later — change detection log) ──
+    CREATE TABLE IF NOT EXISTS entity_history (
+      id TEXT PRIMARY KEY,
+      entity_type TEXT NOT NULL,
+      entity_key TEXT NOT NULL,
+      field_path TEXT NOT NULL,
+      old_value TEXT,
+      new_value TEXT NOT NULL,
+      changed_at TEXT DEFAULT (datetime('now')),
+      source TEXT,
+      pipeline_run_id TEXT
+    );
+    CREATE INDEX IF NOT EXISTS idx_history_entity
+      ON entity_history(entity_type, entity_key);
+    CREATE INDEX IF NOT EXISTS idx_history_date
+      ON entity_history(changed_at);
   `);
 }
 
@@ -171,6 +253,9 @@ const JSON_FIELDS = {
   ingestion_log: new Set(['details']),
   landing_zone_matrix: new Set(['matrix', 'plays', 'unconsidered', 'challenges', 'top_zones']),
   discovery_storylines: new Set(['storyline', 'roi_estimate', 'next_steps']),
+  brief_feedback: new Set(['sections_used']),
+  field_provenance: new Set([]),
+  entity_history: new Set([]),
 };
 
 /**
