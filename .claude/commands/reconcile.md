@@ -115,7 +115,7 @@ When two branches conflict on the same files, use these ownership rules to deter
 | Domain | Priority Owner | Priority Period | Notes |
 |--------|---------------|-----------------|-------|
 | **Ignite Inspire** (workshop agents, workshop prep, ignite synthesizer) | **Shobhit** (shobhitonnet) | Ongoing | Shobhit's branch takes priority, then Mariam |
-| **ROI** (roi-business-case-builder, ROI templates, Excel generator) | **Mariam** (mariamt-coder) | Until Feb 14, 2026 | Mariam owns ROI improvements through this date |
+| **ROI** (roi-hypothesis-builder, roi-financial-modeler, /build-roi, ROI templates, Excel generator) | **Mariam** (mariamt-coder) | Until Feb 14, 2026 | Mariam owns ROI improvements through this date |
 | **Infrastructure** (hooks, settings, CLAUDE.md, CI workflows) | **Mayur** (mayur294-lgtm) | Ongoing | Admin changes |
 
 **How to apply:**

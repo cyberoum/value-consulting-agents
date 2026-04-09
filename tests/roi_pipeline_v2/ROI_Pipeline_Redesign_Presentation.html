@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cortex ROI Pipeline Redesign</title>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bb-dark: #091C35;
+  --bb-blue: #3366FF;
+  --bb-white: #FFFFFF;
+  --bb-cyan: #69FEFF;
+  --bb-red: #FF7262;
+  --bb-purple: #7B2FFF;
+  --bb-green: #26BC71;
+  --bb-amber: #FFAC09;
+  --bb-light-blue: #E5EBFF;
+  --bb-off-white: #F5FAFF;
+  --bb-light-grey: #F3F6F9;
+  --bb-muted: #3A495D;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Libre Franklin', sans-serif;
+  background: var(--bb-off-white);
+  color: var(--bb-dark);
+  line-height: 1.6;
+}
+
+/* Sections */
+section {
+  min-height: 100vh;
+  padding: 60px 80px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+}
+
+section.dark {
+  background: var(--bb-dark);
+  color: var(--bb-white);
+}
+
+section.blue {
+  background: var(--bb-blue);
+  color: var(--bb-white);
+}
+
+.section-number {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  opacity: 0.5;
+  margin-bottom: 16px;
+}
+
+section.dark .section-number,
+section.blue .section-number {
+  color: var(--bb-cyan);
+  opacity: 1;
+}
+
+h1 {
+  font-size: 52px;
+  font-weight: 900;
+  line-height: 1.1;
+  margin-bottom: 24px;
+  max-width: 900px;
+}
+
+h2 {
+  font-size: 36px;
+  font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: 20px;
+  max-width: 800px;
+}
+
+h3 {
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+p.subtitle {
+  font-size: 20px;
+  font-weight: 300;
+  max-width: 700px;
+  opacity: 0.85;
+  margin-bottom: 32px;
+}
+
+.accent-bar {
+  width: 60px;
+  height: 4px;
+  background: var(--bb-blue);
+  margin-bottom: 24px;
+  border-radius: 2px;
+}
+
+section.dark .accent-bar,
+section.blue .accent-bar {
+  background: var(--bb-cyan);
+}
+
+/* Logo */
+.logo {
+  position: fixed;
+  top: 24px;
+  left: 40px;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: var(--bb-dark);
+  z-index: 100;
+  mix-blend-mode: difference;
+}
+
+/* Cards */
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+  margin-top: 32px;
+}
+
+.card {
+  background: var(--bb-white);
+  border-radius: 16px;
+  padding: 32px;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(9,28,53,0.06);
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--bb-blue), var(--bb-purple));
+}
+
+.card.green::before { background: linear-gradient(90deg, var(--bb-green), var(--bb-cyan)); }
+.card.red::before { background: linear-gradient(90deg, var(--bb-red), var(--bb-amber)); }
+.card.amber::before { background: linear-gradient(90deg, var(--bb-amber), var(--bb-green)); }
+.card.cyan::before { background: linear-gradient(90deg, var(--bb-cyan), var(--bb-blue)); }
+
+.card-label {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--bb-blue);
+  margin-bottom: 8px;
+}
+
+.card h3 { margin-bottom: 8px; }
+.card p { font-size: 15px; color: var(--bb-muted); }
+
+/* Metric blocks */
+.metric-row {
+  display: flex;
+  gap: 40px;
+  margin-top: 32px;
+  flex-wrap: wrap;
+}
+
+.metric {
+  text-align: center;
+}
+
+.metric-value {
+  font-size: 48px;
+  font-weight: 900;
+  color: var(--bb-blue);
+  line-height: 1;
+}
+
+section.dark .metric-value { color: var(--bb-cyan); }
+
+.metric-label {
+  font-size: 14px;
+  font-weight: 500;
+  margin-top: 8px;
+  opacity: 0.7;
+}
+
+/* Flow diagram */
+.flow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin: 24px 0;
+}
+
+.flow-step {
+  background: var(--bb-white);
+  border: 2px solid var(--bb-light-blue);
+  border-radius: 12px;
+  padding: 16px 24px;
+  font-weight: 600;
+  font-size: 14px;
+  text-align: center;
+  min-width: 160px;
+}
+
+.flow-step.highlight {
+  background: var(--bb-blue);
+  color: white;
+  border-color: var(--bb-blue);
+}
+
+.flow-step.new {
+  background: linear-gradient(135deg, var(--bb-green), #1a9a5a);
+  color: white;
+  border-color: var(--bb-green);
+}
+
+.flow-arrow {
+  font-size: 24px;
+  color: var(--bb-blue);
+  font-weight: 300;
+}
+
+/* Comparison table */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 24px;
+  font-size: 15px;
+}
+
+th {
+  background: var(--bb-dark);
+  color: white;
+  padding: 14px 20px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+td {
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--bb-light-blue);
+}
+
+tr:nth-child(even) { background: var(--bb-light-grey); }
+
+.tag {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.tag.pass { background: #dcfce7; color: #166534; }
+.tag.fail { background: #fee2e2; color: #991b1b; }
+.tag.new { background: #dbeafe; color: #1e40af; }
+.tag.removed { background: #f3f4f6; color: #6b7280; text-decoration: line-through; }
+
+/* Two column */
+.two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 48px;
+  margin-top: 32px;
+}
+
+.col-header {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid var(--bb-light-blue);
+}
+
+.col-header.red { color: var(--bb-red); border-color: var(--bb-red); }
+.col-header.green { color: var(--bb-green); border-color: var(--bb-green); }
+
+ul { padding-left: 20px; }
+li { margin-bottom: 8px; font-size: 15px; }
+
+/* Footer */
+.page-footer {
+  position: absolute;
+  bottom: 24px;
+  right: 40px;
+  font-size: 12px;
+  opacity: 0.4;
+}
+
+/* Code block */
+.code-block {
+  background: var(--bb-dark);
+  color: var(--bb-cyan);
+  padding: 24px;
+  border-radius: 12px;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 14px;
+  line-height: 1.8;
+  overflow-x: auto;
+  margin: 20px 0;
+}
+
+.code-block .comment { color: #6b7280; }
+.code-block .highlight { color: var(--bb-amber); }
+.code-block .new-text { color: var(--bb-green); }
+
+/* Lever chain */
+.chain {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  margin: 24px 0;
+}
+
+.chain-link {
+  flex: 1;
+  padding: 20px;
+  text-align: center;
+  font-size: 14px;
+  position: relative;
+}
+
+.chain-link:nth-child(1) { background: #fef2f2; border-radius: 12px 0 0 12px; }
+.chain-link:nth-child(2) { background: #eff6ff; }
+.chain-link:nth-child(3) { background: #fefce8; }
+.chain-link:nth-child(4) { background: #f0fdf4; border-radius: 0 12px 12px 0; }
+
+.chain-link h4 {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+
+.chain-link:nth-child(1) h4 { color: #dc2626; }
+.chain-link:nth-child(2) h4 { color: var(--bb-blue); }
+.chain-link:nth-child(3) h4 { color: #d97706; }
+.chain-link:nth-child(4) h4 { color: #059669; }
+
+.chain-arrow {
+  display: flex;
+  align-items: center;
+  font-size: 20px;
+  color: var(--bb-muted);
+  padding: 0 2px;
+}
+
+@media (max-width: 900px) {
+  section { padding: 40px 24px; }
+  h1 { font-size: 36px; }
+  h2 { font-size: 28px; }
+  .two-col { grid-template-columns: 1fr; }
+  .chain { flex-direction: column; }
+  .chain-link { border-radius: 8px !important; }
+  .chain-arrow { transform: rotate(90deg); justify-content: center; }
+}
+</style>
+</head>
+<body>
+
+<!-- ========== COVER ========== -->
+<section class="dark">
+  <div class="section-number">Backbase Value Consulting</div>
+  <h1>Cortex ROI Pipeline Redesign</h1>
+  <p class="subtitle">From a monolithic agent that required 1-2 hours of consultant rework to a two-agent architecture that thinks like a consultant.</p>
+  <div class="metric-row">
+    <div class="metric">
+      <div class="metric-value">2</div>
+      <div class="metric-label">New Specialized Agents</div>
+    </div>
+    <div class="metric">
+      <div class="metric-value">3</div>
+      <div class="metric-label">Foundation Documents</div>
+    </div>
+    <div class="metric">
+      <div class="metric-value">22</div>
+      <div class="metric-label">Files Modified</div>
+    </div>
+  </div>
+  <div class="page-footer">Cortex v2 | April 2026</div>
+</section>
+
+<!-- ========== THE PROBLEM ========== -->
+<section>
+  <div class="section-number">01 &mdash; The Problem</div>
+  <div class="accent-bar"></div>
+  <h2>The ROI agent missed levers and required extensive rework</h2>
+  <p class="subtitle">Consultants reported spending 1-2 hours prompting the agent before the output was client-ready. The root cause was not about the financial modeling &mdash; it was about how levers were identified.</p>
+
+  <div class="two-col">
+    <div>
+      <div class="col-header red">What the agent did</div>
+      <ul>
+        <li>Jumped straight from evidence to financial model</li>
+        <li>Picked levers opportunistically from transcript mentions</li>
+        <li>Missed levers that weren't explicitly stated in evidence</li>
+        <li>No problem statement, no hypothesis tree, no MECE structure</li>
+        <li>Crammed 17K tokens of instructions into one agent's context</li>
+      </ul>
+    </div>
+    <div>
+      <div class="col-header green">What a consultant does</div>
+      <ul>
+        <li>Defines the problem statement first</li>
+        <li>Builds a MECE hypothesis tree from the problem</li>
+        <li>Derives levers systematically from the tree</li>
+        <li>Then scans data to size each lever</li>
+        <li>Uses benchmarks where client data is missing</li>
+      </ul>
+    </div>
+  </div>
+  <div class="page-footer">Backbase | 1</div>
+</section>
+
+<!-- ========== THE FIX ========== -->
+<section class="blue">
+  <div class="section-number">02 &mdash; The Fix</div>
+  <div class="accent-bar"></div>
+  <h1>Fix the foundation, not the symptoms</h1>
+  <p class="subtitle">We went back to basics: defined what a value lever actually is, established decomposition patterns, then restructured the architecture around the correct consulting sequence.</p>
+  <div class="page-footer" style="color:rgba(255,255,255,0.4)">Backbase | 2</div>
+</section>
+
+<!-- ========== VALUE LEVER DEFINITION ========== -->
+<section>
+  <div class="section-number">03 &mdash; Foundation: What is a Value Lever?</div>
+  <div class="accent-bar"></div>
+  <h2>Every lever must have four links</h2>
+  <p class="subtitle">If any link is missing, it's not a lever &mdash; it's either a wish or a feature description.</p>
+
+  <div class="chain">
+    <div class="chain-link">
+      <h4>Root Driver</h4>
+      <p>Observable problem in the bank's operations, sourced from evidence</p>
+    </div>
+    <div class="chain-arrow">&rarr;</div>
+    <div class="chain-link">
+      <h4>Operational Change</h4>
+      <p>Specific Backbase capability that changes the process</p>
+    </div>
+    <div class="chain-arrow">&rarr;</div>
+    <div class="chain-link">
+      <h4>Volume/Rate Impact</h4>
+      <p>Measurable metric that moves, with gap-based derivation</p>
+    </div>
+    <div class="chain-arrow">&rarr;</div>
+    <div class="chain-link">
+      <h4>Financial Impact</h4>
+      <p>Dollar value calculated from bank's own data</p>
+    </div>
+  </div>
+
+  <div style="margin-top:24px; padding:20px; background:var(--bb-light-grey); border-radius:12px; font-size:14px;">
+    <strong>Example (BECU):</strong> 26.1% abandonment rate (Root Driver) &rarr; Digital Onboarding Lifecycle DOL.1-5 with save-and-resume, eKYC (Operational Change) &rarr; 18.1pp gap &times; 0.40 capture = 7.2pp improvement (Volume/Rate) &rarr; recovered apps &times; funding rate &times; $350 revenue = annual uplift (Financial Impact)
+  </div>
+  <div class="page-footer">Backbase | 3</div>
+</section>
+
+<!-- ========== NEW ARCHITECTURE ========== -->
+<section>
+  <div class="section-number">04 &mdash; New Architecture</div>
+  <div class="accent-bar"></div>
+  <h2>Two agents replace one</h2>
+  <p class="subtitle">Separation of concerns: lever identification and financial modeling are different cognitive tasks requiring different context.</p>
+
+  <div class="flow">
+    <div class="flow-step new">Problem Statement</div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-step new">Hypothesis Tree</div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-step new">Value Levers</div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-step">Consultant Validates</div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-step highlight">Financial Model</div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-step">roi_config.json</div>
+    <div class="flow-arrow">&rarr;</div>
+    <div class="flow-step">Excel</div>
+  </div>
+
+  <div class="card-grid" style="margin-top:40px">
+    <div class="card green">
+      <div class="card-label">Agent 1</div>
+      <h3>roi-hypothesis-builder</h3>
+      <p><strong>Model:</strong> Opus (strongest reasoning)</p>
+      <p><strong>Job:</strong> Define problem, build MECE tree, derive lever candidates with four-link chain validation</p>
+      <p><strong>Reads:</strong> Evidence + methodology docs + domain benchmarks</p>
+      <p><strong>Produces:</strong> lever_candidates.md</p>
+      <p><strong>Does NOT:</strong> Compute dollar values or produce roi_config.json</p>
+    </div>
+    <div class="card">
+      <div class="card-label">Agent 2</div>
+      <h3>roi-financial-modeler</h3>
+      <p><strong>Model:</strong> Sonnet (efficient for structured work)</p>
+      <p><strong>Job:</strong> Size each lever using gap-based methodology, build 3-scenario model</p>
+      <p><strong>Reads:</strong> Validated levers + benchmarks + client data</p>
+      <p><strong>Produces:</strong> roi_config.json + roi_report.md</p>
+      <p><strong>Does NOT:</strong> Identify levers or build hypothesis trees</p>
+    </div>
+  </div>
+  <div class="page-footer">Backbase | 4</div>
+</section>
+
+<!-- ========== WHY TWO AGENTS ========== -->
+<section>
+  <div class="section-number">05 &mdash; Why Two Agents?</div>
+  <div class="accent-bar"></div>
+  <h2>Context isolation, enforced sequence, better results</h2>
+
+  <div class="card-grid">
+    <div class="card cyan">
+      <h3>Context Isolation</h3>
+      <p>Agent 1 loads methodology (~700 lines). Agent 2 loads financial data + config schema. Neither wastes context on the other's content. Old agent: 17K tokens. New: 5K + 10K in separate sessions.</p>
+    </div>
+    <div class="card cyan">
+      <h3>Enforced Sequence</h3>
+      <p>The orchestrator physically cannot launch Agent 2 until Agent 1's output file exists. This is a structural guarantee that the problem statement and hypothesis tree are built before any numbers.</p>
+    </div>
+    <div class="card cyan">
+      <h3>Turn Efficiency</h3>
+      <p>Each agent is focused. No wasted turns on wrong-track work. Agent 1 finishes in ~10 min, Agent 2 in ~15 min. Total comparable to the old single agent, but better results.</p>
+    </div>
+    <div class="card cyan">
+      <h3>Consultant Checkpoint</h3>
+      <p>Lever candidates are presented for validation BEFORE any financial modeling. This is where the consultant catches missed levers &mdash; before hours of rework, not after.</p>
+    </div>
+  </div>
+  <div class="page-footer">Backbase | 5</div>
+</section>
+
+<!-- ========== FOUNDATION DOCUMENTS ========== -->
+<section>
+  <div class="section-number">06 &mdash; Foundation Documents</div>
+  <div class="accent-bar"></div>
+  <h2>Three knowledge documents power the new pipeline</h2>
+
+  <div class="card-grid">
+    <div class="card">
+      <div class="card-label">Definition</div>
+      <h3>value_lever_framework.md</h3>
+      <p>Defines the four-link chain with real examples from BECU (Raghu-validated), NFIS, HNB, and SeABank. Includes validation criteria, confidence levels, and common failure modes.</p>
+    </div>
+    <div class="card">
+      <div class="card-label">Top-Down Patterns</div>
+      <h3>hypothesis_tree_decomposition.md</h3>
+      <p>MECE decomposition patterns for 6 problem types (Revenue, Cost, Digital, Efficiency, Lending, AUM) with LOB-specific elaborations across Retail, SME, Commercial, Corporate, Wealth, and Investing.</p>
+    </div>
+    <div class="card">
+      <div class="card-label">Bottom-Up Patterns</div>
+      <h3>capability_driven_patterns.md</h3>
+      <p>For exercises starting from a platform component (Grand Central, APA, Managed Hosting, Data Foundations, AI &amp; Agentic). Traces value chains from capability up to business outcomes.</p>
+    </div>
+  </div>
+
+  <div style="margin-top:32px; padding:16px 24px; background:var(--bb-light-grey); border-radius:12px; font-size:14px;">
+    <strong>Design decision:</strong> These are consultant-facing documents. The agent loads only the relevant one at runtime &mdash; not all three. This keeps context lean.
+  </div>
+  <div class="page-footer">Backbase | 6</div>
+</section>
+
+<!-- ========== TEST RESULTS: SEABANK ========== -->
+<section>
+  <div class="section-number">07 &mdash; Test Results: SeABank (Retail, Problem-Driven)</div>
+  <div class="accent-bar"></div>
+  <h2>Before vs. After: Lever Coverage</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Lever</th>
+        <th>Old Pipeline</th>
+        <th>New Pipeline</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Digital Onboarding Funnel Recovery</td>
+        <td>Increase Customer Conversion</td>
+        <td>L1: Digital Onboarding Funnel Recovery</td>
+        <td><span class="tag pass">Retained</span></td>
+      </tr>
+      <tr>
+        <td>Onboarding Cycle Time Acceleration</td>
+        <td>Reduce Onboarding Processing Cost</td>
+        <td>L2: Onboarding Cycle Time Acceleration</td>
+        <td><span class="tag pass">Retained</span></td>
+      </tr>
+      <tr>
+        <td>Call Center Cost Deflection</td>
+        <td>(Part of "Customer Servicing")</td>
+        <td>L3: Call Center Cost Deflection</td>
+        <td><span class="tag pass">Separated</span></td>
+      </tr>
+      <tr>
+        <td>Branch-to-Digital Migration</td>
+        <td>&mdash;</td>
+        <td>L4: Branch-to-Digital Servicing Migration</td>
+        <td><span class="tag new">NEW</span></td>
+      </tr>
+      <tr>
+        <td>Digital Adoption Acceleration</td>
+        <td>&mdash;</td>
+        <td>L5: Digital Banking Adoption Acceleration</td>
+        <td><span class="tag new">NEW</span></td>
+      </tr>
+      <tr>
+        <td>Back Office STP</td>
+        <td>&mdash;</td>
+        <td>L6: Back Office STP &amp; Workaround Elimination</td>
+        <td><span class="tag new">NEW</span></td>
+      </tr>
+      <tr>
+        <td>Digital Lending Origination</td>
+        <td>Increase Loan Application Conversion</td>
+        <td>L7: Digital Lending Pre-Approved Origination</td>
+        <td><span class="tag pass">Retained</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="metric-row" style="margin-top:32px">
+    <div class="metric">
+      <div class="metric-value" style="color:var(--bb-muted)">4</div>
+      <div class="metric-label">Old Pipeline Levers</div>
+    </div>
+    <div class="metric">
+      <div class="metric-value">7</div>
+      <div class="metric-label">New Pipeline Levers</div>
+    </div>
+    <div class="metric">
+      <div class="metric-value" style="color:var(--bb-green)">4/4</div>
+      <div class="metric-label">Lifecycle Stages Covered</div>
+    </div>
+    <div class="metric">
+      <div class="metric-value" style="color:var(--bb-green)">Pass</div>
+      <div class="metric-label">Excel Generation</div>
+    </div>
+  </div>
+  <div class="page-footer">Backbase | 7</div>
+</section>
+
+<!-- ========== TEST RESULTS: MANAGED HOSTING ========== -->
+<section>
+  <div class="section-number">08 &mdash; Test Results: Managed Hosting (Commercial, Capability-Driven)</div>
+  <div class="accent-bar"></div>
+  <h2>Bottom-up test: from platform component to business case</h2>
+  <p class="subtitle">No evidence register. No transcripts. Just: "What's the value of Managed Hosting for a Tier 2 commercial bank in APAC?" The agent traced value chains from the capability to financial outcomes.</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Lever</th>
+        <th>Value Chain</th>
+        <th>Annual Benefit (Moderate)</th>
+        <th>Confidence</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>L1: IT Ops FTE Redeployment</td>
+        <td>Managed infra &rarr; 12 FTEs freed to 2-3</td>
+        <td>$245K</td>
+        <td>MEDIUM</td>
+      </tr>
+      <tr>
+        <td>L2: Compliance &amp; Security Cost Avoidance</td>
+        <td>SOC2/ISO included &rarr; audit + FTE savings</td>
+        <td>$52K</td>
+        <td>MEDIUM</td>
+      </tr>
+      <tr>
+        <td>L3: Uptime Revenue Protection</td>
+        <td>SLA-backed uptime &rarr; fewer outages</td>
+        <td>$61K</td>
+        <td>LOW</td>
+      </tr>
+      <tr>
+        <td>L4: Release Velocity</td>
+        <td>Continuous delivery &rarr; faster time to market</td>
+        <td>$9K</td>
+        <td>LOW</td>
+      </tr>
+      <tr>
+        <td>L5: Infrastructure Rationalization</td>
+        <td>Licenses absorbed into MH fee</td>
+        <td>$120K</td>
+        <td>MEDIUM</td>
+      </tr>
+      <tr>
+        <td>L7: Tech Debt Avoidance</td>
+        <td>Avoided future upgrade costs</td>
+        <td>$36K</td>
+        <td>LOW</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="metric-row" style="margin-top:24px">
+    <div class="metric">
+      <div class="metric-value">6</div>
+      <div class="metric-label">Levers Identified</div>
+    </div>
+    <div class="metric">
+      <div class="metric-value">$523K</div>
+      <div class="metric-label">Steady-State Annual</div>
+    </div>
+    <div class="metric">
+      <div class="metric-value" style="color:var(--bb-amber)">-10%</div>
+      <div class="metric-label">ROI (Moderate)</div>
+    </div>
+    <div class="metric">
+      <div class="metric-value" style="color:var(--bb-green)">Pass</div>
+      <div class="metric-label">Excel Generation</div>
+    </div>
+  </div>
+
+  <div style="margin-top:20px; padding:16px 24px; background:var(--bb-light-grey); border-radius:12px; font-size:14px;">
+    <strong>Insight:</strong> Marginally negative ROI in moderate scenario is realistic and defensible for an infrastructure component. The case reaches positive territory through lower actual hosting fees, multi-LOB scope, or strategic benefits. The agent correctly flagged this as "Conditional GO" &mdash; not inflated.
+  </div>
+  <div class="page-footer">Backbase | 8</div>
+</section>
+
+<!-- ========== PIPELINE FLOW ========== -->
+<section>
+  <div class="section-number">09 &mdash; Orchestrator Integration</div>
+  <div class="accent-bar"></div>
+  <h2>How the pipeline runs</h2>
+
+  <div class="code-block">
+    <span class="comment">## Non-interactive mode (full pipeline)</span><br><br>
+    Discovery &rarr;<br>
+    &nbsp;&nbsp;<span class="highlight">Block A1</span>: [Journey, Market, Capability, <span class="new-text">ROI-Hypothesis</span>, Benchmark]&nbsp;&nbsp;<span class="comment"># 5 parallel</span><br>
+    &nbsp;&nbsp;&rarr; Auto-approve checkpoints<br>
+    &nbsp;&nbsp;<span class="highlight">Block A2</span>: [<span class="new-text">ROI-Financial-Model</span>]&nbsp;&nbsp;<span class="comment"># Sequential, reads A1 outputs</span><br>
+    &nbsp;&nbsp;&rarr; ROI validation gate<br>
+    &rarr; Roadmap &rarr; Assembly &rarr; HTML + Excel
+  </div>
+
+  <div class="code-block">
+    <span class="comment">## Standalone mode (/build-roi skill)</span><br><br>
+    Consultant provides: bank name + LOB + problem statement<br>
+    &rarr; <span class="new-text">roi-hypothesis-builder</span> &rarr; lever_candidates.md<br>
+    &rarr; Consultant validates levers<br>
+    &rarr; <span class="new-text">roi-financial-modeler</span> &rarr; roi_config.json + roi_report.md<br>
+    &rarr; /generate-roi-excel &rarr; Excel workbook
+  </div>
+
+  <div style="margin-top:20px; font-size:14px; color:var(--bb-muted);">
+    <strong>Downstream tools unchanged:</strong> roi_excel_generator.py and roi_calibrator.py consume the same roi_config.json schema. No changes required.
+  </div>
+  <div class="page-footer">Backbase | 9</div>
+</section>
+
+<!-- ========== FILES CHANGED ========== -->
+<section>
+  <div class="section-number">10 &mdash; What Changed</div>
+  <div class="accent-bar"></div>
+  <h2>Complete change inventory</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Category</th>
+        <th>File</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>New Agents</strong></td><td>.claude/agents/roi-hypothesis-builder.md</td><td><span class="tag new">NEW</span></td></tr>
+      <tr><td></td><td>.claude/agents/roi-financial-modeler.md</td><td><span class="tag new">NEW</span></td></tr>
+      <tr><td><strong>New Skill</strong></td><td>.claude/commands/build-roi.md</td><td><span class="tag new">NEW</span></td></tr>
+      <tr><td><strong>Knowledge</strong></td><td>knowledge/methodologies/value_lever_framework.md</td><td><span class="tag new">NEW</span></td></tr>
+      <tr><td></td><td>knowledge/methodologies/hypothesis_tree_decomposition.md</td><td><span class="tag new">NEW</span></td></tr>
+      <tr><td></td><td>knowledge/methodologies/capability_driven_patterns.md</td><td><span class="tag new">NEW</span></td></tr>
+      <tr><td><strong>Orchestrator</strong></td><td>scripts/orchestrate.py</td><td>Modified &mdash; two-agent flow</td></tr>
+      <tr><td><strong>Deprecated</strong></td><td>.claude/agents/roi-business-case-builder.md</td><td><span class="tag removed">Deprecated</span></td></tr>
+      <tr><td><strong>References</strong></td><td>14 files updated (CLAUDE.md, Ignite docs, commands, etc.)</td><td>Agent name references</td></tr>
+      <tr><td><strong>Tests</strong></td><td>tests/roi_pipeline_v2/</td><td><span class="tag new">NEW</span> &mdash; SeABank + Managed Hosting</td></tr>
+    </tbody>
+  </table>
+  <div class="page-footer">Backbase | 10</div>
+</section>
+
+<!-- ========== KNOWN GAPS ========== -->
+<section>
+  <div class="section-number">11 &mdash; Known Gaps &amp; Next Steps</div>
+  <div class="accent-bar"></div>
+  <h2>What still needs work</h2>
+
+  <div class="card-grid">
+    <div class="card amber">
+      <div class="card-label">Training Data Gaps</div>
+      <h3>SME &amp; Corporate LOBs</h3>
+      <p>No complete ROI models for SME or Corporate banking. Layer 2 patterns are benchmark-based estimates. Need 1+ real engagement per LOB to validate.</p>
+    </div>
+    <div class="card amber">
+      <div class="card-label">Schema Compliance</div>
+      <h3>Financial Modeler Output Format</h3>
+      <p>Agent 2 sometimes produces arrays where the Excel generator expects keyed dicts. Explicit schema examples have been added to the agent prompt. Monitor on next test runs.</p>
+    </div>
+    <div class="card">
+      <div class="card-label">Not Yet Covered</div>
+      <h3>Additional Capability Patterns</h3>
+      <p>Digital Engage (standalone), Identity layer, and product edition-specific (Essential/Premium/Signature) patterns not yet written.</p>
+    </div>
+    <div class="card">
+      <div class="card-label">Pending</div>
+      <h3>Regression Testing</h3>
+      <p>Run against HNB (Wealth) and NFIS (Investing) evidence registers to validate cross-LOB coverage matches or exceeds existing outputs.</p>
+    </div>
+  </div>
+  <div class="page-footer">Backbase | 11</div>
+</section>
+
+<!-- ========== CLOSING ========== -->
+<section class="dark">
+  <div class="section-number">Summary</div>
+  <div class="accent-bar"></div>
+  <h1>The agent now thinks like a consultant</h1>
+  <p class="subtitle">Problem first. Tree second. Levers derived, not guessed. Every lever validated against a four-link causal chain. Consultant validates before any numbers are computed.</p>
+
+  <div class="metric-row" style="margin-top:48px">
+    <div class="metric">
+      <div class="metric-value">17K &rarr; 5K+10K</div>
+      <div class="metric-label">Prompt Size (isolated contexts)</div>
+    </div>
+    <div class="metric">
+      <div class="metric-value">4 &rarr; 7</div>
+      <div class="metric-label">Levers Found (SeABank)</div>
+    </div>
+    <div class="metric">
+      <div class="metric-value">0 &rarr; 2</div>
+      <div class="metric-label">Entry Points (pipeline + standalone)</div>
+    </div>
+  </div>
+  <div class="page-footer" style="color:rgba(255,255,255,0.3)">Backbase | Cortex v2</div>
+</section>
+
+</body>
+</html>

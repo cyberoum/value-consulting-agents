@@ -124,11 +124,11 @@ Pre-populate with known data from the attached context.
 Focus on these use cases: [list in-scope use cases]
 ```
 
-### roi-business-case-builder - ROI Business Case
+### roi-financial-modeler - ROI Business Case
 
 **Phase B - Business Case:**
 ```
-Acting as roi-business-case-builder agent, build the business case.
+Acting as roi-financial-modeler agent, build the business case.
 
 Use the completed questionnaire to calculate ROI.
 

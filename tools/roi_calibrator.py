@@ -27,7 +27,7 @@ from typing import Optional
 
 SEGMENT_BENCHMARKS = {
     "Retail Banking": {
-        "roi_range": (60, 150),
+        "roi_range": (100, 150),
         "payback_range": (1.5, 2.5),
         "typical_yoy": 0.08,
         "impl_curve_moderate": [0.30, 0.70, 0.80, 1.00, 1.00],
@@ -83,8 +83,8 @@ SEGMENT_BENCHMARKS = {
         ],
     },
     "Corporate Banking": {
-        "roi_range": (60, 100),
-        "payback_range": (2.5, 3.5),
+        "roi_range": (100, 150),
+        "payback_range": (2.0, 3.0),
         "typical_yoy": 0.06,
         "impl_curve_moderate": [0.20, 0.55, 0.75, 0.95, 1.00],
         "eff_curve_moderate": [0.10, 0.30, 0.55, 0.80, 1.00],

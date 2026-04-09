@@ -48,7 +48,7 @@ def list_relevant_files(issue_body: str) -> list:
 
     # Check for agent mentions
     agents = [
-        'capability-assessment', 'roi-business-case-builder',
+        'capability-assessment', 'roi-hypothesis-builder', 'roi-financial-modeler',
         'discovery-transcript-interpreter', 'narrative-assembler',
         'roadmap-prioritization', 'benchmark-librarian',
         'market-context-researcher', 'value-consulting-orchestrator',

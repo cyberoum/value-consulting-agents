@@ -136,6 +136,66 @@ def _sum_costs(results) -> float:
 
 MAX_BACKBASE_IMPACT = 0.60
 
+# Segment benchmark ranges for ROI validation (from roi_calibrator.py)
+SEGMENT_ROI_RANGES = {
+    "Retail Banking": (100, 150),
+    "Wealth Management": (120, 200),
+    "Commercial Banking": (80, 140),
+    "SME Banking": (70, 130),
+    "Corporate Banking": (100, 150),
+    "Investing": (100, 150),
+}
+
+
+def _compute_5yr_roi(config: dict) -> float | None:
+    """Compute 5-year ROI from config using curves (matching Excel logic)."""
+    groups = config.get('value_lever_groups', config.get('journeys', {}))
+    bl = config.get('backbase_loading', {})
+    impl_curve = bl.get('implementation_curve', [0.3, 0.7, 0.8, 1.0, 1.0])
+    eff_curve = bl.get('effectiveness_curve', [0.15, 0.35, 0.6, 0.85, 1.0])
+
+    # Sum steady-state annual benefit across all drivers
+    total_steady_state = 0
+    for group in groups.values():
+        for dtype in ('revenue_drivers', 'cost_drivers'):
+            for driver in group.get(dtype, {}).values():
+                baseline = driver.get('baseline_annual', 0)
+                bi = driver.get('inputs', {}).get('backbase_impact', {})
+                impact = bi.get('value', 0) if isinstance(bi, dict) else bi if isinstance(bi, (int, float)) else 0
+                total_steady_state += baseline * impact
+        # Add servicing analysis totals
+        sa = group.get('servicing_analysis')
+        if isinstance(sa, dict):
+            for channel in sa.values():
+                if isinstance(channel, dict):
+                    for task in channel.get('tasks', []):
+                        if isinstance(task, dict):
+                            total_steady_state += task.get('total_saved', 0)
+
+    # Apply curves year by year (matching Excel logic)
+    total_5yr_benefit = 0
+    for yr in range(5):
+        impl = impl_curve[yr] if yr < len(impl_curve) else 1.0
+        eff = eff_curve[yr] if yr < len(eff_curve) else 1.0
+        total_5yr_benefit += total_steady_state * impl * eff
+
+    # Sum investment
+    inv = config.get('investment', {})
+    total_investment = 0
+    for inv_type in ('license', 'implementation'):
+        inv_data = inv.get(inv_type, {})
+        if isinstance(inv_data, dict):
+            for yr_key in ('year_1', 'year_2', 'year_3', 'year_4', 'year_5'):
+                total_investment += inv_data.get(yr_key, 0)
+        elif isinstance(inv_data, (int, float)):
+            total_investment += inv_data
+
+    if total_investment <= 0:
+        return None
+
+    return (total_5yr_benefit - total_investment) / total_investment * 100
+
+
 def _validate_roi_config(config_path: Path):
     """Validate roi_config.json for unreasonable values. Caps impacts and warns."""
     if not config_path.exists():
@@ -156,16 +216,17 @@ def _validate_roi_config(config_path: Path):
         for driver_type in ('revenue_drivers', 'cost_drivers'):
             for drv_key, driver in group.get(driver_type, {}).items():
                 bi = driver.get('inputs', {}).get('backbase_impact', {})
-                val = bi.get('value', 0)
+                val = bi.get('value', 0) if isinstance(bi, dict) else bi if isinstance(bi, (int, float)) else 0
                 if isinstance(val, (int, float)) and val > MAX_BACKBASE_IMPACT:
                     warnings.append(
                         f"    {drv_key}: backbase_impact {val:.0%} → capped to {MAX_BACKBASE_IMPACT:.0%}"
                     )
-                    bi['value'] = MAX_BACKBASE_IMPACT
+                    if isinstance(bi, dict):
+                        bi['value'] = MAX_BACKBASE_IMPACT
                     modified = True
                 baseline = driver.get('baseline_annual', 0)
-                benefit = baseline * bi.get('value', 0.30)
-                total_benefit += benefit
+                impact = bi.get('value', 0.30) if isinstance(bi, dict) else bi if isinstance(bi, (int, float)) else 0.30
+                total_benefit += baseline * impact
 
     # Cap scenario-level impacts
     for sc_name, sc in config.get('scenarios', {}).items():
@@ -179,18 +240,63 @@ def _validate_roi_config(config_path: Path):
                 sc['backbase_impacts'][imp_key] = MAX_BACKBASE_IMPACT
                 modified = True
 
+    # --- OVERESTIMATION CHECKS ---
     investment = config.get('total_investment', 0)
     if investment > 0 and total_benefit > 0:
-        five_yr_roi = (total_benefit * 5 - investment) / investment * 100
-        if five_yr_roi > 500:
+        five_yr_roi_simple = (total_benefit * 5 - investment) / investment * 100
+        if five_yr_roi_simple > 500:
             warnings.append(
-                f"    5-year ROI = {five_yr_roi:.0f}% — exceeds 500% threshold, review baselines"
+                f"    5-year ROI (simple) = {five_yr_roi_simple:.0f}% — exceeds 500% threshold, review baselines"
             )
 
     if client_revenue > 0 and total_benefit > client_revenue * 0.05:
         warnings.append(
             f"    Total annual benefit ${total_benefit:,.0f} exceeds 5% of client revenue ${client_revenue:,.0f}"
         )
+
+    # --- UNDERESTIMATION CHECK (NEW) ---
+    # Compute curve-adjusted ROI (matches Excel logic)
+    curve_roi = _compute_5yr_roi(config)
+    if curve_roi is not None:
+        # Detect segment
+        industry = config.get('industry', '').lower()
+        segment = "Retail Banking"  # default
+        for seg_name in SEGMENT_ROI_RANGES:
+            if seg_name.lower().replace(' ', '') in industry.replace(' ', '').lower():
+                segment = seg_name
+                break
+        if 'wealth' in industry:
+            segment = "Wealth Management"
+        elif 'invest' in industry:
+            segment = "Investing"
+        elif 'commercial' in industry:
+            segment = "Commercial Banking"
+        elif 'sme' in industry or 'small' in industry:
+            segment = "SME Banking"
+        elif 'corporate' in industry:
+            segment = "Corporate Banking"
+
+        low, high = SEGMENT_ROI_RANGES.get(segment, (60, 150))
+        log(f"  📊 Curve-adjusted 5-year ROI: {curve_roi:.0f}% (segment: {segment}, benchmark: {low}-{high}%)", C.CYAN)
+
+        if curve_roi < low:
+            warnings.append(
+                f"    ⚠ ROI {curve_roi:.0f}% is BELOW {segment} benchmark range ({low}-{high}%). "
+                f"Consider: (1) review backbase_impact values — may be too conservative, "
+                f"(2) check if implementation/effectiveness curves are too slow, "
+                f"(3) run roi_calibrator.py --config roi_config.json for expansion proposals, "
+                f"(4) verify investment isn't over-estimated."
+            )
+        elif curve_roi > high:
+            warnings.append(
+                f"    ⚠ ROI {curve_roi:.0f}% is ABOVE {segment} benchmark range ({low}-{high}%). "
+                f"A consultant presenting {curve_roi:.0f}% ROI will lose credibility. "
+                f"Review: (1) attribution — are top levers genuinely Backbase-driven or bank strategic decisions? "
+                f"(2) baselines — is the full customer base addressable or only digitally active subset? "
+                f"(3) backbase_impact — any P3 assumptions above 0.40 should be reduced, "
+                f"(4) investment — is it adequate for a bank this size? "
+                f"(5) interdependency — apply 10-20% haircut if multiple levers share the same customer base."
+            )
 
     if warnings:
         log("  ⚠ ROI VALIDATION WARNINGS:", C.YELLOW)
@@ -669,9 +775,11 @@ REQUIRED OUTPUT FILES:
 Do NOT write journal entries or update other files.
 """
 
-        roi_prompt = f"""PHASE DIRECTIVE: Single-phase (non-interactive)
+        roi_hyp_prompt = f"""PHASE DIRECTIVE: Single-phase (non-interactive)
 {shared_context}
 
+Also read: knowledge/methodologies/hypothesis_tree_decomposition.md
+Also read: knowledge/methodologies/value_lever_framework.md
 Also read: knowledge/domains/{domain}/benchmarks.md
 Also read: knowledge/domains/{domain}/roi_levers.md (if exists)
 
@@ -680,24 +788,26 @@ OUTPUT DISCIPLINE:
 - If a cross-reference file doesn't exist yet, proceed WITHOUT it — do NOT wait or retry.
 - Write ONLY the required output files listed below.
 
-STEP 1 — Analysis & Checkpoint:
-Scan the evidence register for lifecycle stage distribution.
-Map evidence to potential value levers. Propose lever candidates
-and initial assumptions.
-Write checkpoint to: {outputs_dir}/CHECKPOINT_roi_CP1.md (for audit trail)
+STEP 1 — Define the problem statement:
+(a) Bank's desired outcome (from evidence), (b) Backbase's sales objective,
+(c) Primary LOB and problem type, (d) Scope constraints.
 
-STEP 2 — Final Output (continue immediately, do NOT stop):
-OPTIONAL cross-references (try ONCE, skip if not found — do NOT retry):
-- {outputs_dir}/capability_assessment.md
-- {outputs_dir}/market_context_validated.md
-- {outputs_dir}/benchmarks_validated.md
+STEP 2 — Build hypothesis tree:
+Apply Layer 1 math decomposition for the problem type.
+Apply Layer 2 LOB-specific elaboration. Attach KPIs from benchmarks.
 
-Build the full financial model with 3 scenarios (conservative/base/aspirational).
-Run sensitivity analysis on top assumptions.
+STEP 3 — Derive value lever candidates:
+For each node with a gap + Backbase capability, build the four-link chain:
+Root Driver → Operational Change → Volume/Rate Impact → Financial Impact Direction.
+Do NOT compute dollar values. State inputs needed for financial modeling.
 
-REQUIRED OUTPUT FILES (you MUST produce BOTH):
-- {outputs_dir}/roi_report.md
-- {outputs_dir}/roi_config.json
+STEP 4 — Coverage check:
+MECE verified, 2+ lifecycle stages, 5-8 levers typical.
+
+Write checkpoint to: {outputs_dir}/CHECKPOINT_roi_levers.md (for audit trail)
+
+REQUIRED OUTPUT FILES:
+- {outputs_dir}/lever_candidates.md
 Do NOT write journal entries or update other files.
 """
 
@@ -740,22 +850,23 @@ Do NOT write journal entries or update other files.
                 log(f"  ✗ {label} TIMED OUT after {BLOCK_A_TIMEOUT//60} min", C.RED)
                 raise
 
+        # Block A1: 5 agents in parallel (hypothesis builder replaces monolithic ROI)
         results = await asyncio.gather(
             _timed_agent("journey-builder", jb_prompt, "Journey Builder", 30),
             _timed_agent("market-context-researcher", mc_prompt, "Market Context", 30),
             _timed_agent("capability-assessment", cap_prompt, "Capability", 25),
-            _timed_agent("roi-business-case-builder", roi_prompt, "ROI", 30),
+            _timed_agent("roi-hypothesis-builder", roi_hyp_prompt, "ROI Hypothesis", 20),
             _timed_agent("benchmark-librarian", bench_prompt, "Benchmark", 25),
             return_exceptions=True,
         )
 
-        # V5: Validate that each agent produced its required output files
-        agent_labels = ["Journey Builder", "Market Context", "Capability", "ROI", "Benchmark"]
+        # V5: Validate Block A1 outputs
+        agent_labels = ["Journey Builder", "Market Context", "Capability", "ROI Hypothesis", "Benchmark"]
         required_files = {
             "Journey Builder": ["journey_maps.json", "journey_maps_summary.md"],
             "Market Context": ["market_context_validated.md"],
             "Capability": ["capability_assessment.md"],
-            "ROI": ["roi_report.md", "roi_config.json"],
+            "ROI Hypothesis": ["lever_candidates.md"],
             "Benchmark": ["benchmarks_validated.md"],
         }
         for label, result in zip(agent_labels, results):
@@ -769,6 +880,53 @@ Do NOT write journal entries or update other files.
                         log(f"  ⚠ {label}: missing or empty output {fname}", C.YELLOW)
 
         cost += _sum_costs(results)
+
+        # Block A2: Financial modeler (sequential — depends on A1 lever_candidates.md)
+        if file_exists(outputs_dir / "lever_candidates.md"):
+            log_step("2B", "ROI FINANCIAL MODEL — Sequential (reads Block A1 outputs)")
+
+            roi_model_prompt = f"""PHASE DIRECTIVE: Single-phase (non-interactive)
+{shared_context}
+
+Read validated lever candidates: {outputs_dir}/lever_candidates.md
+Also read: knowledge/domains/{domain}/benchmarks.md
+Also read: knowledge/domains/{domain}/roi_levers.md (if exists)
+
+OPTIONAL cross-references (try ONCE, skip if not found — do NOT retry):
+- {outputs_dir}/capability_assessment.md
+- {outputs_dir}/market_context_validated.md
+- {outputs_dir}/benchmarks_validated.md
+
+OUTPUT DISCIPLINE:
+- Do NOT explore the filesystem beyond the listed input files.
+- Write ONLY the required output files listed below.
+
+For each lever in lever_candidates.md:
+1. Compute gap-based backbase_impact using percentage point gap method
+2. Build baseline calculations with bank-specific data
+3. Define 3 scenarios (conservative/moderate/aggressive) with per-lever curves
+4. Run reasonableness checks (total benefit < 5% of revenue, no single lever > 2%)
+
+Write checkpoint to: {outputs_dir}/CHECKPOINT_roi_model.md (for audit trail)
+
+REQUIRED OUTPUT FILES (you MUST produce BOTH):
+- {outputs_dir}/roi_report.md
+- {outputs_dir}/roi_config.json
+Do NOT write journal entries or update other files.
+"""
+
+            result_a2 = await _timed_agent(
+                "roi-financial-modeler", roi_model_prompt, "ROI Financial Model", 25
+            )
+            cost += result_a2.total_cost_usd if result_a2 and result_a2.total_cost_usd else 0
+
+            # Validate financial model outputs
+            for fname in ["roi_report.md", "roi_config.json"]:
+                fpath = outputs_dir / fname
+                if not fpath.exists() or fpath.stat().st_size < 100:
+                    log(f"  ⚠ ROI Financial Model: missing or empty output {fname}", C.YELLOW)
+        else:
+            log("  ⚠ Skipping ROI Financial Model — lever_candidates.md not found", C.YELLOW)
 
     else:
         # ── INTERACTIVE: Keep existing P1 -> checkpoint -> P2 flow ───────
@@ -811,17 +969,21 @@ and propose assessment scope.
 Write: {outputs_dir}/CHECKPOINT_capability.md
 """
 
-        roi_prompt = f"""PHASE DIRECTIVE: Phase 1 of 2
+        roi_hyp_prompt = f"""PHASE DIRECTIVE: Phase 1 (Hypothesis Building)
 {shared_context}
 
+Also read: knowledge/methodologies/hypothesis_tree_decomposition.md
+Also read: knowledge/methodologies/value_lever_framework.md
 Also read: knowledge/domains/{domain}/benchmarks.md
 Also read: knowledge/domains/{domain}/roi_levers.md (if exists)
 
-Scan the evidence register for lifecycle stage distribution.
-Map evidence to potential value levers. Propose lever candidates
-and initial assumptions.
+STEP 1: Define problem statement (bank goal + BB objective + LOB + scope).
+STEP 2: Build hypothesis tree (Layer 1 math + Layer 2 LOB elaboration).
+STEP 3: Derive lever candidates with four-link chain validation.
+STEP 4: Coverage check (MECE, lifecycle, 5-8 levers).
 
-Write: {outputs_dir}/CHECKPOINT_roi_CP1.md
+Write: {outputs_dir}/CHECKPOINT_roi_levers.md
+Write: {outputs_dir}/lever_candidates.md
 """
 
         bench_prompt = f"""PHASE DIRECTIVE: Phase 1 of 2
@@ -835,24 +997,24 @@ Rate confidence (High/Medium/Low) and provide sources.
 Write: {outputs_dir}/CHECKPOINT_benchmark.md
 """
 
-        # Fire all 5 simultaneously
+        # Fire all 5 simultaneously (hypothesis builder replaces monolithic ROI)
         results = await asyncio.gather(
             run_agent("journey-builder", jb_prompt, engagement_dir, label="Journey Builder P1"),
             run_agent("market-context-researcher", mc_prompt, engagement_dir, label="Market Context P1"),
             run_agent("capability-assessment", cap_prompt, engagement_dir, label="Capability P1"),
-            run_agent("roi-business-case-builder", roi_prompt, engagement_dir, label="ROI P1"),
+            run_agent("roi-hypothesis-builder", roi_hyp_prompt, engagement_dir, label="ROI Hypothesis", model="opus"),
             run_agent("benchmark-librarian", bench_prompt, engagement_dir, label="Benchmark P1"),
             return_exceptions=True,
         )
 
-        agent_names = ["journey-builder", "market-context", "capability", "roi_CP1", "benchmark"]
+        agent_names = ["journey-builder", "market-context", "capability", "roi_levers", "benchmark"]
         for name, result in zip(agent_names, results):
             if isinstance(result, Exception):
                 log(f"  ✗ {name} Phase 1 FAILED: {result}", C.RED)
         cost += _sum_costs(results)
 
         # ── Checkpoints (batched) ────────────────────────────────────────
-        checkpoint_agents = ["journey-builder", "market-context", "capability", "roi_CP1", "benchmark"]
+        checkpoint_agents = ["journey-builder", "market-context", "capability", "roi_levers", "benchmark"]
         available = [a for a in checkpoint_agents if (outputs_dir / f"CHECKPOINT_{a}.md").exists()]
         present_checkpoints_batched(available, outputs_dir, express=express, non_interactive=non_interactive)
 
@@ -898,17 +1060,25 @@ REQUIRED OUTPUT FILES:
 - {outputs_dir}/capability_assessment.md
 """
 
-        roi2_prompt = f"""PHASE DIRECTIVE: Phase 2 of 2
+        roi_model_prompt = f"""PHASE DIRECTIVE: Phase 2 (Financial Modeling)
 {shared_context}
 
-Read approved checkpoint: {outputs_dir}/CHECKPOINT_roi_CP1_APPROVED.md
-Read draft checkpoint: {outputs_dir}/CHECKPOINT_roi_CP1.md
-Read capability assessment: {outputs_dir}/capability_assessment.md (if available)
-Read market context: {outputs_dir}/market_context_validated.md (if available)
-Read benchmarks: {outputs_dir}/benchmarks_validated.md (if available)
+Read validated lever candidates: {outputs_dir}/lever_candidates.md
+Read approved checkpoint: {outputs_dir}/CHECKPOINT_roi_levers_APPROVED.md
+Read draft checkpoint: {outputs_dir}/CHECKPOINT_roi_levers.md
+Also read: knowledge/domains/{domain}/benchmarks.md
+Also read: knowledge/domains/{domain}/roi_levers.md (if exists)
 
-Build the full financial model with 3 scenarios (conservative/base/aspirational).
-Run sensitivity analysis on top assumptions.
+OPTIONAL cross-references (if available):
+- {outputs_dir}/capability_assessment.md
+- {outputs_dir}/market_context_validated.md
+- {outputs_dir}/benchmarks_validated.md
+
+For each lever in lever_candidates.md:
+1. Compute gap-based backbase_impact using percentage point gap method
+2. Build baseline calculations with bank-specific data
+3. Define 3 scenarios (conservative/moderate/aggressive) with per-lever curves
+4. Run reasonableness checks (total benefit < 5% of revenue, no single lever > 2%)
 
 REQUIRED OUTPUT FILES (you MUST produce BOTH):
 - {outputs_dir}/roi_report.md
@@ -931,7 +1101,7 @@ REQUIRED OUTPUT FILES:
             run_agent("journey-builder", jb2_prompt, engagement_dir, label="Journey Builder P2"),
             run_agent("market-context-researcher", mc2_prompt, engagement_dir, label="Market Context P2"),
             run_agent("capability-assessment", cap2_prompt, engagement_dir, label="Capability P2"),
-            run_agent("roi-business-case-builder", roi2_prompt, engagement_dir, label="ROI P2"),
+            run_agent("roi-financial-modeler", roi_model_prompt, engagement_dir, label="ROI Financial Model"),
             run_agent("benchmark-librarian", bench2_prompt, engagement_dir, label="Benchmark P2"),
             return_exceptions=True,
         )
@@ -1782,7 +1952,7 @@ Write the output to: {outputs_dir}/
 """
 
     result = await run_agent(
-        "roi-business-case-builder", excel_prompt, engagement_dir,
+        "roi-financial-modeler", excel_prompt, engagement_dir,
         label="ROI Excel", max_turns=30,
     )
     cost += result.total_cost_usd if result and result.total_cost_usd else 0
