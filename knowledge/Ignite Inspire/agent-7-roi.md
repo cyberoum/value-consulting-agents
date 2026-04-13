@@ -14,7 +14,8 @@ This file is a **knowledge reference** — NOT an active agent. It contains:
 
 **Who uses this file:**
 - The `/generate-roi-questionnaire` skill reads this for questionnaire structure, value lever categories, and calculation context
-- The `roi-business-case-builder` agent references this for value lever framework and calculation methodology
+- The `roi-hypothesis-builder` agent references this for value lever framework context
+- The `roi-financial-modeler` agent references this for calculation methodology
 - Consultants reference this for ROI methodology and examples
 
 ## Routing
@@ -22,13 +23,16 @@ This file is a **knowledge reference** — NOT an active agent. It contains:
 | Phase | Owner | Location |
 |-------|-------|----------|
 | **Phase A — ROI Questionnaire** | `/generate-roi-questionnaire` skill | `.claude/commands/generate-roi-questionnaire.md` |
-| **Phase B — ROI Calculation** | `roi-business-case-builder` agent | `.claude/agents/roi-business-case-builder.md` |
+| **Phase B1 — Lever Identification** | `roi-hypothesis-builder` agent | `.claude/agents/roi-hypothesis-builder.md` |
+| **Phase B2 — Financial Modeling** | `roi-financial-modeler` agent | `.claude/agents/roi-financial-modeler.md` |
+| **Standalone** | `/build-roi` skill | `.claude/commands/build-roi.md` |
 
 **Workflow:**
 1. `/generate-roi-questionnaire` skill generates a pre-populated questionnaire using upstream agent data
 2. The consultant sends it to the client for data collection
-3. The filled (or partially filled) questionnaire goes to `roi-business-case-builder` as input 7b
-4. `roi-business-case-builder` produces the final ROI model, business case, and Excel output
+3. `roi-hypothesis-builder` defines the problem, builds hypothesis tree, derives lever candidates
+4. Consultant validates lever candidates at checkpoint
+5. `roi-financial-modeler` receives validated levers, computes gap-based impacts, produces roi_config.json + roi_report.md
 
 ---
 
@@ -254,7 +258,7 @@ Sheet 8: IT APPLICATION RATIONALIZATION (~30 questions)
 
 ## PHASE B: BUSINESS CASE METHODOLOGY (Reference)
 
-> **Note:** Phase B is executed by the `roi-business-case-builder` agent. This section is retained as reference for the value lever framework, calculation methodology, and ROI examples.
+> **Note:** Phase B is executed by the `/build-roi` skill (which orchestrates `roi-hypothesis-builder` and `roi-financial-modeler`). This section is retained as reference for the value lever framework, calculation methodology, and ROI examples.
 
 ### Inputs for Phase B
 1. **Completed Questionnaire** (Required)

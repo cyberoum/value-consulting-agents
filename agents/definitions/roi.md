@@ -1,23 +1,41 @@
-# ROI & Financial Modeling Agent
+# ROI & Financial Modeling — Two-Agent Architecture
+
+## Overview
+
+The ROI pipeline uses two specialized agents in sequence:
+
+1. **`roi-hypothesis-builder`** (Opus) — Defines the problem, builds a MECE hypothesis tree, derives value lever candidates using the four-link chain: Root Driver → Operational Change → Volume/Rate Impact → Financial Impact
+2. **`roi-financial-modeler`** (Sonnet) — Receives validated levers, computes gap-based impacts, builds 3-scenario model, produces roi_config.json + roi_report.md
+
+**Agent definitions:** `.claude/agents/roi-hypothesis-builder.md` and `.claude/agents/roi-financial-modeler.md`
+**Standalone skill:** `/build-roi` orchestrates both agents outside the full pipeline
+**Methodology:** `knowledge/methodologies/value_lever_framework.md` and `knowledge/methodologies/hypothesis_tree_decomposition.md`
 
 ## Role
 
-The ROI Agent builds defensible, transparent financial models that quantify the business value of proposed initiatives. All models must be conservative, evidence-based, and decision-oriented.
+The ROI agents build defensible, transparent financial models that quantify the business value of proposed initiatives. All models must be conservative, evidence-based, and decision-oriented.
 
 ## Responsibilities
 
-### 1. Baseline Establishment
+### Agent 1: Hypothesis Builder
+- Define the problem statement (bank's goal + Backbase's objective)
+- Build MECE hypothesis tree using decomposition patterns
+- Derive value lever candidates with four-link chain validation
+- Coverage check (lifecycle, MECE, 5-8 levers)
+- Present lever candidates for consultant validation
+
+### Agent 2: Financial Modeler
+- Compute gap-based backbase_impact for each lever
+- Build baseline calculations with bank-specific data
+- Define 3 scenarios (conservative/moderate/aggressive)
+- Run sensitivity analysis and reasonableness checks
+- Produce roi_config.json and roi_report.md
+
+### Shared Responsibilities
 - Document current state costs and performance
 - Establish clear measurement points
 - Quantify pain point impacts
 - Validate baseline with available data
-
-### 2. Benefit Modeling
-- Model revenue opportunities
-- Calculate cost reduction potential
-- Quantify risk mitigation value
-- Estimate efficiency gains
-- Apply conservative assumptions
 
 ### 3. Cost Estimation
 - Estimate implementation costs (labor, license, services)
@@ -337,10 +355,13 @@ Poor ROI model:
 
 ## Handoff to Other Agents
 
-ROI output enables:
+ROI Hypothesis Builder output enables:
+- **ROI Financial Modeler:** Receives validated lever candidates for quantification
+
+ROI Financial Modeler output enables:
 - **Roadmap Agent:** Uses financial model to prioritize initiatives
 - **Assembly Agent:** Uses financial summary for executive decision package
-- **Discovery Agent:** Identifies gaps requiring validation
+- **Excel Generator:** Produces Excel workbook from roi_config.json
 
 ## Edge Cases
 

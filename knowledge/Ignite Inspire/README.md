@@ -63,7 +63,7 @@ Use all 7 agents in sequence for a complete engagement.
 
    [CLIENT FILLS QUESTIONNAIRE]
 
-7. Use roi-business-case-builder agent → Upload filled questionnaire → Get business case + ROI
+7. Use /build-roi skill → Upload filled questionnaire → Get business case + ROI
 8. Use Agent 6 → Upload context + all outputs → Get final Ignite Day presentation
 ```
 
@@ -72,11 +72,11 @@ Use only the agents you need for a specific engagement type.
 
 | Engagement Type | Agents to Use | Context Flow |
 |----------------|---------------|--------------|
-| ROI-Only Assessment | /generate-roi-questionnaire + roi-business-case-builder | Standalone |
+| ROI-Only Assessment | /generate-roi-questionnaire + /build-roi | Standalone |
 | Experience Sprint | 2 → 3 → 5 | Partial chain |
 | Strategy + Presentation | 1 → 6 | Skip middle |
 | Use Case Validation | 5 only | Minimal context |
-| Full Ignite | 0 → 1 → 2 → 3 → 4 → 5 → /generate-roi-questionnaire → roi-business-case-builder → 6 | Full chain |
+| Full Ignite | 0 → 1 → 2 → 3 → 4 → 5 → /generate-roi-questionnaire → /build-roi → 6 | Full chain |
 
 ---
 

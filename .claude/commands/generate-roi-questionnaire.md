@@ -2,7 +2,7 @@
 
 Generate a customized Business Case Questionnaire for client data collection. The questionnaire arrives **pre-populated** with everything already known from upstream agents — transforming it from a blank data-collection exercise into a validation exercise.
 
-**This is Phase A of the ROI workflow.** Phase B (calculation) is handled by the `roi-business-case-builder` agent when the filled questionnaire returns.
+**This is Phase A of the ROI workflow.** Phase B (calculation) is handled by the `roi-financial-modeler` agent when the filled questionnaire returns.
 
 ## When to Invoke
 
@@ -210,9 +210,9 @@ Say: *"Please review the questionnaire structure before I generate it. Are the s
 ## Handoff to Phase B
 
 After the client fills (or partially fills) the questionnaire:
-1. The filled questionnaire (`[CLIENT]_Business_Case_Questionnaire_FILLED.xlsx`) becomes **input 7b** to the `roi-business-case-builder` agent
-2. The `roi-business-case-builder` combines questionnaire data with evidence register, market context, and benchmarks to produce the final ROI model
-3. If the questionnaire comes back partially filled, `roi-business-case-builder` falls back to benchmarks for missing fields with appropriate confidence downgrades
+1. The filled questionnaire (`[CLIENT]_Business_Case_Questionnaire_FILLED.xlsx`) becomes **input 7b** to the `roi-financial-modeler` agent
+2. The `roi-financial-modeler` combines questionnaire data with evidence register, market context, and benchmarks to produce the final ROI model
+3. If the questionnaire comes back partially filled, `roi-financial-modeler` falls back to benchmarks for missing fields with appropriate confidence downgrades
 
 ## Knowledge Reference
 
@@ -254,5 +254,5 @@ Before delivering the questionnaire:
 1. **Pre-fill everything possible** — the goal is to reduce client burden; a mostly-GREEN questionnaire gets filled faster
 2. **Source annotations are mandatory** — every GREEN cell needs a comment explaining where the data came from
 3. **Hidden sheets reduce overwhelm** — if a use case isn't in scope, hide the sheet entirely
-4. **This feeds Phase B** — the questionnaire structure must align with what `roi-business-case-builder` expects as input 7b
+4. **This feeds Phase B** — the questionnaire structure must align with what `roi-financial-modeler` expects as input 7b
 5. **Pipeline-agnostic** — works identically whether upstream came from Inspire workshops or Value Assessment agents

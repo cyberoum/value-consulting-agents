@@ -362,7 +362,7 @@
 | [Date] | Agent 4: IT Architecture | Architecture Workshop Prep | architecture_deck.html |
 | [Date] | Agent 5: Use Case Design | Use Case Documents + Prototypes | use_case_docs/, prototypes/ |
 | [Date] | /generate-roi-questionnaire | Questionnaire Generation | questionnaire.xlsx |
-| [Date] | roi-business-case-builder | Business Case | business_case.pdf, roi_model.xlsx |
+| [Date] | /build-roi | Business Case | business_case.pdf, roi_model.xlsx |
 | [Date] | Agent 6: Presentation | Ignite Day Deck | ignite_presentation.pptx |
 
 ---

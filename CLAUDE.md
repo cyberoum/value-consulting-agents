@@ -345,6 +345,6 @@ Generate a customized Business Case Questionnaire pre-populated with upstream ag
 ```
 Then provide the engagement directory path. The skill reads ENGAGEMENT_CONTEXT.md and all available upstream outputs automatically.
 
-**Output:** `[CLIENT]_Business_Case_Questionnaire.xlsx` — feeds into `roi-business-case-builder` agent as input 7b.
+**Output:** `[CLIENT]_Business_Case_Questionnaire.xlsx` — feeds into `roi-financial-modeler` agent as input 7b.
 
 **Knowledge Reference:** `knowledge/Ignite Inspire/agent-7-roi.md` — value lever framework, calculation methodology, ROI examples.
