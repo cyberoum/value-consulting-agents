@@ -34,14 +34,14 @@ Use this skill when the user wants to:
 ### Brand Colors
 ```css
 :root {
-    --bb-blue: #1A56FF;      /* Primary accent - use for highlights, CTAs */
-    --bb-dark: #1A1F36;      /* Dark backgrounds, cards */
+    --bb-blue: #3366FF;      /* Primary accent - use for highlights, CTAs */
+    --bb-dark: #0F172A;      /* Dark backgrounds, cards */
     --bb-gray: #6B7280;      /* Secondary text, descriptions */
-    --bb-light: #F3F4F6;     /* Light backgrounds (light theme) */
-    --bb-glow: rgba(26, 86, 255, 0.4);  /* Glow effects */
-    --bb-red: #EF4444;       /* Negative, alerts, missed targets */
-    --bb-green: #10B981;     /* Positive, success, achieved */
-    --bb-orange: #F59E0B;    /* Warning, in-progress, attention */
+    --bb-light: #FFFFFF;     /* Light backgrounds (light theme) */
+    --bb-glow: rgba(51, 102, 255, 0.4);  /* Glow effects */
+    --bb-coral: #FF6B5E;     /* Negative, alerts, missed targets */
+    --bb-green: #93C47D;     /* Positive, success, achieved */
+    --bb-gold: #E8B931;      /* Warning, in-progress, attention */
 }
 ```
 
@@ -54,7 +54,7 @@ Use this skill when the user wants to:
 
 ### Visual Language
 - **Dark theme default** with light accents
-- **Blue (#1A56FF)** for emphasis and highlights
+- **Blue (#3366FF)** for emphasis and highlights
 - **Gradients** for depth and premium feel
 - **Subtle grid background** for structure
 - **Floating glow orbs** for ambiance

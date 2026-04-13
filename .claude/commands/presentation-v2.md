@@ -44,17 +44,18 @@ These colors come from the Backbase Master Slides Template (September 2022, page
 
 ```css
 :root {
-    /* Primary brand colors — overridden by meta.brand at runtime */
+    /* Primary brand colors — ENGAGE 2026 keynote palette */
     --bb-blue: #3366FF;        /* Primary blue - highlights, CTAs, accent text */
-    --bb-navy: #091C35;        /* Dark navy - backgrounds, dark cards */
-    --bb-cyan: #69FEFF;        /* Cyan accent - highlights on dark backgrounds, labels */
-    --bb-coral: #FF7262;       /* Coral/red - alerts, negative indicators, accents */
+    --bb-navy: #0F172A;        /* Dark navy - backgrounds, dark cards */
+    --bb-coral: #FF6B5E;       /* Coral - alerts, negative indicators, accents */
+    --bb-green: #93C47D;       /* Sage green - success, growth, decorative orbs */
+    --bb-gold: #E8B931;        /* Gold - warning, caution, decorative orbs */
 
     /* Extended palette */
-    --bb-dark: #091C35;        /* Alias for navy */
-    --bb-blue-bright: #4C7AFF; /* Lighter blue for hover states */
-    --bb-blue-light: #E8EEFE;  /* Very light blue for light-theme backgrounds */
-    --bb-blue-border: #B8C9F0; /* Blue borders on light backgrounds */
+    --bb-dark: #0F172A;        /* Alias for navy */
+    --bb-blue-bright: #7D9DFF; /* Lighter blue for hover states */
+    --bb-blue-light: #EDF2FF;  /* Very light blue for light-theme backgrounds */
+    --bb-blue-border: #B8CDFF; /* Blue borders on light backgrounds */
     --bb-gray: #6B7280;        /* Secondary text */
     --bb-gray-light: #9CA3AF;  /* Tertiary text, placeholders */
     --bb-light: #F5F6FA;       /* Light backgrounds */
@@ -104,10 +105,10 @@ Every scene has a `theme` property that controls its background and text styling
 
 | Theme | Background | Text | Accents | Usage |
 |-------|-----------|------|---------|-------|
-| `"dark"` | Navy `#091C35` | White | Cyan `#69FEFF` | Highlight slides, impact statements |
+| `"dark"` | Navy `#0F172A` | White | Blue `#3366FF` | Highlight slides, impact statements |
 | `"light"` | White `#FFFFFF` | Navy/dark | Blue `#3366FF` | **DEFAULT for content** — tables, detailed data, analysis |
-| `"cover"` | Solid blue `#3366FF` | White | Cyan `#69FEFF` | Section covers, act breaks |
-| `"gradient"` | Blue-to-cyan gradient | White | Navy `#091C35` | Special covers, opening/closing |
+| `"cover"` | Solid navy `#0F172A` | White | Blue `#3366FF` | Section covers, act breaks |
+| `"gradient"` | Navy-to-blue gradient | White | Gold `#E8B931` | Special covers, opening/closing |
 
 **CRITICAL RULE from Backbase Master Template (page 9):**
 > "The standard is the white background slide. The dark blue is used only for specific slides to highlight a topic."
@@ -118,13 +119,15 @@ This means:
 - Use `"cover"` or `"gradient"` for section breaks and act transitions
 - A typical 30-slide deck should have ~60% light, ~25% dark, ~15% cover/gradient
 
-### Color Usage Rules (from Master Template)
-- **Dark scenes:** Navy background, white text, cyan for accents/labels
-- **Light scenes:** White background, navy text, blue for headings/accents
-- **Section covers:** Solid blue OR gradient (blue to cyan)
-- **Highlights on dark:** Always use cyan (`#69FEFF`), NOT blue
-- **Highlights on light:** Always use blue (`#3366FF`), NOT cyan
-- **Coral (`#FF7262`):** Reserved for negative indicators, alerts, and selective emphasis
+### Color Usage Rules (ENGAGE 2026 Keynote)
+- **Dark scenes:** Navy `#0F172A` background, white text, blue `#3366FF` for accents/labels
+- **Light scenes:** White background, navy text, blue `#3366FF` for headings/accents
+- **Section covers:** Solid navy OR navy-to-blue gradient
+- **Highlights on dark:** Always use blue (`#3366FF`) — cyan is removed from palette
+- **Highlights on light:** Always use blue (`#3366FF`)
+- **Coral (`#FF6B5E`):** Reserved for negative indicators, alerts, pain points, and selective emphasis
+- **Sage green (`#93C47D`):** Decorative orbs, positive indicators
+- **Gold (`#E8B931`):** Decorative orbs, warning/caution indicators
 
 ### Typography (from Master Template)
 - **Font:** Inter (Google Fonts) with system fallbacks — overridable via `meta.brand.fontFamily`
@@ -390,9 +393,10 @@ Every presentation is driven by a single JSON object:
         "brandName": "Backbase",
         "brand": {
             "primary": "#3366FF",
-            "navy": "#091C35",
-            "cyan": "#69FEFF",
-            "coral": "#FF7262",
+            "navy": "#0F172A",
+            "coral": "#FF6B5E",
+            "green": "#93C47D",
+            "gold": "#E8B931",
             "green": "#10B981",
             "orange": "#F59E0B",
             "logoText": "Backbase",
