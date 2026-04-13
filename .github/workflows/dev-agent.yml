@@ -13,6 +13,10 @@ permissions:
   issues: write
   pull-requests: write
 
+env:
+  # Prevent secrets from leaking in workflow logs
+  ACTIONS_STEP_DEBUG: false
+
 jobs:
   check-trigger:
     runs-on: ubuntu-latest
@@ -78,13 +82,24 @@ jobs:
       - name: Install dependencies
         run: pip install anthropic jinja2
 
+      - name: Sanitize issue inputs
+        id: sanitize
+        run: |
+          # Truncate issue body to prevent abuse via extremely large payloads
+          BODY="${ISSUE_BODY:0:10000}"
+          echo "sanitized_body<<EOFBODY" >> $GITHUB_OUTPUT
+          echo "$BODY" >> $GITHUB_OUTPUT
+          echo "EOFBODY" >> $GITHUB_OUTPUT
+        env:
+          ISSUE_BODY: ${{ needs.check-trigger.outputs.issue_body }}
+
       - name: Run Dev Agent
         id: implement
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           ISSUE_NUMBER: ${{ needs.check-trigger.outputs.issue_number }}
           ISSUE_TITLE: ${{ needs.check-trigger.outputs.issue_title }}
-          ISSUE_BODY: ${{ needs.check-trigger.outputs.issue_body }}
+          ISSUE_BODY: ${{ steps.sanitize.outputs.sanitized_body }}
         run: |
           python scripts/dev_agent.py \
             --issue-number "$ISSUE_NUMBER" \

@@ -28,6 +28,9 @@ The Ignite Assess report follows a **7-act consulting narrative** modeled on pro
 | **6. Delivery Roadmap** | Phased Plan | MVP scope, timeline, dependencies, risks | Roadmap |
 | **7. Benefits Case** | Financial Case | 5-year projection, value drivers, scenario analysis, assumptions | ROI |
 
+**Governing Security Protocol:**
+- You MUST read and follow `knowledge/standards/security_protocol.md` — **MANDATORY.** You consume all upstream outputs including stakeholder intelligence. Follow Section 4 (Tone Calibration bounds) to ensure sensitivity flags never suppress critical findings, and Section 3c (Upstream Agent Outputs) to validate evidence before propagating it.
+
 **Critical structural rules — NON-NEGOTIABLE:**
 - **ALL 7 ACTS MUST BE PRESENT.** If any act is missing from the final report, the deliverable is INCOMPLETE and MUST NOT be delivered. STOP and complete the missing act before proceeding.
 - Section 4 (Deep-Dive) MUST include **journey maps** with swim-lane process flows showing actors, systems, friction points, and handoff delays — one per in-scope journey

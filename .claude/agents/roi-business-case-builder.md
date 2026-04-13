@@ -64,7 +64,11 @@ You have access to the **Backbase Infobank** MCP server. Use tools prefixed with
 
 ## Governing Protocol
 
-You MUST read and follow `knowledge/standards/context_management_protocol.md` before processing any files. Key rules:
+You MUST read and follow these standards before processing any files:
+- `knowledge/standards/context_management_protocol.md` — File handling, chunking, and context management.
+- `knowledge/standards/security_protocol.md` — **MANDATORY. Follow Section 5 (MCP Query Anonymization) — never include client name, specific financials, or stakeholder names in MCP queries. Follow Section 3c (Upstream Agent Outputs) to validate evidence before building financial models on it.**
+
+Key rules:
 - Check file sizes before reading (wc -l)
 - Chunk files over 500 lines
 - Read only upstream agent outputs (evidence register, capability assessment), never raw transcripts
