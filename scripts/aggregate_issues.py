@@ -15,6 +15,7 @@ import json
 import subprocess
 import sys
 import re
+import time
 from datetime import datetime, timedelta
 from collections import defaultdict
 
@@ -27,16 +28,32 @@ SEVERITY_WEIGHTS = {
 }
 
 
+def _gh_run_with_retry(cmd: list, max_retries: int = 3) -> subprocess.CompletedProcess:
+    """Run a gh CLI command with exponential backoff on failure."""
+    for attempt in range(max_retries):
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        if result.returncode == 0:
+            return result
+        # Check for rate limiting (gh exits non-zero and mentions rate limit)
+        if 'rate limit' in result.stderr.lower() or attempt < max_retries - 1:
+            wait = (2 ** attempt) * 2
+            print(f'  gh command failed (attempt {attempt + 1}/{max_retries}), retrying in {wait}s...',
+                  file=sys.stderr)
+            time.sleep(wait)
+        else:
+            break
+    return result  # Return last attempt's result
+
+
 def fetch_telemetry_issues(repo: str) -> list:
     """Fetch all open telemetry issues from GitHub."""
-    result = subprocess.run(
+    result = _gh_run_with_retry(
         ['gh', 'issue', 'list',
          '--repo', repo,
          '--label', 'telemetry',
          '--state', 'open',
          '--limit', '100',
-         '--json', 'number,title,body,createdAt,labels'],
-        capture_output=True, text=True
+         '--json', 'number,title,body,createdAt,labels']
     )
 
     if result.returncode != 0:

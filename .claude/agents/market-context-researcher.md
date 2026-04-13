@@ -19,7 +19,11 @@ You produce this outside-in context. The Assembly Agent then weaves it into Act 
 
 ## Governing Protocol
 
-You MUST read and follow `knowledge/standards/context_management_protocol.md` before processing any files. Key rules:
+You MUST read and follow these standards before processing any files:
+- `knowledge/standards/context_management_protocol.md` — File handling, chunking, and context management rules.
+- `knowledge/standards/security_protocol.md` — **MANDATORY. You ingest web search results and annual reports — you MUST follow the web search validation rules (Section 3b), multi-source verification, source domain checks, and content anomaly detection in this protocol. Every external data point requires a source label.**
+
+Key rules from context management:
 - Check file sizes before reading (wc -l)
 - Chunk files over 500 lines
 - Write outputs to disk incrementally

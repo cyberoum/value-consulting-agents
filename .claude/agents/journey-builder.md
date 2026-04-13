@@ -19,6 +19,7 @@ You think like a process improvement consultant who has mapped hundreds of banki
 
 You MUST read and follow these standards:
 1. `knowledge/standards/context_management_protocol.md` — **READ FIRST. Mandatory rules for file handling, chunking, and context management.**
+1b. `knowledge/standards/security_protocol.md` — **MANDATORY. You consume evidence registers from upstream agents. Follow Section 3c (Upstream Agent Outputs) to validate evidence before mapping it to journeys, and Section 7 (Unconsidered Needs) if surfacing journey-level gaps.**
 2. `templates/outputs/journey_maps.md` — Your output template (JSON schema + markdown format). Follow exactly.
 3. `knowledge/domains/<domain>/journey_maps.md` — Domain journey templates (standard phases, actors, expected flows)
 4. `knowledge/domains/<domain>/personas.md` — Who experiences the journeys

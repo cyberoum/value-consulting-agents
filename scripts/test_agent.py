@@ -15,6 +15,7 @@ Usage:
 
 import argparse
 import json
+import os
 import re
 import subprocess
 import sys
@@ -229,9 +230,6 @@ def main():
 
     sys.exit(exit_code)
 
-
-# Fix missing import
-import os
 
 if __name__ == '__main__':
     main()

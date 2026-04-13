@@ -131,6 +131,7 @@ ALL agents (current and future) MUST comply with these protocols:
 |----------|------|----------|
 | **Auditability Protocol** | `knowledge/standards/auditability_protocol.md` | Journal entries, telemetry, output provenance, checkpoint logging |
 | **Context Management Protocol** | `knowledge/standards/context_management_protocol.md` | File size checks, chunking, context preservation |
+| **Security Protocol** | `knowledge/standards/security_protocol.md` | Prompt injection defense, untrusted data handling, MCP query anonymization, web source validation, stakeholder intelligence bounds |
 | **Unified Design System** | `knowledge/design-system.md` | Visual output standards, brand colors, typography, layout patterns |
 
 **Non-negotiable rules for every agent:**

@@ -1,0 +1,293 @@
+#!/usr/bin/env python3
+"""
+Transcript PII Anonymizer — strips identifying information from client
+transcripts before they are sent to the Anthropic API.
+
+Replaces:
+  - Client/organization names (from engagement intake)
+  - Person names mentioned in transcripts
+  - Email addresses
+  - Phone numbers
+  - Account/member numbers
+  - SSNs/Tax IDs
+  - URLs containing client domains
+
+Keeps:
+  - Business concepts, pain points, processes
+  - Financial figures (amounts, percentages) — needed for ROI analysis
+  - Product names (Backbase, vendor names)
+  - Roles/titles (CIO, VP Digital, etc.)
+
+A mapping file is written alongside the anonymized transcript so outputs
+can be de-anonymized later for the final deliverable.
+"""
+
+import json
+import re
+import sys
+from pathlib import Path
+from typing import Optional
+
+
+# PII regex patterns
+_EMAIL_RE = re.compile(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b')
+_PHONE_RE = re.compile(r'\b(?:\+?1[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}\b')
+_SSN_RE = re.compile(r'\b\d{3}-\d{2}-\d{4}\b')
+_ACCOUNT_RE = re.compile(r'\b(?:account|member|acct|ID)[\s#:]*\d{6,}\b', re.IGNORECASE)
+_URL_RE = re.compile(r'https?://[^\s)<>]+')
+
+
+def _load_entity_names(intake_path: Path) -> list[str]:
+    """Extract organization and person names from engagement intake."""
+    names = []
+    if not intake_path.exists():
+        return names
+
+    content = intake_path.read_text()
+
+    # Extract client/organization name from common intake patterns
+    for pattern in [
+        r'(?:Client|Organization|Institution|Bank|Credit Union|Company)\s*:\s*(.+)',
+        r'(?:client_name|org_name)\s*:\s*(.+)',
+    ]:
+        for match in re.finditer(pattern, content, re.IGNORECASE):
+            name = match.group(1).strip().strip('"\'')
+            if name and len(name) > 2:
+                names.append(name)
+
+    # Extract stakeholder names
+    for pattern in [
+        r'(?:Name|Contact|Stakeholder|Attendee)\s*:\s*([A-Z][a-z]+ [A-Z][a-z]+)',
+        r'(?:with|from|by)\s+([A-Z][a-z]+ [A-Z][a-z]+)\s*(?:,|\(|—|-)',
+    ]:
+        for match in re.finditer(pattern, content):
+            name = match.group(1).strip()
+            if name and len(name) > 3:
+                names.append(name)
+
+    return list(set(names))
+
+
+def _load_context_file(context_path: Path) -> list[str]:
+    """Extract additional entity names from ENGAGEMENT_CONTEXT.md."""
+    names = []
+    if not context_path.exists():
+        return names
+
+    content = context_path.read_text()
+    for pattern in [
+        r'(?:Client|Organization)\s*:\s*(.+)',
+        r'(?:Key Stakeholders|Participants).*?\n((?:[-*]\s+.+\n)+)',
+    ]:
+        for match in re.finditer(pattern, content, re.IGNORECASE):
+            text = match.group(1).strip()
+            # If it's a list block, extract individual names
+            if '\n' in text:
+                for line in text.split('\n'):
+                    line = re.sub(r'^[-*]\s+', '', line).strip()
+                    name_match = re.match(r'^([A-Z][a-z]+ [A-Z][a-z]+)', line)
+                    if name_match:
+                        names.append(name_match.group(1))
+            else:
+                if len(text) > 2:
+                    names.append(text.strip('"\''))
+
+    return list(set(names))
+
+
+def anonymize_text(
+    text: str,
+    entity_names: list[str],
+    client_label: str = "[CLIENT]",
+) -> tuple[str, dict]:
+    """Anonymize PII in text. Returns (anonymized_text, mapping).
+
+    The mapping dict can be used to de-anonymize outputs later.
+    """
+    mapping = {}
+    result = text
+
+    # 1. Replace known entity names (longest first to avoid partial matches)
+    sorted_names = sorted(entity_names, key=len, reverse=True)
+    for i, name in enumerate(sorted_names):
+        if not name or len(name) < 3:
+            continue
+        # Determine placeholder
+        if i == 0:
+            placeholder = client_label
+        else:
+            placeholder = f"[PERSON-{i}]"
+
+        # Case-insensitive replacement
+        pattern = re.compile(re.escape(name), re.IGNORECASE)
+        if pattern.search(result):
+            mapping[placeholder] = name
+            result = pattern.sub(placeholder, result)
+
+        # For the client org name: also replace acronyms and common short forms
+        # Use distinct placeholders so de-anonymization restores the original form
+        if i == 0:
+            words = name.split()
+            if len(words) >= 2:
+                # Acronym (e.g., "NFCU" for "Navy Federal Credit Union")
+                acronym = ''.join(w[0].upper() for w in words if w[0].isupper() or len(w) > 3)
+                if len(acronym) >= 2:
+                    acr_placeholder = "[CLIENT-ABBR]"
+                    acr_pattern = re.compile(r'\b' + re.escape(acronym) + r'\b')
+                    if acr_pattern.search(result):
+                        mapping[acr_placeholder] = acronym
+                        result = acr_pattern.sub(acr_placeholder, result)
+
+                # Partial name variants — drop common suffixes and try shorter forms
+                # e.g., "Navy Federal Credit Union" → also match "Navy Federal"
+                name_lower = name.lower()
+                multi_suffixes = ['credit union', 'savings bank', 'mutual bank',
+                                  'financial group', 'financial services']
+                single_suffixes = ['bank', 'corporation', 'corp', 'inc',
+                                   'limited', 'ltd', 'group', 'holdings',
+                                   'financial', 'services', 'bancorp',
+                                   'bancshares', 'co', 'plc', 'sa', 'ag']
+
+                short_name = name
+                # First strip multi-word suffixes
+                for suffix in multi_suffixes:
+                    if name_lower.endswith(suffix):
+                        short_name = name[:-(len(suffix))].strip()
+                        break
+                else:
+                    # Then try single-word suffixes
+                    for suffix in single_suffixes:
+                        if words[-1].lower() == suffix:
+                            short_name = ' '.join(words[:-1])
+                            break
+
+                if len(short_name.split()) >= 2 and short_name != name:
+                    short_placeholder = "[CLIENT-SHORT]"
+                    short_pattern = re.compile(re.escape(short_name), re.IGNORECASE)
+                    if short_pattern.search(result):
+                        mapping[short_placeholder] = short_name
+                        result = short_pattern.sub(short_placeholder, result)
+
+    # 2. Replace emails
+    for match in _EMAIL_RE.finditer(result):
+        email = match.group(0)
+        placeholder = "[EMAIL-REDACTED]"
+        mapping[placeholder] = email
+        result = result.replace(email, placeholder, 1)
+
+    # 3. Replace phone numbers
+    for match in _PHONE_RE.finditer(result):
+        phone = match.group(0)
+        placeholder = "[PHONE-REDACTED]"
+        mapping[placeholder] = phone
+        result = result.replace(phone, placeholder, 1)
+
+    # 4. Replace SSNs / Tax IDs
+    for match in _SSN_RE.finditer(result):
+        ssn = match.group(0)
+        placeholder = "[SSN-REDACTED]"
+        mapping[placeholder] = ssn
+        result = result.replace(ssn, placeholder, 1)
+
+    # 5. Replace account/member numbers
+    for match in _ACCOUNT_RE.finditer(result):
+        acct = match.group(0)
+        placeholder = "[ACCOUNT-REDACTED]"
+        mapping[placeholder] = acct
+        result = result.replace(acct, placeholder, 1)
+
+    # 6. Replace URLs that contain client domain names
+    for match in _URL_RE.finditer(result):
+        url = match.group(0)
+        # Check if URL contains any entity name
+        url_lower = url.lower()
+        for name in entity_names:
+            name_parts = name.lower().split()
+            if any(part in url_lower for part in name_parts if len(part) > 3):
+                placeholder = "[CLIENT-URL-REDACTED]"
+                mapping[placeholder] = url
+                result = result.replace(url, placeholder, 1)
+                break
+
+    return result, mapping
+
+
+def anonymize_transcript_file(
+    transcript_path: Path,
+    engagement_dir: Path,
+    output_dir: Optional[Path] = None,
+) -> tuple[Path, Path]:
+    """Anonymize a transcript file in-place (or to output_dir).
+
+    Returns (anonymized_transcript_path, mapping_path).
+    """
+    # Collect entity names from intake and context files
+    entity_names = []
+    entity_names.extend(_load_entity_names(engagement_dir / "inputs" / "engagement_intake.md"))
+    entity_names.extend(_load_context_file(engagement_dir / "ENGAGEMENT_CONTEXT.md"))
+    entity_names = list(set(entity_names))
+
+    if not entity_names:
+        # No names found — still strip generic PII (emails, phones, SSNs)
+        pass
+
+    # Read transcript
+    original_text = transcript_path.read_text()
+
+    # Anonymize
+    anonymized_text, mapping = anonymize_text(original_text, entity_names)
+
+    # Determine output paths
+    if output_dir is None:
+        output_dir = transcript_path.parent
+
+    anon_path = output_dir / f".anon_{transcript_path.name}"
+    mapping_path = output_dir / f".anon_mapping_{transcript_path.stem}.json"
+
+    # Write anonymized transcript
+    anon_path.write_text(anonymized_text)
+
+    # Write mapping (for de-anonymization of final outputs)
+    mapping_path.write_text(json.dumps(mapping, indent=2))
+
+    return anon_path, mapping_path
+
+
+def deanonymize_text(text: str, mapping: dict) -> str:
+    """Restore original names/PII from anonymized text using the mapping."""
+    result = text
+    # Replace longest placeholders first to avoid partial matches
+    for placeholder in sorted(mapping.keys(), key=len, reverse=True):
+        result = result.replace(placeholder, mapping[placeholder])
+    return result
+
+
+def deanonymize_file(file_path: Path, mapping_path: Path) -> str:
+    """De-anonymize a file using a mapping file. Returns de-anonymized text."""
+    mapping = json.loads(mapping_path.read_text())
+    text = file_path.read_text()
+    return deanonymize_text(text, mapping)
+
+
+if __name__ == '__main__':
+    import argparse
+
+    parser = argparse.ArgumentParser(description='Anonymize transcript PII')
+    parser.add_argument('--file', required=True, help='Path to transcript file')
+    parser.add_argument('--engagement-dir', required=True, help='Path to engagement directory')
+    parser.add_argument('--deanonymize', action='store_true', help='De-anonymize a file instead')
+    parser.add_argument('--mapping', help='Path to mapping file (for --deanonymize)')
+    args = parser.parse_args()
+
+    if args.deanonymize:
+        if not args.mapping:
+            print('Error: --mapping required for --deanonymize', file=sys.stderr)
+            sys.exit(1)
+        result = deanonymize_file(Path(args.file), Path(args.mapping))
+        print(result)
+    else:
+        anon_path, mapping_path = anonymize_transcript_file(
+            Path(args.file), Path(args.engagement_dir)
+        )
+        print(f'Anonymized: {anon_path}')
+        print(f'Mapping: {mapping_path}')
