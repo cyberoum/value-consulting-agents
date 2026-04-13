@@ -12,10 +12,14 @@ Usage:
 import anthropic
 import json
 import os
+import re
 import sys
 import subprocess
 import argparse
 from pathlib import Path
+
+# Repository root — all file operations are sandboxed to this directory
+REPO_ROOT = Path(__file__).resolve().parent.parent
 
 
 def load_agent_prompt() -> str:
@@ -156,12 +160,11 @@ IMPORTANT:
     response_text = message.content[0].text
     json_match = None
 
-    # Try to find JSON block
-    import re
+    # Try to find JSON block — use non-greedy patterns only
     json_patterns = [
         r'```json\n([\s\S]*?)\n```',
         r'```\n([\s\S]*?)\n```',
-        r'\{[\s\S]*\}',
+        r'\{[\s\S]*?\}',  # Non-greedy to avoid matching across unrelated JSON
     ]
 
     for pattern in json_patterns:
@@ -176,11 +179,48 @@ IMPORTANT:
     if not json_match:
         return {'error': 'Could not parse Dev Agent response', 'raw': response_text}
 
+    # Validate required fields in LLM response
+    required_keys = {'root_cause', 'fix_description', 'risk_level', 'files_to_modify'}
+    if not required_keys.issubset(json_match.keys()):
+        missing = required_keys - json_match.keys()
+        return {'error': f'LLM response missing required fields: {missing}', 'raw': response_text}
+
+    if not isinstance(json_match.get('files_to_modify'), list):
+        return {'error': 'files_to_modify must be a list', 'raw': response_text}
+
+    if json_match.get('risk_level') not in ('LOW', 'MEDIUM', 'HIGH'):
+        return {'error': f'Invalid risk_level: {json_match.get("risk_level")}', 'raw': response_text}
+
     return json_match
 
 
+def _safe_resolve_path(relative_path: str) -> Path:
+    """Resolve a relative path and ensure it stays within REPO_ROOT.
+
+    Raises ValueError if the resolved path escapes the repository.
+    """
+    # Reject absolute paths outright
+    if os.path.isabs(relative_path):
+        raise ValueError(f"Absolute paths are not allowed: {relative_path}")
+
+    resolved = (REPO_ROOT / relative_path).resolve()
+    repo_resolved = REPO_ROOT.resolve()
+
+    if not str(resolved).startswith(str(repo_resolved) + os.sep) and resolved != repo_resolved:
+        raise ValueError(f"Path traversal detected — resolved path escapes repository: {relative_path}")
+
+    # Block writes to sensitive locations within the repo
+    blocked_prefixes = ['.git' + os.sep, '.github' + os.sep + 'workflows']
+    rel = str(resolved.relative_to(repo_resolved))
+    for prefix in blocked_prefixes:
+        if rel.startswith(prefix):
+            raise ValueError(f"Writes to {prefix} are not allowed: {relative_path}")
+
+    return resolved
+
+
 def apply_changes(changes: list) -> list:
-    """Apply file changes to the repository."""
+    """Apply file changes to the repository (sandboxed to REPO_ROOT)."""
     applied = []
 
     for change in changes:
@@ -188,19 +228,21 @@ def apply_changes(changes: list) -> list:
         action = change.get('action', 'edit')
 
         try:
+            safe_path = _safe_resolve_path(path)
+
             if action == 'create':
-                Path(path).parent.mkdir(parents=True, exist_ok=True)
-                Path(path).write_text(change.get('replace', ''))
+                safe_path.parent.mkdir(parents=True, exist_ok=True)
+                safe_path.write_text(change.get('replace', ''))
                 applied.append({'path': path, 'action': 'created', 'success': True})
 
             elif action == 'edit':
-                content = Path(path).read_text()
+                content = safe_path.read_text()
                 search = change.get('search', '')
                 replace = change.get('replace', '')
 
                 if search and search in content:
                     new_content = content.replace(search, replace, 1)
-                    Path(path).write_text(new_content)
+                    safe_path.write_text(new_content)
                     applied.append({'path': path, 'action': 'edited', 'success': True})
                 else:
                     applied.append({
@@ -210,8 +252,10 @@ def apply_changes(changes: list) -> list:
                         'reason': 'Search text not found in file'
                     })
 
-        except Exception as e:
+        except ValueError as e:
             applied.append({'path': path, 'action': action, 'success': False, 'reason': str(e)})
+        except Exception as e:
+            applied.append({'path': path, 'action': action, 'success': False, 'reason': type(e).__name__})
 
     return applied
 

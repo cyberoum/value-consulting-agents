@@ -36,6 +36,8 @@ from datetime import datetime, timezone
 sys.stdout.reconfigure(line_buffering=True)
 sys.stderr.reconfigure(line_buffering=True)
 from pathlib import Path
+
+from anonymize_transcript import anonymize_transcript_file, deanonymize_text
 from typing import Optional
 
 from claude_agent_sdk import (
@@ -203,7 +205,7 @@ def _validate_roi_config(config_path: Path):
     try:
         config = json.loads(config_path.read_text())
     except Exception as e:
-        log(f"  ⚠ Could not parse roi_config.json: {e}", C.YELLOW)
+        log(f"  ⚠ Could not parse roi_config.json: {type(e).__name__}", C.YELLOW)
         return
 
     warnings = []
@@ -561,6 +563,34 @@ async def step_discovery(
         return {"elapsed": 0, "cost": 0}
 
     log(f"  Found {len(transcripts)} transcript(s)")
+
+    # --- PII Anonymization: strip client names, emails, phones before sending to API ---
+    anon_mappings = {}  # { original_path: mapping_path }
+    anon_transcripts = []
+    for t in transcripts:
+        try:
+            anon_path, mapping_path = anonymize_transcript_file(t, engagement_dir, output_dir=inputs_dir)
+            anon_transcripts.append(anon_path)
+            anon_mappings[str(t)] = mapping_path
+            log(f"    Anonymized: {t.name} → {anon_path.name}")
+        except Exception:
+            # If anonymization fails, use the original (don't block the pipeline)
+            anon_transcripts.append(t)
+            log(f"    ⚠ Anonymization skipped for {t.name}, using original", C.YELLOW)
+
+    # Use anonymized transcripts for all downstream processing
+    transcripts = anon_transcripts
+
+    # Save combined mapping for de-anonymization of final outputs
+    combined_mapping = {}
+    for mp in anon_mappings.values():
+        if mp.exists():
+            combined_mapping.update(json.loads(mp.read_text()))
+    if combined_mapping:
+        mapping_file = engagement_dir / ".pii_mapping.json"
+        mapping_file.write_text(json.dumps(combined_mapping, indent=2))
+        mapping_file.chmod(0o600)  # Restrict access — this file contains PII
+        log(f"    PII mapping saved ({len(combined_mapping)} substitutions)")
 
     if len(transcripts) == 1:
         # Single transcript: lean extraction -> Python checkpoint
@@ -2165,6 +2195,29 @@ async def run_pipeline(
         if not passed:
             log("  Pipeline completed with validation warnings.", C.YELLOW)
 
+    # ── Step 6b: De-anonymize final outputs ─────────────────────────────
+    pii_mapping_file = engagement_dir / ".pii_mapping.json"
+    if pii_mapping_file.exists():
+        log("  Restoring client names in final outputs...", C.CYAN)
+        try:
+            pii_mapping = json.loads(pii_mapping_file.read_text())
+            if pii_mapping:
+                deanon_count = 0
+                for out_file in outputs_dir.iterdir():
+                    if out_file.suffix in ('.md', '.html', '.json', '.txt') and not out_file.name.startswith('interim'):
+                        content = out_file.read_text()
+                        restored = deanonymize_text(content, pii_mapping)
+                        if restored != content:
+                            out_file.write_text(restored)
+                            deanon_count += 1
+                log(f"  ✓ De-anonymized {deanon_count} output file(s)")
+        except Exception as e:
+            log(f"  ⚠ De-anonymization failed: {type(e).__name__} — outputs may contain placeholders", C.YELLOW)
+
+    # Clean up anonymized transcript copies (keep mapping for audit trail)
+    for anon_file in (engagement_dir / "inputs").glob(".anon_transcript_*"):
+        anon_file.unlink(missing_ok=True)
+
     # ── Step 7: Knowledge Harvest (silent, non-blocking) ─────────────────
     log_step("7", "KNOWLEDGE HARVEST")
     engagement_id = engagement_dir.name
@@ -2233,37 +2286,56 @@ def _load_env_file(cortex_dir: Path) -> dict:
 
 def _git_push_harvest(branch: str, token: str, cortex_dir: Path, engagement_id: str) -> bool:
     """Commit knowledge/ changes and push harvest branch using the harvest token."""
-    remote_url = f"https://x-access-token:{token}@github.com/mayur294-lgtm/value-consulting-agents.git"
-    env = {**os.environ, "GIT_AUTHOR_NAME": "Cortex Harvester",
+    github_owner = os.environ.get("CORTEX_GITHUB_OWNER", "mayur294-lgtm")
+    github_repo = os.environ.get("CORTEX_GITHUB_REPO", "value-consulting-agents")
+    remote_url = f"https://github.com/{github_owner}/{github_repo}.git"
+
+    # Use GIT_ASKPASS to supply the token without embedding it in the URL or process args
+    askpass_script = cortex_dir / ".git_askpass.sh"
+    askpass_script.write_text("#!/bin/sh\necho \"$GIT_HARVEST_TOKEN\"\n")
+    askpass_script.chmod(0o700)
+
+    env = {**os.environ,
+           "GIT_AUTHOR_NAME": "Cortex Harvester",
            "GIT_AUTHOR_EMAIL": "harvest@cortex.ai",
            "GIT_COMMITTER_NAME": "Cortex Harvester",
-           "GIT_COMMITTER_EMAIL": "harvest@cortex.ai"}
+           "GIT_COMMITTER_EMAIL": "harvest@cortex.ai",
+           "GIT_ASKPASS": str(askpass_script),
+           "GIT_HARVEST_TOKEN": token,
+           "GIT_TERMINAL_PROMPT": "0"}
 
     def run(cmd):
         return subprocess.run(cmd, cwd=cortex_dir, capture_output=True, text=True, env=env)
 
-    # Create and switch to harvest branch from current main
-    run(["git", "fetch", "origin", "main", "--quiet"])
-    run(["git", "checkout", "-B", branch, "origin/main"])
+    try:
+        # Create and switch to harvest branch from current main
+        run(["git", "fetch", "origin", "main", "--quiet"])
+        run(["git", "checkout", "-B", branch, "origin/main"])
 
-    # Stage only knowledge/ and EXTRACTION_REGISTRY.md
-    run(["git", "add", "knowledge/"])
+        # Stage only knowledge/ and EXTRACTION_REGISTRY.md
+        run(["git", "add", "knowledge/"])
 
-    status = run(["git", "status", "--porcelain"])
-    if not status.stdout.strip():
-        return False  # Nothing to commit
+        status = run(["git", "status", "--porcelain"])
+        if not status.stdout.strip():
+            return False  # Nothing to commit
 
-    msg = f"harvest: {engagement_id} → knowledge (auto)"
-    result = run(["git", "commit", "-m", msg])
-    if result.returncode != 0:
-        return False
+        msg = f"harvest: {engagement_id} → knowledge (auto)"
+        result = run(["git", "commit", "-m", msg])
+        if result.returncode != 0:
+            return False
 
-    push = run(["git", "push", remote_url, f"{branch}:{branch}", "--quiet"])
-    return push.returncode == 0
+        push = run(["git", "push", remote_url, f"{branch}:{branch}", "--quiet"])
+        return push.returncode == 0
+    finally:
+        # Clean up the askpass script so the token helper doesn't linger on disk
+        askpass_script.unlink(missing_ok=True)
 
 
 def _open_harvest_pr(branch: str, token: str, engagement_id: str, summary: str) -> str:
     """Open a GitHub PR for the harvest branch. Returns PR URL."""
+    github_owner = os.environ.get("CORTEX_GITHUB_OWNER", "mayur294-lgtm")
+    github_repo = os.environ.get("CORTEX_GITHUB_REPO", "value-consulting-agents")
+
     payload = json.dumps({
         "title": f"harvest: {engagement_id} knowledge update",
         "head": branch,
@@ -2277,7 +2349,7 @@ def _open_harvest_pr(branch: str, token: str, engagement_id: str, summary: str) 
     }).encode()
 
     req = urllib.request.Request(
-        "https://api.github.com/repos/mayur294-lgtm/value-consulting-agents/pulls",
+        f"https://api.github.com/repos/{github_owner}/{github_repo}/pulls",
         data=payload,
         headers={
             "Authorization": f"Bearer {token}",

@@ -474,6 +474,7 @@ This agent executes in **2 phases** with one consultant checkpoint:
 ## Governing Protocol
 
 - Read `knowledge/standards/context_management_protocol.md` for file handling rules
+- Read `knowledge/standards/security_protocol.md` — **MANDATORY. Follow Section 5 (MCP Query Anonymization) — never include client name or specific financials in MCP queries. Follow Section 3c (Upstream Agent Outputs) to validate evidence before building financial models on it.**
 - Check file sizes before reading; chunk files over 500 lines
 - Write large outputs incrementally to disk
 - Append journal entry to `ENGAGEMENT_JOURNAL.md` on completion with telemetry block

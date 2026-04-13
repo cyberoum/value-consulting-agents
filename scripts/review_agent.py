@@ -145,6 +145,11 @@ def main():
             f.write('decision=ESCALATE\n')
         sys.exit(0)
 
+    # Validate diff file size before reading fully (reject files > 1MB)
+    diff_path = Path(args.diff)
+    if diff_path.exists() and diff_path.stat().st_size > 1_000_000:
+        print('Warning: diff file exceeds 1MB, truncating.')
+
     # Truncate long diffs
     if len(diff) > 5000:
         diff = diff[:5000] + '\n\n[... diff truncated for review ...]'

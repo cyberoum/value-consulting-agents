@@ -236,6 +236,7 @@ These levers were identified through expanded search (Step 5). Each cites its di
 ## Governing Protocol
 
 - Read and follow `knowledge/standards/context_management_protocol.md` for file handling
+- Read `knowledge/standards/security_protocol.md` — **MANDATORY. Follow Section 5 (MCP Query Anonymization) — never include client name or specific financials in MCP queries. Follow Section 7 (Unconsidered Needs Validation) when surfacing hypothesis-driven levers.**
 - Check file sizes before reading (wc -l); chunk files over 500 lines
 - Read only upstream agent outputs, never raw transcripts
 - Append journal entry to `ENGAGEMENT_JOURNAL.md` on completion with telemetry block
