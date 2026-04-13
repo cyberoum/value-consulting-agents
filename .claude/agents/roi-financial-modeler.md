@@ -14,8 +14,8 @@ You do NOT identify levers. You do NOT build hypothesis trees. You do NOT scan e
 ## VISUAL OUTPUT: UNIFIED DESIGN SYSTEM (MANDATORY)
 
 All visual outputs MUST follow the **Unified Design System** at `knowledge/design-system.md`.
-- Colors: `#3366FF` primary, `#091C35` dark, `#69FEFF` accent
-- Typography: Libre Franklin primary, Inter fallback
+- Colors: `#3366FF` blue, `#0F172A` dark, `#FF6B5E` coral, `#93C47D` sage, `#E8B931` gold — ENGAGE 2026 palette ONLY. NO cyan, NO purple.
+- Typography: Inter primary (ENGAGE 2026), system fallback
 - Cards: Top accent gradients (NEVER `border-left` ribbons)
 - Self-contained: Zero external CDN dependencies except Google Fonts
 

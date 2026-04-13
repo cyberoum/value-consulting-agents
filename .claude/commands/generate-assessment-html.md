@@ -4,9 +4,9 @@ Generate a premium interactive HTML dashboard from the engagement's markdown del
 
 **Do NOT use this skill for general presentations.** For slide decks, Innovation Day pitches, or any non-assessment deliverable, use `/presentation` instead. This skill is exclusively for Detailed Assessment / Ignite Assess engagements that follow the 7-act narrative structure.
 
-**CRITICAL DESIGN RULE:** This dashboard uses a **LIGHT base theme** (`#F8FAFC` background). The body background is NEVER dark. Dark colors are used ONLY for:
-- The sidebar (`#1A1F36`)
-- Dark feature accent sections (`.dark-feature` with `#0B0F1A`)
+**CRITICAL DESIGN RULE:** This dashboard uses a **LIGHT base theme** (`#FFFFFF` background). The body background is NEVER dark. Dark colors are used ONLY for:
+- The sidebar (`#0F172A`)
+- Dark feature accent sections (`.dark-feature` with `#0F172A`)
 - Metric cards (`.metric-card` with `#0F172A`)
 - Journey swimlanes (`.journey-swimlane` with `#0F172A`)
 - Waterfall containers (`.waterfall-container` with `#0F172A`)
@@ -92,14 +92,14 @@ Every act panel starts with this:
 ### 5.2 Metric Cards (for headline KPIs)
 ```html
 <div class="card-grid card-grid-4">
-  <div class="metric-card"><div class="metric-val" style="color:#DC2626">{{VALUE}}</div><div class="metric-lbl">{{LABEL}}</div></div>
+  <div class="metric-card"><div class="metric-val" style="color:#FF6B5E">{{VALUE}}</div><div class="metric-lbl">{{LABEL}}</div></div>
 </div>
 ```
 
 ### 5.3 Bento Grid (for overview stats)
 ```html
 <div class="bento">
-  <div class="bento-item bento-dark bento-2x1 bento-stat"><div class="bento-stat-val" style="color:#1A56FF">{{VALUE}}</div><div class="bento-stat-lbl">{{LABEL}}</div></div>
+  <div class="bento-item bento-dark bento-2x1 bento-stat"><div class="bento-stat-val" style="color:#3366FF">{{VALUE}}</div><div class="bento-stat-lbl">{{LABEL}}</div></div>
   <!-- Mix: bento-item, bento-2x1, bento-1x2, bento-2x2, bento-dark, bento-accent -->
 </div>
 ```
@@ -239,9 +239,9 @@ renderHeatmap('hm-{{BL}}', caps_hm_{{BL}});
   </div>
   <div class="lever-body"><div class="lever-content">
     <div class="lever-mece">
-      <div class="lever-mece-box" style="background:#FEF2F2;"><h5 style="color:#DC2626;">Current State</h5>{{CURRENT}}</div>
+      <div class="lever-mece-box" style="background:#FFF1F0;"><h5 style="color:#FF6B5E;">Current State</h5>{{CURRENT}}</div>
       <div class="lever-mece-box" style="background:#FFFBEB;"><h5 style="color:#D97706;">Change Driver</h5>{{CHANGE}}</div>
-      <div class="lever-mece-box" style="background:#F0FDF4;"><h5 style="color:#059669;">Target State</h5>{{TARGET}}</div>
+      <div class="lever-mece-box" style="background:#F0F7EC;"><h5 style="color:#93C47D;">Target State</h5>{{TARGET}}</div>
     </div>
     <div class="lever-benchmark"><strong>Benchmark:</strong> {{BENCHMARK}}</div>
     <div class="lever-capabilities">
@@ -255,7 +255,7 @@ renderHeatmap('hm-{{BL}}', caps_hm_{{BL}});
 ```html
 <div id="journey-{{JOURNEY_ID}}" class="journey-swimlane reveal">
   <div class="journey-swimlane-title">{{JOURNEY_NAME}}</div>
-  <div class="journey-swimlane-sub">{{LIFECYCLE_STAGE}} &bull; Total Value Leakage: <span style="color:#DC2626;font-weight:800;">{{TOTAL_LEAKAGE}}</span>/year</div>
+  <div class="journey-swimlane-sub">{{LIFECYCLE_STAGE}} &bull; Total Value Leakage: <span style="color:#FF6B5E;font-weight:800;">{{TOTAL_LEAKAGE}}</span>/year</div>
   <div class="swimlane-toggle-group">
     <button class="swimlane-toggle-btn active-current" onclick="toggleJourney('{{JOURNEY_ID}}','current',this)">Current State</button>
     <button class="swimlane-toggle-btn" onclick="toggleJourney('{{JOURNEY_ID}}','future',this)">Backbase-Enabled</button>
@@ -421,7 +421,7 @@ This component renders the holistic journey experience map: headline insight car
 2. **X-axis spacing:** Distribute stages evenly across the viewbox width (1000). First stage at x=80, last mapped stage at x=720. Pending stages continue to x=950.
 3. **Curve:** Use cubic bezier curves (C command) connecting the score points. The curve should feel organic, not angular.
 4. **Area fill:** Close the curve path downward to y=172 to create the area fill polygon.
-5. **Colors:** Map score to color — 8+: `#059669`, 5-7: `#7B2FFF`/`#D97706`, 3-4: `#EA580C`, 1-2: `#DC2626`. Pending: `#7C3AED`.
+5. **Colors:** Map score to color — 8+: `#93C47D` (sage green), 5-7: `#3366FF` (blue) / `#E8B931` (gold), 3-4: `#E8B931` (gold), 1-2: `#FF6B5E` (coral). Pending: `#7D9DFF` (mid-blue).
 6. **Dot sizes:** Normal stages r=5. Critical stages (lowest score) r=6. Pending stages r=4 with dashed stroke, no fill.
 7. **Score labels:** Faint numbers floating near dots. Use the score color at 40-55% opacity. Font size 8, weight 700.
 
@@ -524,10 +524,10 @@ The JavaScript traceability engine adds hover-based cross-referencing. When you 
 
 | Position | Color | Gradient | Use For |
 |---|---|---|---|
-| BL-1 | `#1A56FF` (Blue) | `#1A56FF` → `#3B82F6` | First business line |
-| BL-2 | `#059669` (Green) | `#059669` → `#34D399` | Second business line |
-| BL-3 | `#7B2FFF` (Purple) | `#7B2FFF` → `#A78BFA` | Third business line |
-| BL-4 | `#EA580C` (Orange) | `#EA580C` → `#FB923C` | Fourth (if needed) |
+| BL-1 | `#3366FF` (Blue) | `#3366FF` → `#7D9DFF` | First business line |
+| BL-2 | `#93C47D` (Sage Green) | `#93C47D` → `#A3D48D` | Second business line |
+| BL-3 | `#E8B931` (Gold) | `#E8B931` → `#F0CC5E` | Third business line |
+| BL-4 | `#FF6B5E` (Coral) | `#FF6B5E` → `#FF9A92` | Fourth (if needed) |
 
 ### Consistent Application
 
@@ -551,14 +551,14 @@ Instead, use **top accent gradients** for all card-level color indicators:
 </div>
 
 <!-- WRONG: Left border ribbon — DO NOT USE -->
-<div class="card" style="border-left:4px solid #DC2626;">
+<div class="card" style="border-left:4px solid #FF6B5E;">
 ```
 
 For comparison/contrast boxes (e.g., "Current vs. Target"):
 ```html
 <!-- Use background tint + top accent, no left border -->
-<div style="padding:14px 18px;background:#FEF2F2;border-radius:12px;position:relative;overflow:hidden;">
-  <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#DC2626,#EF4444);border-radius:12px 12px 0 0;"></div>
+<div style="padding:14px 18px;background:#FFF1F0;border-radius:12px;position:relative;overflow:hidden;">
+  <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#FF6B5E,#FF9A92);border-radius:12px 12px 0 0;"></div>
   <!-- content -->
 </div>
 ```
@@ -566,8 +566,8 @@ For comparison/contrast boxes (e.g., "Current vs. Target"):
 For fix/solution cards in Act 4 lifecycle panels, use green gradient:
 ```html
 <div class="card" style="position:relative;overflow:hidden;">
-  <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#059669,#10B981);"></div>
-  <h4 style="color:#059669;">Unified Frontline Fix</h4>
+  <div style="position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#93C47D,#A3D48D);"></div>
+  <h4 style="color:#93C47D;">Unified Frontline Fix</h4>
 </div>
 ```
 

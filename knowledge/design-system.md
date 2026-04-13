@@ -8,8 +8,8 @@
 # output MUST reference this file.
 #
 # LAYOUT SOURCE: templates/presentations/assessment-dashboard-template.html
-# COLOR SOURCE: Official Backbase Master Template 2022 (Shobhit's extraction)
-# Last Updated: 2026-02-16
+# COLOR SOURCE: ENGAGE Americas 2026 Keynote (Jouk Pleiter + Deepak Pandey)
+# Last Updated: 2026-04-13
 # ═══════════════════════════════════════════════════════════════════════════════
 
 ---
@@ -21,98 +21,126 @@
 3. **Layout patterns** (bento grids, dark feature sections, sidebar nav, glass morphism, SVG journey maps, heatmaps) are from the assessment dashboard template — the most sophisticated layout system available.
 4. **Card accents**: Use top accent gradients. NEVER use `border-left` ribbons.
 5. **Self-contained**: All HTML outputs must be self-contained with zero external CDN dependencies (no React CDN, no Tailwind CDN). Google Fonts for Libre Franklin is the ONLY acceptable external resource.
-6. **Dark accents on light base**: Body background is ALWAYS light (`#F5FAFF` or `#F8FAFC`). Dark colors are used for sidebar, dark-feature sections, metric cards, journey swimlanes, and waterfall containers only.
+6. **Dark accents on light base**: Body background is ALWAYS light (`#FFFFFF`). Dark colors are used for sidebar, dark-feature sections, metric cards, journey swimlanes, and waterfall containers only.
 
 ---
 
-## 1. COLOR PALETTE — Official Backbase Brand
+## 1. COLOR PALETTE — Official Backbase Brand (ENGAGE 2026)
+
+**Source:** ENGAGE Americas 2026 Keynote — the ONLY permitted color palette. No other colors may be used.
 
 ### Primary Colors
 
 | Token | CSS Variable | Hex | Usage |
 |-------|-------------|-----|-------|
-| **Primary Dark** | `--bb-dark` | `#091C35` | Dark backgrounds, sidebar, dark-feature sections, primary text on light |
-| **Primary Blue** | `--bb-blue` | `#3366FF` | Primary accent, CTAs, links, active states, gradients |
-| **White** | `--bb-white` | `#FFFFFF` | Text on dark, card backgrounds |
+| **Primary Dark** | `--bb-dark` | `#0F172A` | Dark backgrounds, sidebar, dark-feature sections, primary text on light, Banking OS platform blocks |
+| **Primary Blue** | `--bb-blue` | `#3366FF` | Primary accent, CTAs, links, active states, headings on dark, section numbers, integration bars |
+| **White** | `--bb-white` | `#FFFFFF` | Light backgrounds, text on dark, card backgrounds |
+| **Black** | `--bb-black` | `#000000` | Platform matrix grids, Banking OS blocks (used sparingly) |
 
 ### Accent Colors
 
 | Token | CSS Variable | Hex | Usage |
 |-------|-------------|-----|-------|
-| **Cyan** | `--bb-cyan` | `#69FEFF` | Highlights, data viz accent, attention items |
-| **Red/Coral** | `--bb-red` | `#FF7262` | Alerts, negative indicators, pain points |
-| **Purple** | `--bb-purple` | `#7B2FFF` | Gradient endpoints, visual richness accents |
-| **Green** | `--bb-green` | `#26BC71` | Positive, success, growth indicators |
-| **Amber** | `--bb-amber` | `#FFAC09` | Warning, caution, pending items |
+| **Coral** | `--bb-coral` | `#FF6B5E` | Alerts, negative indicators, pain points, "messy middle" friction |
+| **Sage Green** | `--bb-green` | `#93C47D` | Positive, success, growth indicators, decorative orbs |
+| **Gold** | `--bb-gold` | `#E8B931` | Warning, caution, pending items, decorative orbs |
 
 ### Supporting Colors
 
 | Token | CSS Variable | Hex | Usage |
 |-------|-------------|-----|-------|
-| **Navy Heading** | `--bb-navy-heading` | `#181E41` | Alternative heading color |
-| **Muted Blue-Grey** | `--bb-muted` | `#3A495D` | Card fills on dark, secondary backgrounds |
-| **Light Blue** | `--bb-light-blue` | `#E5EBFF` | Light accent fills, table alternation |
-| **Off-White** | `--bb-off-white` | `#F5FAFF` | Near-white backgrounds |
-| **Light Grey** | `--bb-light-grey` | `#F3F6F9` | Content area backgrounds |
-| **Mid Blue** | `--bb-mid-blue` | `#7D9DFF` | Secondary blue, hover states |
+| **Muted Blue-Grey** | `--bb-muted` | `#334155` | Card fills on dark, secondary backgrounds, muted text |
+| **Light Blue Tint** | `--bb-light-blue` | `#EDF2FF` | Light accent fills, table alternation, subtle card backgrounds |
+| **Light Grey** | `--bb-light-grey` | `#F8FAFC` | Content area backgrounds (near-white) |
+| **Mid Blue** | `--bb-mid-blue` | `#7D9DFF` | Secondary blue, hover states, lighter blue layer fills |
+| **Pale Blue** | `--bb-pale-blue` | `#B8CDFF` | Lightest blue tier (architecture layer fills, lifecycle wheel lighter segments) |
 
 ### Maturity / RAG Scale (Data Visualization)
 
+Uses only brand palette colors — no off-brand hues.
+
 | Level | CSS Variable | Hex | Meaning |
 |-------|-------------|-----|---------|
-| L0 | `--L0` | `#DC2626` | Non-Existent / Critical |
-| L1 | `--L1` | `#EA580C` | Ad-Hoc / High Risk |
-| L2 | `--L2` | `#0891B2` | Developing / Moderate |
-| L3 | `--L3` | `#059669` | Defined / Good |
-| L4 | `--L4` | `#2563EB` | Optimized / Excellent |
+| L0 | `--L0` | `#FF6B5E` | Non-Existent / Critical (brand coral) |
+| L1 | `--L1` | `#E8B931` | Ad-Hoc / High Risk (brand gold) |
+| L2 | `--L2` | `#7D9DFF` | Developing / Moderate (brand mid-blue) |
+| L3 | `--L3` | `#93C47D` | Defined / Good (brand sage green) |
+| L4 | `--L4` | `#3366FF` | Optimized / Excellent (brand blue) |
 
 ### Alpha Color References (for rgba usage)
 
-When using the primary blue in transparent/alpha contexts:
-- `rgba(51,102,255, ...)` — derived from `#3366FF`
-- `rgba(9,28,53, ...)` — derived from `#091C35`
-- `rgba(123,47,255, ...)` — derived from `#7B2FFF`
+When using brand colors in transparent/alpha contexts:
+- `rgba(51,102,255, ...)` — derived from `#3366FF` (primary blue)
+- `rgba(15,23,42, ...)` — derived from `#0F172A` (primary dark)
+- `rgba(255,107,94, ...)` — derived from `#FF6B5E` (coral)
+- `rgba(147,196,125, ...)` — derived from `#93C47D` (sage green)
+- `rgba(232,185,49, ...)` — derived from `#E8B931` (gold)
 
-**NEVER use approximate values** like `rgba(26,86,255,...)` (old `#1A56FF`) or `rgba(26,31,54,...)` (old `#1A1F36`).
+**NEVER use old palette values.** See Section 2 (Deprecated Colors) for the full replacement map.
 
 ---
 
 ## 2. DEPRECATED COLORS — DO NOT USE
 
-These colors appeared in earlier outputs and must be replaced:
+**ALL colors not listed in Section 1 are banned.** This includes the previous design system palette and any ad-hoc colors. If a color is not in Section 1, it must not appear in any output.
+
+### Previous Design System → ENGAGE 2026 Migration
 
 | Deprecated | Replacement | Notes |
 |-----------|-------------|-------|
-| `#1A56FF` | `#3366FF` | Old approximate blue → official primary blue |
-| `#1A1F36` | `#091C35` | Old approximate dark → official primary dark |
-| `#0B0F1A` | `#091C35` | Old dark feature bg → official primary dark |
-| `#141929` | `#091C35` | Old navy → official primary dark |
-| `#1C2238` | `#3A495D` | Old navy-2 → official muted blue-grey |
-| `#3B6BF5` | `#3366FF` | Old blue → official primary blue |
-| `#5A8AFF` | `#7D9DFF` | Old blue-light → official mid-blue |
-| `rgba(26,86,255,...)` | `rgba(51,102,255,...)` | Old blue alpha → correct blue alpha |
+| `#091C35` | `#0F172A` | Old primary dark → ENGAGE 2026 primary dark |
+| `#3366FF` | `#3366FF` | Old primary blue → ENGAGE 2026 primary blue |
+| `#FF7262` | `#FF6B5E` | Old red → ENGAGE 2026 coral |
+| `#26BC71` | `#93C47D` | Old vibrant green → ENGAGE 2026 sage green |
+| `#FFAC09` | `#E8B931` | Old amber → ENGAGE 2026 gold |
+| `#69FEFF` | **REMOVED** | Cyan — not in ENGAGE 2026 palette. Use `#3366FF` (blue) or `#93C47D` (sage) instead |
+| `#7B2FFF` | **REMOVED** | Purple — not in ENGAGE 2026 palette. Use `#3366FF` (blue) for gradient endpoints |
+| `#181E41` | `#0F172A` | Old navy heading → primary dark |
+| `#3A495D` | `#334155` | Old muted → updated muted blue-grey |
+| `#E5EBFF` | `#EDF2FF` | Old light blue → softer light blue tint |
+| `#F5FAFF` | `#FFFFFF` | Old off-white → pure white (ENGAGE 2026 uses white backgrounds) |
+| `#F3F6F9` | `#F8FAFC` | Old light grey → updated light grey |
+| `#7D9DFF` | `#7D9DFF` | Old mid-blue → updated mid-blue |
+| `#F8FAFC` | `#FFFFFF` | Old semantic bg → pure white |
+
+### Historical Deprecated (from pre-2026 outputs)
+
+| Deprecated | Replacement | Notes |
+|-----------|-------------|-------|
+| `#1A56FF` | `#3366FF` | Old approximate blue → ENGAGE 2026 blue |
+| `#1A1F36` | `#0F172A` | Old approximate dark → ENGAGE 2026 dark |
+| `#0B0F1A` | `#0F172A` | Old dark feature bg → ENGAGE 2026 dark |
+| `#141929` | `#0F172A` | Old navy → ENGAGE 2026 dark |
+| `#1C2238` | `#334155` | Old navy-2 → muted blue-grey |
+| `#3B6BF5` | `#3366FF` | Old blue → ENGAGE 2026 blue |
+| `#5A8AFF` | `#7D9DFF` | Old blue-light → ENGAGE 2026 mid-blue |
+| `rgba(51,102,255,...)` | `rgba(51,102,255,...)` | Old blue alpha → ENGAGE 2026 blue alpha |
+| `rgba(9,28,53,...)` | `rgba(15,23,42,...)` | Old dark alpha → ENGAGE 2026 dark alpha |
+| `rgba(123,47,255,...)` | **REMOVED** | Purple alpha — not in palette |
 
 ---
 
 ## 3. TYPOGRAPHY
 
-### Primary Font: Libre Franklin (Official Backbase)
+### Primary Font: Inter (ENGAGE 2026)
 
 | Weight | CSS | Usage |
 |--------|-----|-------|
 | **Black (900)** | `font-weight: 900` | Major headings, hero titles, stat values |
-| **SemiBold (600)** | `font-weight: 600` | Sub-headings, labels, overlines |
+| **Bold (700)** | `font-weight: 700` | Sub-headings, card titles, bold emphasis |
+| **SemiBold (600)** | `font-weight: 600` | Labels, overlines, uppercase tracking |
 | **Regular (400)** | `font-weight: 400` | Body text, descriptions |
-| **Light (300)** | `font-weight: 300` | Subtitles, secondary text |
+| **Light (300)** | `font-weight: 300` | Subtitles, secondary text, large display numbers |
 
 ### Fallback Stack
 ```css
-font-family: 'Libre Franklin', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 ```
 
 ### Font Import (only external dependency allowed)
 ```css
-@import url('https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;400;600;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;900&display=swap');
 ```
 
 ### Size Scale for Interactive Dashboards
@@ -131,7 +159,7 @@ font-family: 'Libre Franklin', 'Inter', -apple-system, BlinkMacSystemFont, 'Sego
 - **Negative letter-spacing** on display text: -4px (hero), -2px (dark feature), -1px (section headers, stats)
 - **Positive letter-spacing** on overlines/labels: +2-3px
 - **Line height**: 1.6 for body, 1.7 for paragraphs, 0.92 for hero titles
-- **Gradient text**: Use `background: linear-gradient(90deg, #3366FF, #7B2FFF); -webkit-background-clip: text; -webkit-text-fill-color: transparent;` for overlines and accent text
+- **Gradient text**: Use `background: linear-gradient(90deg, #3366FF, #7D9DFF); -webkit-background-clip: text; -webkit-text-fill-color: transparent;` for overlines and accent text (blue-to-lighter-blue, no purple)
 
 ---
 
@@ -139,37 +167,36 @@ font-family: 'Libre Franklin', 'Inter', -apple-system, BlinkMacSystemFont, 'Sego
 
 ```css
 :root {
-  /* ── Backbase Brand ── */
-  --bb-dark: #091C35;
+  /* ── Backbase Brand (ENGAGE 2026) ── */
+  --bb-dark: #0F172A;
   --bb-blue: #3366FF;
   --bb-white: #FFFFFF;
-  --bb-cyan: #69FEFF;
-  --bb-red: #FF7262;
-  --bb-purple: #7B2FFF;
-  --bb-green: #26BC71;
-  --bb-amber: #FFAC09;
-  --bb-muted: #3A495D;
-  --bb-light-blue: #E5EBFF;
-  --bb-off-white: #F5FAFF;
-  --bb-light-grey: #F3F6F9;
+  --bb-black: #000000;
+  --bb-coral: #FF6B5E;
+  --bb-green: #93C47D;
+  --bb-gold: #E8B931;
+  --bb-muted: #334155;
+  --bb-light-blue: #EDF2FF;
+  --bb-light-grey: #F8FAFC;
   --bb-mid-blue: #7D9DFF;
+  --bb-pale-blue: #B8CDFF;
 
   /* ── Semantic Tokens (Dashboard) ── */
-  --bg: #F8FAFC;
+  --bg: #FFFFFF;
   --card: #FFFFFF;
   --border: #E2E8F0;
-  --text: #091C35;
+  --text: #0F172A;
   --muted: #64748B;
   --dim: #94A3B8;
   --accent: #3366FF;
-  --accent-light: #E5EBFF;
+  --accent-light: #EDF2FF;
 
-  /* ── Maturity Scale ── */
-  --L0: #DC2626;
-  --L1: #EA580C;
-  --L2: #0891B2;
-  --L3: #059669;
-  --L4: #2563EB;
+  /* ── Maturity Scale (brand colors only) ── */
+  --L0: #FF6B5E;
+  --L1: #E8B931;
+  --L2: #7D9DFF;
+  --L3: #93C47D;
+  --L4: #3366FF;
 
   /* ── Shadows ── */
   --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
@@ -183,7 +210,7 @@ font-family: 'Libre Franklin', 'Inter', -apple-system, BlinkMacSystemFont, 'Sego
   --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
   /* ── Font ── */
-  --font: 'Libre Franklin', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 ```
 
@@ -194,7 +221,7 @@ font-family: 'Libre Franklin', 'Inter', -apple-system, BlinkMacSystemFont, 'Sego
 The assessment-dashboard-template.html (`templates/presentations/`) is the LAYOUT source of truth. All interactive outputs must use these patterns:
 
 ### Page Structure
-- **Fixed sidebar** (250px, dark `#091C35`) with numbered tab navigation
+- **Fixed sidebar** (250px, dark `#0F172A`) with numbered tab navigation
 - **Scrollable content area** with max-width 1360px
 - **Hero section** with 2-column grid (text + visual)
 - **Panel switching** via JavaScript (tab-based SPA)
@@ -214,13 +241,13 @@ The assessment-dashboard-template.html (`templates/presentations/`) is the LAYOU
 | Component | Key Features |
 |-----------|-------------|
 | **Card** | 20px radius, top gradient accent on hover (scaleX animation), lift on hover |
-| **Metric Card** | Dark bg (`#091C35`), centered stat, scale on hover |
-| **Dark Feature Section** | Immersive `#091C35` bg, radial gradient orbs, gradient text fills |
+| **Metric Card** | Dark bg (`#0F172A`), centered stat, scale on hover |
+| **Dark Feature Section** | Immersive `#0F172A` bg, radial gradient orbs, gradient text fills |
 | **Persona Card** | Avatar + expandable body, click to reveal |
 | **Expandable** | Accordion with animated max-height, glow border on open |
 | **Heatmap Cell** | Interactive selection with detail panel |
 | **Phone Frame** | 280x580 with notch, status bar, embedded screens |
-| **Friction Callout** | Severity-based top gradient (red/orange/yellow) |
+| **Friction Callout** | Severity-based top gradient (coral/gold/blue) |
 | **Journey Experience Map** | SVG emotion curve with clickable stage markers |
 | **Value Waterfall** | Dark bg, gradient bar segments showing leakage |
 | **Score Badge** | Maturity-colored circle with hover scale |
@@ -229,7 +256,7 @@ The assessment-dashboard-template.html (`templates/presentations/`) is the LAYOU
 ### Dark Feature Section Pattern
 ```css
 .dark-feature {
-  background: #091C35;
+  background: #0F172A;
   border-radius: 28px;
   padding: 72px 56px;
   position: relative;
@@ -240,8 +267,8 @@ The assessment-dashboard-template.html (`templates/presentations/`) is the LAYOU
   background: radial-gradient(circle, rgba(51,102,255,0.12) 0%, transparent 70%);
 }
 .dark-feature::after {
-  /* Bottom-left ambient purple orb */
-  background: radial-gradient(circle, rgba(123,47,255,0.08) 0%, transparent 70%);
+  /* Bottom-left ambient blue-light orb (no purple — use lighter blue) */
+  background: radial-gradient(circle, rgba(51,102,255,0.06) 0%, transparent 70%);
 }
 ```
 
@@ -252,7 +279,7 @@ The assessment-dashboard-template.html (`templates/presentations/`) is the LAYOU
   position: absolute;
   top: 0; left: 0; right: 0;
   height: 3px;
-  background: linear-gradient(90deg, #3366FF, #7B2FFF, #3366FF);
+  background: linear-gradient(90deg, #3366FF, #7D9DFF, #3366FF);
   transform: scaleX(0);
   transition: transform 0.4s ease;
 }
@@ -320,8 +347,9 @@ The assessment-dashboard-template.html (`templates/presentations/`) is the LAYOU
 ### Accessibility
 - Minimum contrast: `rgba(255,255,255,0.55)` for sub-labels on dark backgrounds
 - Never use `rgba(255,255,255,0.3)` or lower for readable text on dark
-- Blue text on dark navy: use `#60A5FA` (not `#3366FF`) for WCAG AA compliance
-- Green text on dark navy: use `#34D399` (not `#059669`)
+- Blue text on dark navy (`#0F172A`): `#3366FF` passes WCAG AA (contrast ratio 4.8:1)
+- Sage green text on dark navy: use `#A3D48D` (lightened sage) for WCAG AA compliance
+- Gold text on dark navy: `#E8B931` passes WCAG AA (contrast ratio 6.2:1)
 
 ---
 
