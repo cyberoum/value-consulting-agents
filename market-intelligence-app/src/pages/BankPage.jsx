@@ -1,6 +1,12 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, FileText, Clock, Plus, LayoutDashboard, Presentation } from 'lucide-react';
+import { useParams, useNavigate, useSearchParams, Link } from 'react-router-dom';
+import { ArrowLeft, FileText, Clock, Plus, LayoutDashboard, Presentation, FileSpreadsheet } from 'lucide-react';
+import QuickIntelCard from '../components/bank/QuickIntelCard';
+import PlayDashboard from '../components/plays/PlayDashboard';
+import PlayDetail from '../components/plays/PlayDetail';
+import SignalFeed from '../components/signals/SignalFeed';
+import DealHealthDashboard from '../components/twin/DealHealthDashboard';
+import IntelligenceOnboarding from '../components/plays/IntelligenceOnboarding';
 import { useBank, useAiAnalysis } from '../hooks/useData';
 import { QUAL_FRAMEWORK, calcScoreFromData, scoreColor, parseBankKey, dataConfidenceFromData } from '../data/scoring';
 import { getMarketForCountry } from '../data/utils';
@@ -14,17 +20,20 @@ import { useFavorites } from '../context/FavoritesContext';
 import useFeedback from '../hooks/useFeedback';
 import FreshnessBadge from '../components/common/FreshnessBadge';
 import { BANK_METADATA, bankFreshness } from '../data/metadata';
-import { getIntelForBank, getPendingCount } from '../data/userIntel';
+import { getIntelForBank, getPendingCount, getApprovedIntelByTarget } from '../data/userIntel';
 import IntelPanel from '../components/intel/IntelPanel';
 import { NewsSignalBadge } from '../components/live/LiveNewsFeed';
 import LiveStockTicker from '../components/live/LiveStockTicker';
 import { AiSignalBadge } from '../components/live/AiInsightsCard';
 import { matchZonesToLandingZones } from '../utils/zoneMatching';
+import Section from '../components/common/Section';
 import MeetingContextBar from '../components/bank/MeetingContextBar';
 import MeetingPrepBrief from '../components/bank/MeetingPrepBrief';
 import DiscoveryStoryline from '../components/bank/DiscoveryStoryline';
 import CascadeProgressBar from '../components/bank/CascadeProgressBar';
-import { PrepareTab, PositionTab, QualifyTab } from '../components/bank/tabs';
+import WhatsChangedCard from '../components/bank/WhatsChangedCard';
+import WhatsChangedSummary from '../components/bank/WhatsChangedSummary';
+import { PrepareTab, PositionTab, QualifyTab, MeetingHistoryTab, PeopleTab, AccountPlanTab } from '../components/bank/tabs';
 import { MeetingProvider, useMeeting } from '../context/MeetingContext';
 import { useLandingZoneMatrix, useDiscoveryStoryline } from '../hooks/useData';
 import { analyzeLandingZones as apiAnalyzeLandingZones, generateDiscoveryStoryline as apiGenerateDiscoveryStoryline, generateMeetingPrep as apiGenerateMeetingPrep, generateValueHypothesis as apiGenerateValueHypothesis } from '../data/api';
@@ -50,11 +59,16 @@ export default function BankPage() {
 
 function BankPageContent({ bankKey: key }) {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = parseInt(searchParams.get('tab') || '0');
+  const handleTabChange = (i) => setSearchParams({ tab: i }, { replace: true });
+
   const { meetingContext, updateContext: handleContextChange, meetingActive, meetingRoleKeys } = useMeeting();
   const [briefingOpen, setBriefingOpen] = useState(false);
   const [quickPrepOpen, setQuickPrepOpen] = useState(false);
   const [intelOpen, setIntelOpen] = useState(false);
   const [intelRefresh, setIntelRefresh] = useState(0);
+  const [selectedPlay, setSelectedPlay] = useState(null); // Intelligence Layer: selected play for detail view
   const deepDiveRef = useRef(null);
 
   // Fetch bank data from API
@@ -79,8 +93,27 @@ function BankPageContent({ bankKey: key }) {
   const meta = BANK_METADATA[key];
   const freshness = bankFreshness(key);
   const hasLiveData = !!(data?.live_stock || data?.live_news || cx?.live_ratings || aiAnalysis);
-  const intelEntries = getIntelForBank(key);
-  const pendingIntel = getPendingCount(key);
+  const intelEntries = useMemo(() => getIntelForBank(key), [key, intelRefresh]);
+  const pendingIntel = useMemo(() => getPendingCount(key), [key, intelRefresh]);
+
+  // Merge approved intel into bank data for cross-tab surfacing
+  const approvedIntel = useMemo(() => getApprovedIntelByTarget(key), [key, intelRefresh]);
+  const allSignals = useMemo(() => [
+    ...(data?.signals || []),
+    ...(approvedIntel.signals || []).map(e => ({
+      signal: e.structured?.signal || e.content,
+      implication: e.structured?.implication || 'User-contributed intel',
+      _fromIntel: true,
+    })),
+  ], [data, approvedIntel]);
+  const allPainPoints = useMemo(() => [
+    ...(data?.pain_points || []),
+    ...(approvedIntel.pain_points || []).map(e => ({
+      title: e.structured?.title || e.content?.substring(0, 50),
+      detail: e.structured?.detail || e.content,
+      _fromIntel: true,
+    })),
+  ], [data, approvedIntel]);
   const refreshIntel = useCallback(() => setIntelRefresh(n => n + 1), []);
   const { toggle: toggleFav, isFavorite } = useFavorites();
   const { getFeedback, setFeedbackFor } = useFeedback();
@@ -150,6 +183,13 @@ function BankPageContent({ bankKey: key }) {
         attendees: meetingCtx.attendees, topics: meetingCtx.topics,
         scopeKnown: meetingCtx.scopeKnown, painPointKnown: meetingCtx.painPointKnown,
         scopeText: meetingCtx.scopeText, painText: meetingCtx.painText,
+        // Position-First Mode fields
+        mode: meetingCtx.mode || 'stakeholder',
+        positionProduct: meetingCtx.positionProduct,
+        positionPainPoints: meetingCtx.positionPainPoints,
+        // Competitive context
+        competitors: meetingCtx.competitors,
+        region: meetingCtx.region,
       });
       meetingPrepResult = result;
       handleContextChange(prev => ({ ...prev, meetingPrepBrief: result }));
@@ -310,9 +350,8 @@ function BankPageContent({ bankKey: key }) {
   const topPeople = (data.key_decision_makers || []).slice(0, 4);
   const allPeople = data.key_decision_makers || [];
 
-  // Derived data for tab components
-  const allSignals = data.signals || [];
-  const topPainPoints = (data.pain_points || []).slice(0, 2);
+  // Derived data for tab components (allSignals and allPainPoints defined above with intel merge)
+  const topPainPoints = allPainPoints.slice(0, 2);
   const liveNews = (data.live_news?.articles || []).slice(0, 2);
   const discoveryQuestions = (vs?.discovery_questions || []).slice(0, 5);
 
@@ -323,102 +362,90 @@ function BankPageContent({ bankKey: key }) {
   return (
     <div className="animate-fade-in-up">
 
-      {/* ── HEADER ─────────────────────────────────────────────────── */}
-      {/* Row 1: Back + Identity + Score */}
-      <div className="flex items-center gap-2 mb-1">
-        <button onClick={() => navigate(-1)} className="p-1 text-fg-muted hover:text-primary transition-colors shrink-0">
-          <ArrowLeft size={16} />
-        </button>
-        <h2 className="text-lg font-black text-fg truncate min-w-0 flex-1">{data.bank_name}</h2>
-        <span className="px-2 py-0.5 rounded-full text-xs font-black text-white shrink-0"
-              style={{ backgroundColor: scoreColor(score) }}>
-          {score}/10
-        </span>
-        <FavoriteButton active={isFavorite(key, 'bank')} onClick={() => toggleFav({ key, type: 'bank', name: data.bank_name })} />
-      </div>
-
-      {/* Row 2: Metadata badges */}
-      <div className="flex items-center gap-2 flex-wrap mb-2 pl-8">
-        <ConfidenceBadge level={conf.level} />
-        <FreshnessBadge date={meta?.as_of || '2026-03-10'} label={meta?.kpis_period || 'Dataset'} compact />
-        <LiveStockTicker bankData={data} />
-        <NewsSignalBadge bankData={data} />
-        {aiAnalysis && <AiSignalBadge aiAnalysis={aiAnalysis} />}
-        {grp && <span className="text-[9px] font-bold text-primary bg-primary-50 px-2 py-0.5 rounded shrink-0">🔗 {grp.group_name}</span>}
-      </div>
-
-      {/* Row 3: Action buttons — labeled, grouped by function */}
-      <div className="flex items-center gap-1.5 flex-wrap pl-8 mb-3">
-        {/* Prep actions */}
-        <button onClick={() => setQuickPrepOpen(true)}
-          className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[10px] font-bold bg-primary/5 text-primary hover:bg-primary/10 transition-colors border border-primary/10">
-          <Clock size={12} /> 2-Min Prep
-        </button>
-        <button onClick={() => setBriefingOpen(true)}
-          className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[10px] font-bold bg-primary/5 text-primary hover:bg-primary/10 transition-colors border border-primary/10">
-          <FileText size={12} /> Full Briefing
-        </button>
-
-        {/* Divider */}
-        <div className="w-px h-4 bg-border mx-0.5" />
-
-        {/* Export actions */}
-        <ExportBar bankName={data.bank_name} />
-        <button
-          onClick={async () => {
-            const { generateDiscoveryPresentation } = await import('../utils/generateDiscoveryPresentation');
-            generateDiscoveryPresentation({
-              bankName: data.bank_name,
-              storyline: storylineData?.storyline || null,
-              meetingBrief: meetingContext.meetingPrepBrief,
-              attendees: meetingContext.attendees,
-              topics: meetingContext.topics,
-            });
-          }}
-          title="Discovery Meeting Presentation"
-          disabled={!storylineData && !meetingContext.meetingPrepBrief}
-          className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[10px] font-bold transition-colors border
-            ${storylineData || meetingContext.meetingPrepBrief
-              ? 'bg-violet-50 text-violet-600 hover:bg-violet-100 border-violet-100 dark:bg-violet-900/20 dark:text-violet-400 dark:border-violet-800'
-              : 'bg-surface-2 text-fg-disabled border-border opacity-50 cursor-not-allowed'}`}
-        >
-          <Presentation size={12} /> Presentation
-        </button>
-        <button
-          onClick={async () => {
-            const { generateAssessmentHtml } = await import('../utils/generateAssessmentHtml');
-            generateAssessmentHtml({ bankKey: key, bankData: data, qualData: qd, cxData: cx, compData: comp, valueSelling: vs, score });
-          }}
-          className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[10px] font-bold bg-surface-2 text-fg-muted hover:bg-surface-3 transition-colors border border-border"
-        >
-          <LayoutDashboard size={12} /> Dashboard
-        </button>
-
-        {/* Divider */}
-        <div className="w-px h-4 bg-border mx-0.5" />
-
-        {/* Intel */}
-        <button onClick={() => setIntelOpen(true)}
-          className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[10px] font-bold bg-surface-2 text-fg-muted hover:bg-surface-3 transition-colors border border-border relative">
-          <Plus size={12} /> Add Intel
-          {pendingIntel > 0 && (
-            <span className="ml-0.5 px-1.5 py-0.5 rounded-full text-[8px] font-black bg-danger text-white">{pendingIntel}</span>
-          )}
-        </button>
-      </div>
-
-      {/* ── INLINE KPIs — always visible ────────────────────────────── */}
-      {data.kpis?.length > 0 && (
-        <div className="flex gap-1.5 flex-wrap pl-8 mb-3">
-          {data.kpis.slice(0, 5).map((k, i) => (
-            <span key={i} className="text-[9px] text-fg-muted bg-surface-2 border border-border rounded px-2 py-0.5">
-              <span className="text-fg-disabled">{k.label}:</span> <strong className="text-fg">{k.value}</strong>
-            </span>
-          ))}
-        </div>
+      {/* ── QUICK INTEL CARD ──────────────────────────────────────── */}
+      <QuickIntelCard
+        bankKey={key}
+        bankName={data.bank_name}
+        country={data.country}
+        score={score}
+        data={data}
+        qualification={qd}
+        onPrepMeeting={() => {
+          // Scroll to meeting context bar
+          document.getElementById('meeting-setup')?.scrollIntoView({ behavior: 'smooth' });
+        }}
+        onQuickPrep={() => setQuickPrepOpen(true)}
+        onBriefing={() => setBriefingOpen(true)}
+        onPresentation={async () => {
+          const { generateDiscoveryPresentation } = await import('../utils/generateDiscoveryPresentation');
+          generateDiscoveryPresentation({ bankName: data.bank_name, storyline: storylineData?.storyline || null, meetingBrief: meetingContext.meetingPrepBrief, attendees: meetingContext.attendees, topics: meetingContext.topics });
+        }}
+        onDashboard={async () => {
+          const { generateAssessmentHtml } = await import('../utils/generateAssessmentHtml');
+          generateAssessmentHtml({ bankKey: key, bankData: data, qualData: qd, cxData: cx, compData: comp, valueSelling: vs, score });
+        }}
+        onIntel={() => setIntelOpen(true)}
+      />
+      {/* ── INTELLIGENCE LAYER: Onboarding + Plays + Signals ────────── */}
+      <IntelligenceOnboarding />
+      {selectedPlay ? (
+        <PlayDetail dealId={key} playId={selectedPlay.id} onBack={() => setSelectedPlay(null)} />
+      ) : (
+        <>
+          <PlayDashboard dealId={key} onPlaySelect={(play) => setSelectedPlay(play)} />
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
+            <div className="lg:col-span-2">
+              <details open>
+                <summary className="text-[10px] font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:text-slate-700 transition-colors mb-2">
+                  Deal Signals
+                </summary>
+                <SignalFeed dealId={key} />
+              </details>
+            </div>
+            <div>
+              <DealHealthDashboard dealId={key} />
+            </div>
+          </div>
+        </>
       )}
 
-      {/* ── MEETING SETUP — compact bar ─────────────────────────────── */}
+      {/* ── BANK SNAPSHOT — collapsed by default ─────────────────────── */}
+      <Section title="Bank Snapshot" defaultOpen={false}>
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex-1">
+            {data.tagline && <p className="text-xs text-fg-muted italic mb-3">{data.tagline}</p>}
+            {data.kpis?.length > 0 && (
+              <div className="flex gap-1.5 flex-wrap mb-3">
+                {data.kpis.map((k, i) => (
+                  <span key={i} className="text-[9px] text-fg-muted bg-surface-2 border border-border rounded px-2 py-0.5">
+                    <span className="text-fg-disabled">{k.label}:</span> <strong className="text-fg">{k.value}</strong>
+                  </span>
+                ))}
+              </div>
+            )}
+            <div className="flex items-center gap-2 flex-wrap">
+              <NewsSignalBadge bankData={data} />
+              {aiAnalysis && <AiSignalBadge aiAnalysis={aiAnalysis} />}
+              {grp && <span className="text-[9px] font-bold text-primary bg-primary-50 px-2 py-0.5 rounded shrink-0">🔗 {grp.group_name}</span>}
+            </div>
+          </div>
+        </div>
+      </Section>
+
+      {/* ── STEP 1: Meeting Setup ────────────────────────────────────── */}
+      <div className="flex items-center gap-2 mb-2 mt-2">
+        <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black shrink-0 ${
+          meetingActive || meetingContext.positionProduct ? 'bg-emerald-500 text-white' : 'bg-primary text-white'
+        }`}>
+          {meetingActive || meetingContext.positionProduct ? '✓' : '1'}
+        </span>
+        <span className="text-xs font-bold text-fg">
+          {meetingContext.mode === 'position' && meetingContext.positionProduct
+            ? `Positioning: ${meetingContext.positionProduct}`
+            : meetingActive ? 'Meeting configured' : 'Set up your meeting'}
+        </span>
+        <div className="flex-1 h-px bg-border" />
+      </div>
       <MeetingContextBar
         kdms={data.key_decision_makers || []}
         meetingContext={meetingContext}
@@ -434,14 +461,29 @@ function BankPageContent({ bankKey: key }) {
         <CascadeProgressBar status={cascadeStatus} />
       )}
 
-      {/* ── AI Outputs (Meeting Prep + Storyline) ───────────────────── */}
+      {/* ── STEP 2: Review AI Brief ──────────────────────────────────── */}
+      <div className="flex items-center gap-2 mb-2 mt-4">
+        <span className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-black shrink-0 ${
+          (meetingContext.meetingPrepBrief || storylineData) ? 'bg-emerald-500 text-white' : 'bg-primary/20 text-primary'
+        }`}>
+          {(meetingContext.meetingPrepBrief || storylineData) ? '✓' : '2'}
+        </span>
+        <span className="text-xs font-bold text-fg">
+          {(meetingContext.meetingPrepBrief || storylineData) ? 'AI brief ready' : 'Generate AI brief'}
+        </span>
+        <div className="flex-1 h-px bg-border" />
+      </div>
+
       {(meetingContext.meetingPrepBrief || storylineData) && (
-        <div className="mt-3">
+        <div className="mt-2">
           {meetingContext.meetingPrepBrief && (
             <MeetingPrepBrief
               brief={meetingContext.meetingPrepBrief}
               bankName={data.bank_name || parseBankKey(key).bank}
+              bankKey={key}
               onClear={() => handleContextChange(prev => ({ ...prev, meetingPrepBrief: null }))}
+              cascadeStatus={cascadeStatus}
+              attendees={meetingContext.attendees}
             />
           )}
           <DiscoveryStoryline
@@ -465,12 +507,26 @@ function BankPageContent({ bankKey: key }) {
         />
       )}
 
-      {/* ═══════════════════════════════════════════════════════════════
-       *  MAIN INTELLIGENCE — 3 Task-Based Tabs
-       *  Prepare (get ready) → Position (sell) → Qualify (close)
-       * ═══════════════════════════════════════════════════════════════ */}
-      <div className="mt-4">
-        <TabBar id="phase-tabs" sticky tabs={[
+      {/* ── STEP 3: Explore Intelligence ──────────────────────────────── */}
+      <div className="flex items-center gap-2 mb-3 mt-5">
+        <span className="w-6 h-6 rounded-full bg-primary flex items-center justify-center text-white text-[10px] font-black shrink-0">3</span>
+        <span className="text-xs font-bold text-fg">Explore intelligence</span>
+        <div className="flex-1 h-px bg-border" />
+      </div>
+      <WhatsChangedSummary bankKey={key} />
+      <WhatsChangedCard bankKey={key} />
+      {!hasLiveData && (
+        <div className="p-3 bg-surface-2 border border-border rounded-lg text-xs text-fg-muted mb-3 flex items-start gap-2">
+          <span className="text-base leading-none">💡</span>
+          <div>
+            <span className="font-bold text-fg">Live signals not yet loaded.</span>
+            {' '}News, app ratings, stock prices, and AI insights are available when the data pipeline has run.
+            <code className="text-[9px] bg-surface px-1.5 py-0.5 rounded ml-1">npm run refresh</code>
+          </div>
+        </div>
+      )}
+      <div>
+        <TabBar id="phase-tabs" sticky activeTab={activeTab} onTabChange={handleTabChange} tabs={[
           {
             label: '🎯 Prepare',
             badge: meetingActive ? 'dot' : null,
@@ -513,6 +569,39 @@ function BankPageContent({ bankKey: key }) {
                 discoveryQuestions={discoveryQuestions}
                 intelEntries={intelEntries} pendingIntel={pendingIntel}
                 onAddIntel={() => setIntelOpen(true)} refreshIntel={refreshIntel}
+              />
+            ),
+          },
+          {
+            label: '👥 People',
+            badge: bankProfile?.persons?.length || null,
+            content: (
+              <PeopleTab
+                bankKey={key}
+                meetingActive={meetingActive}
+                meetingContext={meetingContext}
+                meetingTips={meetingTips}
+                allPeople={allPeople}
+                topPeople={topPeople}
+                scrollToDeepDive={scrollToDeepDive}
+                persons={bankProfile?.persons}
+                personProvenance={bankProfile?.person_provenance}
+              />
+            ),
+          },
+          {
+            label: '📋 Meetings',
+            content: <MeetingHistoryTab bankKey={key} />,
+          },
+          {
+            label: '📊 Account Plan',
+            content: (
+              <AccountPlanTab
+                bankKey={key}
+                data={data}
+                qd={qd}
+                comp={comp}
+                researchAvailable={researchAvailable}
               />
             ),
           },

@@ -438,11 +438,23 @@ export async function handleDataRoute(req, res, { path, url, db, parseRow, parse
       WHERE b.country IN (${placeholders}) OR b.country LIKE '%' || ? || '%'
       ORDER BY b.bank_name
     `).all(...countries, countries[0]);
-    const banks = rows.map(r => ({
-      key: r.key, bank_name: r.bank_name, country: r.country, tagline: r.tagline,
-      data: r.bank_data ? JSON.parse(r.bank_data) : null,
-      qualification: r.qual_data ? JSON.parse(r.qual_data) : null,
-    }));
+    const MIN_SCORE = 3;
+    const banks = rows.map(r => {
+      const qd = r.qual_data ? JSON.parse(r.qual_data) : null;
+      let score = 0;
+      if (qd) {
+        const fw = { firmographics: 0.10, technographics: 0.15, decision_process: 0.10, landing_zones: 0.20, pain_push: 0.20, power_map: 0.15, partner_access: 0.10 };
+        for (const [dim, weight] of Object.entries(fw)) {
+          if (qd[dim]?.score) score += qd[dim].score * weight;
+        }
+      }
+      return {
+        key: r.key, bank_name: r.bank_name, country: r.country, tagline: r.tagline,
+        data: r.bank_data ? JSON.parse(r.bank_data) : null,
+        qualification: qd,
+        score: Math.round(score * 10) / 10,
+      };
+    }).filter(b => b.score > MIN_SCORE);
     jsonResponse(res, 200, banks);
     return true;
   }
@@ -477,12 +489,25 @@ export async function handleDataRoute(req, res, { path, url, db, parseRow, parse
       WHERE b.country = ? OR b.country LIKE '%' || ? || '%'
       ORDER BY b.bank_name
     `).all(name, name);
-    const banks = rows.map(r => ({
-      key: r.key, bank_name: r.bank_name, country: r.country, tagline: r.tagline,
-      data: r.bank_data ? JSON.parse(r.bank_data) : null,
-      qualification: r.qual_data ? JSON.parse(r.qual_data) : null,
-      value_selling: r.vs_data ? JSON.parse(r.vs_data) : null,
-    }));
+    const MIN_SCORE = 3;
+    const banks = rows.map(r => {
+      const qd = r.qual_data ? JSON.parse(r.qual_data) : null;
+      // Calculate score server-side for filtering
+      let score = 0;
+      if (qd) {
+        const fw = { firmographics: 0.10, technographics: 0.15, decision_process: 0.10, landing_zones: 0.20, pain_push: 0.20, power_map: 0.15, partner_access: 0.10 };
+        for (const [dim, weight] of Object.entries(fw)) {
+          if (qd[dim]?.score) score += qd[dim].score * weight;
+        }
+      }
+      return {
+        key: r.key, bank_name: r.bank_name, country: r.country, tagline: r.tagline,
+        data: r.bank_data ? JSON.parse(r.bank_data) : null,
+        qualification: qd,
+        value_selling: r.vs_data ? JSON.parse(r.vs_data) : null,
+        score: Math.round(score * 10) / 10,
+      };
+    }).filter(b => b.score > MIN_SCORE);
     jsonResponse(res, 200, banks);
     return true;
   }
@@ -507,14 +532,14 @@ export async function handleDataRoute(req, res, { path, url, db, parseRow, parse
   if (match && req.method === 'POST') {
     const key = decodeURIComponent(match[1]);
     const body = await parseBody(req);
-    if (\!body.meeting_date) {
+    if (!body.meeting_date) {
       jsonResponse(res, 400, { error: 'Missing required field: meeting_date' });
       return true;
     }
     const id = crypto.randomUUID();
     db.prepare(`
-      INSERT INTO meeting_history (id, bank_key, meeting_date, attendees, key_topics, objections_raised, commitments_made, outcome, notes, source)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO meeting_history (id, bank_key, meeting_date, attendees, key_topics, objections_raised, commitments_made, outcome, notes, source, meeting_type)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
       id, key, body.meeting_date,
       body.attendees ? JSON.stringify(body.attendees) : null,
@@ -524,7 +549,27 @@ export async function handleDataRoute(req, res, { path, url, db, parseRow, parse
       body.outcome || null,
       body.notes || null,
       body.source || 'manual',
+      body.meeting_type || 'client',
     );
+    // Auto-advance deal stage based on meeting activity
+    if (body.meeting_type !== 'internal') {
+      const currentStatus = db.prepare('SELECT status FROM pipeline_settings WHERE bank_key = ?').get(key);
+      const status = currentStatus?.status || 'prospect';
+      const meetingTotal = db.prepare("SELECT COUNT(*) as c FROM meeting_history WHERE bank_key = ? AND meeting_type = 'client'").get(key).c;
+
+      let newStatus = null;
+      // Auto-advance: prospect → discovery on first meeting
+      if (status === 'prospect' && meetingTotal >= 1) newStatus = 'discovery';
+      // Auto-advance: discovery → qualification after 3+ meetings
+      else if (status === 'discovery' && meetingTotal >= 3) newStatus = 'qualification';
+
+      if (newStatus) {
+        db.prepare(`INSERT INTO pipeline_settings (bank_key, status, updated_at) VALUES (?, ?, datetime('now'))
+          ON CONFLICT(bank_key) DO UPDATE SET status = ?, updated_at = datetime('now')`)
+          .run(key, newStatus, newStatus);
+      }
+    }
+
     const created = db.prepare('SELECT * FROM meeting_history WHERE id = ?').get(id);
     jsonResponse(res, 201, parseRow('meeting_history', created));
     return true;
@@ -546,13 +591,13 @@ export async function handleDataRoute(req, res, { path, url, db, parseRow, parse
     const id = decodeURIComponent(match[2]);
     const body = await parseBody(req);
 
-    const allowedFields = ['meeting_date', 'attendees', 'key_topics', 'objections_raised', 'commitments_made', 'outcome', 'notes', 'source'];
+    const allowedFields = ['meeting_date', 'attendees', 'key_topics', 'objections_raised', 'commitments_made', 'outcome', 'notes', 'source', 'meeting_type'];
     const jsonFieldSet = new Set(['attendees', 'key_topics', 'objections_raised', 'commitments_made']);
     const updates = [];
     const values = [];
 
     for (const field of allowedFields) {
-      if (body[field] \!== undefined) {
+      if (body[field] !== undefined) {
         updates.push(field + ' = ?');
         values.push(jsonFieldSet.has(field) && typeof body[field] === 'object' ? JSON.stringify(body[field]) : body[field]);
       }
@@ -662,6 +707,11 @@ export async function handleDataRoute(req, res, { path, url, db, parseRow, parse
     const painPointsRows = db.prepare('SELECT * FROM pain_points WHERE bank_key = ?').all(key);
     const landingZonesRows = db.prepare('SELECT * FROM landing_zones WHERE bank_key = ? ORDER BY source, fit_score DESC').all(key);
 
+    // Layer 1: person provenance for source attribution on People tab
+    const personProvenanceRows = db.prepare(
+      "SELECT field_path, source_type, source_date, confidence_tier, is_stale FROM field_provenance WHERE entity_type = 'person' AND entity_key = ?"
+    ).all(key);
+
     const result = {
       ...parseRow('banks', bank),
       qualification: qual ? parseRow('qualification', qual).data : null,
@@ -674,6 +724,8 @@ export async function handleDataRoute(req, res, { path, url, db, parseRow, parse
       persons: parseRows('persons', personsRows),
       pain_points_normalized: parseRows('pain_points', painPointsRows),
       landing_zones_normalized: parseRows('landing_zones', landingZonesRows),
+      // Layer 1: person provenance for source badges
+      person_provenance: personProvenanceRows,
     };
     jsonResponse(res, 200, result);
     return true;
@@ -805,6 +857,352 @@ export async function handleDataRoute(req, res, { path, url, db, parseRow, parse
         .sort((a, b) => b[1] - a[1])
         .map(([section, count]) => ({ section, count, pct: totalCount > 0 ? Math.round((count / totalCount) * 100) : 0 })),
     });
+    return true;
+  }
+
+  // ── POST /api/deal-outcomes ── Record a deal outcome
+  if (path === '/api/deal-outcomes' && req.method === 'POST') {
+    const body = await parseBody(req);
+    const { bankKey, outcome } = body;
+    if (!bankKey || !outcome) { jsonResponse(res, 400, { error: 'bankKey and outcome required' }); return true; }
+    const id = crypto.randomUUID();
+    db.prepare(`INSERT INTO deal_outcomes (id, bank_key, outcome, arr_value, close_date, win_reasons, loss_reasons, competitor_won, lessons_learned) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
+      id, bankKey, outcome, body.arrValue || null, body.closeDate || null,
+      body.winReasons ? JSON.stringify(body.winReasons) : null,
+      body.lossReasons ? JSON.stringify(body.lossReasons) : null,
+      body.competitorWon || null, body.lessonsLearned || null
+    );
+    jsonResponse(res, 201, { id });
+    return true;
+  }
+
+  // ── GET /api/deal-outcomes ── List all deal outcomes (optional ?bankKey= filter)
+  if (path === '/api/deal-outcomes' && req.method === 'GET') {
+    const bankKey = url.searchParams.get('bankKey');
+    const rows = bankKey
+      ? db.prepare('SELECT * FROM deal_outcomes WHERE bank_key = ? ORDER BY created_at DESC').all(bankKey)
+      : db.prepare('SELECT * FROM deal_outcomes ORDER BY created_at DESC LIMIT 50').all();
+    jsonResponse(res, 200, parseRows('deal_outcomes', rows));
+    return true;
+  }
+
+  // ── GET /api/deal-outcomes/stats ── Win/loss aggregation
+  if (path === '/api/deal-outcomes/stats' && req.method === 'GET') {
+    const outcomes = db.prepare('SELECT outcome, COUNT(*) as count FROM deal_outcomes GROUP BY outcome').all();
+    const total = outcomes.reduce((s, o) => s + o.count, 0);
+    const recentLosses = db.prepare("SELECT bank_key, competitor_won, lessons_learned FROM deal_outcomes WHERE outcome = 'lost' ORDER BY created_at DESC LIMIT 5").all();
+    jsonResponse(res, 200, {
+      total,
+      breakdown: Object.fromEntries(outcomes.map(o => [o.outcome, o.count])),
+      winRate: total > 0 ? Math.round((outcomes.find(o => o.outcome === 'won')?.count || 0) / total * 100) : 0,
+      recentLosses,
+    });
+    return true;
+  }
+
+  // ── GET /api/banks/:key/status ── Single bank status for bank page
+  const bankStatusMatch = path.match(/^\/api\/banks\/([^/]+)\/status$/);
+  if (bankStatusMatch && req.method === 'GET') {
+    const bk = decodeURIComponent(bankStatusMatch[1]);
+    const row = db.prepare('SELECT status, excluded, disqualify_reason FROM pipeline_settings WHERE bank_key = ?').get(bk);
+    jsonResponse(res, 200, row || { status: 'prospect', excluded: false, disqualify_reason: null });
+    return true;
+  }
+
+  // ── GET /api/pipeline-settings ── List all banks with status + exclusion
+  if (path === '/api/pipeline-settings' && req.method === 'GET') {
+    const banks = db.prepare('SELECT key, bank_name, country, data FROM banks ORDER BY bank_name').all();
+    const settings = db.prepare('SELECT bank_key, excluded, status, disqualify_reason FROM pipeline_settings').all();
+    const settingsMap = {};
+    settings.forEach(s => { settingsMap[s.bank_key] = s; });
+
+    // Get qualification scores
+    const quals = db.prepare('SELECT bank_key, data FROM qualification').all();
+    const qualMap = {};
+    quals.forEach(q => { qualMap[q.bank_key] = JSON.parse(q.data || '{}'); });
+
+    const result = banks.map(b => {
+      const s = settingsMap[b.key] || {};
+      const bd = JSON.parse(b.data || '{}');
+      // Compute score inline
+      const qd = qualMap[b.key];
+      let score = 0;
+      if (qd) {
+        const fw = { firmographics: 0.10, technographics: 0.15, decision_process: 0.10, landing_zones: 0.20, pain_push: 0.20, power_map: 0.15, partner_access: 0.10 };
+        for (const [dim, weight] of Object.entries(fw)) {
+          if (qd[dim]?.score) score += qd[dim].score * weight;
+        }
+      }
+      return {
+        key: b.key,
+        bank_name: b.bank_name,
+        country: b.country,
+        score: Math.round(score * 10) / 10,
+        deal_size: bd.backbase_qualification?.deal_size || '',
+        excluded: s.excluded === 1,
+        status: s.status || 'prospect',
+        disqualify_reason: s.disqualify_reason || null,
+      };
+    });
+    jsonResponse(res, 200, result);
+    return true;
+  }
+
+  // ── PUT /api/pipeline-settings/:bankKey ── Update bank status + exclusion
+  const settingsMatch = path.match(/^\/api\/pipeline-settings\/([^/]+)$/);
+  if (settingsMatch && req.method === 'PUT') {
+    const bankKey = decodeURIComponent(settingsMatch[1]);
+    const body = await parseBody(req);
+    const excluded = body.excluded ? 1 : 0;
+    const status = body.status || 'prospect';
+    const disqualifyReason = body.disqualify_reason || null;
+
+    // Auto-exclude disqualified and lost banks from pipeline
+    const effectiveExcluded = (status === 'disqualified' || status === 'lost') ? 1 : excluded;
+
+    db.prepare(`INSERT INTO pipeline_settings (bank_key, excluded, status, disqualify_reason, updated_at)
+      VALUES (?, ?, ?, ?, datetime('now'))
+      ON CONFLICT(bank_key) DO UPDATE SET excluded = ?, status = ?, disqualify_reason = ?, updated_at = datetime('now')`)
+      .run(bankKey, effectiveExcluded, status, disqualifyReason, effectiveExcluded, status, disqualifyReason);
+
+    jsonResponse(res, 200, { bank_key: bankKey, excluded: !!effectiveExcluded, status, disqualify_reason: disqualifyReason });
+    return true;
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  // INTELLIGENCE LAYER — Plays, Signals, Outputs, Feedback
+  // ══════════════════════════════════════════════════════════════
+
+  // ── POST /api/deals/:dealId/plays — Create/activate a play ──
+  match = path.match(/^\/api\/deals\/([^/]+)\/plays$/);
+  if (match && req.method === 'POST') {
+    const dealId = decodeURIComponent(match[1]);
+    const body = await parseBody(req);
+    if (!body.play_type) { jsonResponse(res, 400, { error: 'play_type required' }); return true; }
+    const id = crypto.randomUUID();
+    db.prepare('INSERT INTO deal_plays (id, deal_id, play_type) VALUES (?, ?, ?)').run(id, dealId, body.play_type);
+    const created = db.prepare('SELECT * FROM deal_plays WHERE id = ?').get(id);
+    jsonResponse(res, 201, created);
+    return true;
+  }
+
+  // ── GET /api/deals/:dealId/plays — List plays for a deal ──
+  match = path.match(/^\/api\/deals\/([^/]+)\/plays$/);
+  if (match && req.method === 'GET') {
+    const dealId = decodeURIComponent(match[1]);
+    const rows = db.prepare('SELECT * FROM deal_plays WHERE deal_id = ? ORDER BY created_at DESC').all(dealId);
+    // Attach output counts per play
+    const plays = rows.map(p => {
+      const outputCount = db.prepare('SELECT COUNT(*) as c FROM play_outputs WHERE play_id = ?').get(p.id).c;
+      const feedbackCount = db.prepare("SELECT COUNT(*) as c FROM play_outputs WHERE play_id = ? AND feedback IS NOT NULL").get(p.id).c;
+      return { ...p, output_count: outputCount, feedback_count: feedbackCount };
+    });
+    jsonResponse(res, 200, plays);
+    return true;
+  }
+
+  // ── GET /api/deals/:dealId/plays/:playId — Play detail with outputs ──
+  match = path.match(/^\/api\/deals\/([^/]+)\/plays\/([^/]+)$/);
+  if (match && req.method === 'GET') {
+    const playId = decodeURIComponent(match[2]);
+    const play = db.prepare('SELECT * FROM deal_plays WHERE id = ?').get(playId);
+    if (!play) { jsonResponse(res, 404, { error: 'Play not found' }); return true; }
+    const outputs = db.prepare('SELECT * FROM play_outputs WHERE play_id = ? ORDER BY created_at DESC').all(playId);
+    jsonResponse(res, 200, { ...play, outputs: parseRows('play_outputs', outputs) });
+    return true;
+  }
+
+  // ── PUT /api/deals/:dealId/plays/:playId — Update play status ──
+  match = path.match(/^\/api\/deals\/([^/]+)\/plays\/([^/]+)$/);
+  if (match && req.method === 'PUT') {
+    const playId = decodeURIComponent(match[2]);
+    const body = await parseBody(req);
+    const updates = [];
+    const values = [];
+    if (body.status) { updates.push('status = ?'); values.push(body.status); }
+    if (body.status === 'completed') { updates.push("completed_at = datetime('now')"); }
+    updates.push("updated_at = datetime('now')");
+    values.push(playId);
+    db.prepare(`UPDATE deal_plays SET ${updates.join(', ')} WHERE id = ?`).run(...values);
+    const updated = db.prepare('SELECT * FROM deal_plays WHERE id = ?').get(playId);
+    jsonResponse(res, 200, updated);
+    return true;
+  }
+
+  // ── GET /api/plays/:playId/outputs — List outputs for a play ──
+  match = path.match(/^\/api\/plays\/([^/]+)\/outputs$/);
+  if (match && req.method === 'GET') {
+    const playId = decodeURIComponent(match[1]);
+    const rows = db.prepare('SELECT * FROM play_outputs WHERE play_id = ? ORDER BY created_at DESC').all(playId);
+    jsonResponse(res, 200, parseRows('play_outputs', rows));
+    return true;
+  }
+
+  // ── PUT /api/plays/:playId/outputs/:outputId — Update output ──
+  match = path.match(/^\/api\/plays\/([^/]+)\/outputs\/([^/]+)$/);
+  if (match && req.method === 'PUT') {
+    const outputId = decodeURIComponent(match[2]);
+    const body = await parseBody(req);
+    const updates = [];
+    const values = [];
+    if (body.content) { updates.push('content = ?'); values.push(body.content); }
+    if (body.feedback) { updates.push('feedback = ?'); values.push(body.feedback); }
+    if (body.used_in_meeting_id) { updates.push('used_in_meeting_id = ?'); values.push(body.used_in_meeting_id); }
+    if (body.confidence_tier) { updates.push('confidence_tier = ?'); values.push(body.confidence_tier); }
+    updates.push("updated_at = datetime('now')");
+    values.push(outputId);
+    db.prepare(`UPDATE play_outputs SET ${updates.join(', ')} WHERE id = ?`).run(...values);
+    const updated = db.prepare('SELECT * FROM play_outputs WHERE id = ?').get(outputId);
+    jsonResponse(res, 200, parseRow('play_outputs', updated));
+    return true;
+  }
+
+  // ── POST /api/plays/:playId/outputs/:outputId/feedback — Submit feedback ──
+  match = path.match(/^\/api\/plays\/([^/]+)\/outputs\/([^/]+)\/feedback$/);
+  if (match && req.method === 'POST') {
+    const outputId = decodeURIComponent(match[2]);
+    const body = await parseBody(req);
+    if (!body.feedback_type) { jsonResponse(res, 400, { error: 'feedback_type required' }); return true; }
+    const id = crypto.randomUUID();
+    db.prepare('INSERT INTO output_feedback (id, play_output_id, meeting_id, feedback_type, notes, stakeholder_reaction) VALUES (?, ?, ?, ?, ?, ?)').run(
+      id, outputId, body.meeting_id || null, body.feedback_type, body.notes || null, body.stakeholder_reaction || null
+    );
+    // Also update the play_output's feedback field
+    db.prepare('UPDATE play_outputs SET feedback = ? WHERE id = ?').run(body.feedback_type, outputId);
+    jsonResponse(res, 201, { id, feedback_type: body.feedback_type });
+    return true;
+  }
+
+  // ── POST /api/deals/:dealId/signals — Create a signal ──
+  match = path.match(/^\/api\/deals\/([^/]+)\/signals$/);
+  if (match && req.method === 'POST') {
+    const dealId = decodeURIComponent(match[1]);
+    const body = await parseBody(req);
+    if (!body.signal_category || !body.signal_event || !body.title) {
+      jsonResponse(res, 400, { error: 'signal_category, signal_event, and title required' });
+      return true;
+    }
+    const id = crypto.randomUUID();
+    db.prepare(`INSERT INTO deal_signals (id, deal_id, signal_category, signal_event, title, description, source_url, source_type, severity)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`).run(
+      id, dealId, body.signal_category, body.signal_event, body.title,
+      body.description || null, body.source_url || null, body.source_type || 'manual', body.severity || 'info'
+    );
+
+    // Route signal to active plays based on SIGNAL_CATALOGUE routing config
+    const SIGNAL_ROUTING = {
+      stakeholder: ['discovery'],
+      strategic: ['discovery', 'competitive'],
+      competitive: ['competitive'],
+      momentum: ['discovery', 'value', 'competitive', 'proposal', 'expansion'],
+      market: ['value', 'competitive'],
+      internal: ['value', 'proposal'],
+    };
+    const targetTypes = SIGNAL_ROUTING[body.signal_category] || [];
+    const activePlays = db.prepare("SELECT id, play_type FROM deal_plays WHERE deal_id = ? AND status = 'active'").all(dealId);
+    const routedPlays = activePlays.filter(p => targetTypes.includes(p.play_type));
+
+    if (routedPlays.length > 0) {
+      const playIds = routedPlays.map(p => p.id);
+      db.prepare('UPDATE deal_signals SET routed_to_plays = ? WHERE id = ?').run(JSON.stringify(playIds), id);
+
+      // Flag outputs as stale if signal is attention or urgent
+      if (body.severity === 'attention' || body.severity === 'urgent') {
+        const staleIds = [];
+        for (const play of routedPlays) {
+          const outputs = db.prepare("SELECT id FROM play_outputs WHERE play_id = ? AND confidence_tier != 'stale'").all(play.id);
+          for (const o of outputs) {
+            db.prepare("UPDATE play_outputs SET confidence_tier = 'stale', updated_at = datetime('now') WHERE id = ?").run(o.id);
+            staleIds.push(o.id);
+          }
+        }
+        if (staleIds.length > 0) {
+          db.prepare('UPDATE deal_signals SET triggered_output_ids = ? WHERE id = ?').run(JSON.stringify(staleIds), id);
+        }
+      }
+    }
+
+    jsonResponse(res, 201, { id, routed_to: routedPlays.length, outputs_staled: 0 });
+    return true;
+  }
+
+  // ── GET /api/deals/:dealId/signals — List signals ──
+  match = path.match(/^\/api\/deals\/([^/]+)\/signals$/);
+  if (match && req.method === 'GET') {
+    const dealId = decodeURIComponent(match[1]);
+    const category = url.searchParams.get('category');
+    const severity = url.searchParams.get('severity');
+    let sql = 'SELECT * FROM deal_signals WHERE deal_id = ?';
+    const params = [dealId];
+    if (category) { sql += ' AND signal_category = ?'; params.push(category); }
+    if (severity) { sql += ' AND severity = ?'; params.push(severity); }
+    sql += ' ORDER BY detected_at DESC LIMIT 50';
+    const rows = db.prepare(sql).all(...params);
+    jsonResponse(res, 200, parseRows('deal_signals', rows));
+    return true;
+  }
+
+  // ── PUT /api/deals/:dealId/signals/:signalId — Acknowledge/action ──
+  match = path.match(/^\/api\/deals\/([^/]+)\/signals\/([^/]+)$/);
+  if (match && req.method === 'PUT') {
+    const signalId = decodeURIComponent(match[2]);
+    const body = await parseBody(req);
+    if (body.acknowledged) {
+      db.prepare("UPDATE deal_signals SET acknowledged_at = datetime('now') WHERE id = ?").run(signalId);
+    }
+    if (body.actioned) {
+      db.prepare("UPDATE deal_signals SET actioned_at = datetime('now') WHERE id = ?").run(signalId);
+    }
+    const updated = db.prepare('SELECT * FROM deal_signals WHERE id = ?').get(signalId);
+    jsonResponse(res, 200, parseRow('deal_signals', updated));
+    return true;
+  }
+
+  // ── GET /api/deals/:dealId/signals/summary — Signal summary for WhatsChanged ──
+  match = path.match(/^\/api\/deals\/([^/]+)\/signals\/summary$/);
+  if (match && req.method === 'GET') {
+    const dealId = decodeURIComponent(match[1]);
+    const total = db.prepare('SELECT COUNT(*) as c FROM deal_signals WHERE deal_id = ?').get(dealId).c;
+    const unacknowledged = db.prepare('SELECT COUNT(*) as c FROM deal_signals WHERE deal_id = ? AND acknowledged_at IS NULL').get(dealId).c;
+    const bySeverity = db.prepare('SELECT severity, COUNT(*) as c FROM deal_signals WHERE deal_id = ? GROUP BY severity').all(dealId);
+    const byCategory = db.prepare('SELECT signal_category, COUNT(*) as c FROM deal_signals WHERE deal_id = ? AND acknowledged_at IS NULL GROUP BY signal_category').all(dealId);
+    const recent = db.prepare('SELECT * FROM deal_signals WHERE deal_id = ? ORDER BY detected_at DESC LIMIT 5').all(dealId);
+    // Count plays with stale outputs
+    const playsWithStale = db.prepare(`
+      SELECT COUNT(DISTINCT dp.id) as c FROM deal_plays dp
+      JOIN play_outputs po ON po.play_id = dp.id
+      WHERE dp.deal_id = ? AND dp.status = 'active' AND po.confidence_tier = 'stale'
+    `).get(dealId).c;
+
+    jsonResponse(res, 200, {
+      total, unacknowledged,
+      by_severity: Object.fromEntries(bySeverity.map(r => [r.severity, r.c])),
+      by_category: Object.fromEntries(byCategory.map(r => [r.signal_category, r.c])),
+      recent: parseRows('deal_signals', recent),
+      plays_with_stale_outputs: playsWithStale,
+    });
+    return true;
+  }
+
+  // ── GET /api/deals/:dealId/twin — Get current twin state ──
+  match = path.match(/^\/api\/deals\/([^/]+)\/twin$/);
+  if (match && req.method === 'GET') {
+    const dealId = decodeURIComponent(match[1]);
+    const state = db.prepare('SELECT * FROM deal_twin_state WHERE deal_id = ?').get(dealId);
+    if (!state) {
+      jsonResponse(res, 200, { deal_id: dealId, deal_health_score: null, message: 'No twin state calculated yet' });
+    } else {
+      jsonResponse(res, 200, parseRow('deal_twin_state', state));
+    }
+    return true;
+  }
+
+  // ── GET /api/deals/:dealId/twin/history — Historical snapshots ──
+  match = path.match(/^\/api\/deals\/([^/]+)\/twin\/history$/);
+  if (match && req.method === 'GET') {
+    const dealId = decodeURIComponent(match[1]);
+    const rows = db.prepare('SELECT * FROM deal_twin_history WHERE deal_id = ? ORDER BY snapshot_date DESC LIMIT 30').all(dealId);
+    jsonResponse(res, 200, rows);
     return true;
   }
 

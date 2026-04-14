@@ -68,13 +68,15 @@ let _stmtLandingZone = null;
 function stmtPerson() {
   if (!_stmtPerson) {
     _stmtPerson = getDb().prepare(`
-      INSERT INTO persons (id, bank_key, canonical_name, role, role_category, aliases, linkedin_url, note)
-      VALUES (@id, @bankKey, @canonicalName, @role, @roleCategory, @aliases, @linkedinUrl, @note)
+      INSERT INTO persons (id, bank_key, canonical_name, role, role_category, aliases, linkedin_url, note, is_legacy, discovery_source)
+      VALUES (@id, @bankKey, @canonicalName, @role, @roleCategory, @aliases, @linkedinUrl, @note, @isLegacy, @discoverySource)
       ON CONFLICT(bank_key, canonical_name) DO UPDATE SET
         role = excluded.role,
         role_category = excluded.role_category,
         linkedin_url = excluded.linkedin_url,
         note = excluded.note,
+        is_legacy = excluded.is_legacy,
+        discovery_source = excluded.discovery_source,
         updated_at = datetime('now')
     `);
   }
@@ -137,6 +139,8 @@ export function extractPersons(bankKey, bankData) {
       aliases: null, // populated by entityResolver
       linkedinUrl: kdm.linkedin || null,
       note: kdm.note || null,
+      isLegacy: 1,
+      discoverySource: 'legacy_seed',
     });
     count++;
   }

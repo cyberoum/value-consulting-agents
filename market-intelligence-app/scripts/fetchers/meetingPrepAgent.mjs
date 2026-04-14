@@ -545,7 +545,8 @@ Return ONLY valid JSON with this structure:
       "whyItMatters": "Why it matters to THIS persona at THIS bank — reference specific data points, KPIs, or news",
       "backbaseAngle": "How the product being positioned addresses it — be concrete about capabilities",
       "conversationHook": "A specific question to open this topic in conversation",
-      "inferred": false
+      "inferred": false,
+      "confidence": "verified|inferred|estimated"
     }
   ],
   "positioningStrategy": {
@@ -637,7 +638,14 @@ AI & OPERATIONS PERSONA FRAMING rules:
   2. STRATEGIC PRIORITIES: Lead with operational KPIs — STP rates, cost-to-serve, manual intervention reduction, FTE reallocation, processing time. These must appear as the first 1-2 priorities.
   3. BUDGET UNLOCK: Generate a "budgetUnlock" note — a 1-2 sentence recommendation on how to position Backbase as an operational efficiency investment (not a tech spend) to unlock budget from ops/transformation budgets rather than IT budgets.
   4. WHY BACKBASE REFRAME: If competitive context is present, reframe "backbaseWins" around Backbase APA (App Platform Accelerator) and operational use cases — intelligent routing, automated decisioning, self-service deflection, employee assist — not around developer experience or API architecture.
-- If NO AI/Operations personas are present, set "budgetUnlock" to null and use standard technology language.`;
+- If NO AI/Operations personas are present, set "budgetUnlock" to null and use standard technology language.
+
+CONFIDENCE TIER RULES for strategicPriorities:
+For each strategic priority, set the "confidence" field based on the DATA CONFIDENCE section (if provided):
+- "verified" — the priority directly references a fact marked [verified] in the DATA CONFIDENCE block (e.g., a KPI from an Annual Report, a confirmed stock price)
+- "inferred" — the priority references facts marked [inferred], or combines multiple data points to draw a conclusion
+- "estimated" — the priority is entirely your inference with no specific data backing from the provided context, or all supporting facts are [estimated] or STALE
+If no DATA CONFIDENCE block is provided, default all priorities to "inferred".`;
 
 const MEETING_PREP_SYSTEM_PROMPT = `You are a senior Backbase Value Consultant preparing a comprehensive meeting brief. You specialize in digital banking transformation and engagement banking.
 
@@ -653,7 +661,8 @@ Return ONLY valid JSON with this structure:
       "whyItMatters": "Why it matters to THIS persona at THIS bank — reference specific data points, KPIs, or news",
       "backbaseAngle": "How Backbase addresses it — be concrete about products/capabilities",
       "conversationHook": "A specific question to open this topic in conversation",
-      "inferred": false
+      "inferred": false,
+      "confidence": "verified|inferred|estimated"
     }
   ],
   "personIntelligence": {
@@ -741,7 +750,14 @@ AI & OPERATIONS PERSONA FRAMING rules:
   2. STRATEGIC PRIORITIES: Lead with operational KPIs — STP rates, cost-to-serve, manual intervention reduction, FTE reallocation, processing time. These must appear as the first 1-2 priorities.
   3. BUDGET UNLOCK: Generate a "budgetUnlock" note — a 1-2 sentence recommendation on how to position Backbase as an operational efficiency investment (not a tech spend) to unlock budget from ops/transformation budgets rather than IT budgets.
   4. WHY BACKBASE REFRAME: If competitive context is present, reframe "backbaseWins" around Backbase APA (App Platform Accelerator) and operational use cases — intelligent routing, automated decisioning, self-service deflection, employee assist — not around developer experience or API architecture.
-- If NO AI/Operations personas are present, set "budgetUnlock" to null and use standard technology language.`;
+- If NO AI/Operations personas are present, set "budgetUnlock" to null and use standard technology language.
+
+CONFIDENCE TIER RULES for strategicPriorities:
+For each strategic priority, set the "confidence" field based on the DATA CONFIDENCE section (if provided):
+- "verified" — the priority directly references a fact marked [verified] in the DATA CONFIDENCE block (e.g., a KPI from an Annual Report, a confirmed stock price)
+- "inferred" — the priority references facts marked [inferred], or combines multiple data points to draw a conclusion
+- "estimated" — the priority is entirely your inference with no specific data backing from the provided context, or all supporting facts are [estimated] or STALE
+If no DATA CONFIDENCE block is provided, default all priorities to "inferred".`;
 
 
 /**

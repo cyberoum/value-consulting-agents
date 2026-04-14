@@ -9,32 +9,42 @@ import SectionErrorBoundary from './SectionErrorBoundary';
  *  • Badge support: tabs can show counts / status dots via `tab.badge`
  *  • Keyboard nav: ← → arrows cycle through tabs
  */
-export default function TabBar({ tabs, defaultTab = 0, id = 'tab-indicator', sticky = false }) {
-  const [active, setActive] = useState(defaultTab);
+export default function TabBar({ tabs, defaultTab = 0, id = 'tab-indicator', sticky = false, activeTab, onTabChange }) {
+  const [internalActive, setInternalActive] = useState(defaultTab);
+
+  // Controlled mode: if activeTab prop is provided, use it; otherwise use internal state
+  const active = activeTab !== undefined ? activeTab : internalActive;
+  const setActive = (i) => {
+    setInternalActive(i);
+    onTabChange?.(i);
+  };
 
   // ── Keyboard navigation ──────────────────────────────────────────
   const handleKeyDown = useCallback((e) => {
-    if (e.key === 'ArrowRight') setActive(prev => (prev + 1) % tabs.length);
-    else if (e.key === 'ArrowLeft') setActive(prev => (prev - 1 + tabs.length) % tabs.length);
-  }, [tabs.length]);
+    if (e.key === 'ArrowRight') setActive((active + 1) % tabs.length);
+    else if (e.key === 'ArrowLeft') setActive((active - 1 + tabs.length) % tabs.length);
+  }, [tabs.length, active]);
 
   return (
     <div>
-      <div
-        className={`flex gap-0.5 mb-5 bg-surface-3 rounded-lg p-1 border border-border overflow-x-auto relative scrollbar-hide
-          ${sticky ? 'sticky top-[60px] z-30 shadow-[0_2px_8px_rgba(0,0,0,0.08)] backdrop-blur-sm bg-surface-3/95' : ''}`}
-        role="tablist"
-        onKeyDown={handleKeyDown}
-      >
-        {tabs.map((tab, i) => (
-          <button
-            key={i}
-            role="tab"
-            aria-selected={active === i}
-            tabIndex={active === i ? 0 : -1}
-            onClick={() => setActive(i)}
-            className={`flex-1 min-w-0 px-3 sm:px-4 py-2 rounded-md text-[11px] sm:text-xs font-semibold transition-colors whitespace-nowrap relative z-10
-              ${active === i ? 'text-primary' : 'text-fg-muted hover:text-fg'}`}
+      <div className="relative mb-5">
+        {/* Scroll fade indicator — shows there are more tabs */}
+        <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-surface-3 to-transparent z-20 pointer-events-none rounded-r-lg sm:hidden" />
+        <div
+          className={`flex gap-0.5 bg-surface-3 rounded-lg p-1 border border-border overflow-x-auto relative scrollbar-hide
+            ${sticky ? 'sticky top-[60px] z-30 shadow-[0_2px_8px_rgba(0,0,0,0.08)] backdrop-blur-sm bg-surface-3/95' : ''}`}
+          role="tablist"
+          onKeyDown={handleKeyDown}
+        >
+          {tabs.map((tab, i) => (
+            <button
+              key={i}
+              role="tab"
+              aria-selected={active === i}
+              tabIndex={active === i ? 0 : -1}
+              onClick={() => setActive(i)}
+              className={`min-w-fit shrink-0 px-3 sm:px-4 py-2 rounded-md text-[11px] sm:text-xs font-semibold transition-colors whitespace-nowrap relative z-10
+                ${active === i ? 'text-primary' : 'text-fg-muted hover:text-fg'}`}
           >
             {active === i && (
               <motion.div
@@ -58,6 +68,7 @@ export default function TabBar({ tabs, defaultTab = 0, id = 'tab-indicator', sti
             </span>
           </button>
         ))}
+        </div>
       </div>
 
       <AnimatePresence mode="wait">

@@ -1,0 +1,199 @@
+/**
+ * Nova Design System — "Scientific Luminance"
+ * ────────────────────────────────────────────
+ * Visual foundation inspired by stellar physics.
+ * Luminosity as a data metaphor: brightness = intelligence density.
+ *
+ * Named after the astronomical phenomenon: an ancient white dwarf
+ * that suddenly becomes visible when accreted matter reaches
+ * critical temperature and ignites.
+ */
+
+/* ── Fonts ── */
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&family=IBM+Plex+Mono:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap');
+
+/* ══════════════════════════════════════════════
+   ROOT DESIGN TOKENS
+   ══════════════════════════════════════════════ */
+
+:root {
+  /* ── Foundation: Warm White ── */
+  --bg-primary: #fafaf8;
+  --bg-secondary: #f5f4f0;
+  --bg-surface: #efeee9;
+  --bg-card: #ffffff;
+
+  /* ── Text: High Contrast, Warm Undertones ── */
+  --text-primary: #1a1816;
+  --text-secondary: #5c564e;
+  --text-muted: #9c958b;
+
+  /* ── Borders ── */
+  --border-subtle: rgba(0, 0, 0, 0.06);
+  --border-default: rgba(0, 0, 0, 0.10);
+
+  /* ── Nova Palette: Stellar Physics ── */
+
+  /* Accreting / Building — warm amber */
+  --nova-accreting: #c2850a;
+  --nova-accreting-light: #fef7e8;
+  --nova-accreting-glow: rgba(194, 133, 10, 0.08);
+
+  /* Ignited / Ready — warm white-gold */
+  --nova-ignited: #b8860b;
+  --nova-ignited-light: #fdf6e3;
+  --nova-ignited-glow: rgba(184, 134, 11, 0.12);
+
+  /* Radiant / Successful — deep emerald */
+  --nova-radiant: #2d7a4f;
+  --nova-radiant-light: #f0f9f0;
+  --nova-radiant-glow: rgba(45, 122, 79, 0.08);
+
+  /* Cooling / At Risk — warm red */
+  --nova-cooling: #c44536;
+  --nova-cooling-light: #fdf0ee;
+  --nova-cooling-glow: rgba(196, 69, 54, 0.08);
+
+  /* Dormant / Stale — warm gray */
+  --nova-dormant: #8a8279;
+  --nova-dormant-light: #f3f2ee;
+
+  /* Core — dense teal (primary accent) */
+  --nova-core: #1a6b5a;
+  --nova-core-light: #eef7f4;
+  --nova-core-hover: #14574a;
+
+  /* ── Typography ── */
+  --font-display: 'Instrument Serif', 'Playfair Display', Georgia, serif;
+  --font-body: 'DM Sans', 'Nunito Sans', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', 'JetBrains Mono', monospace;
+
+  /* Label properties */
+  --label-size: 0.65rem;
+  --label-tracking: 0.14em;
+  --label-weight: 600;
+  --label-color: var(--text-muted);
+
+  /* Typography scale */
+  --text-xs: 0.7rem;
+  --text-sm: 0.8rem;
+  --text-base: 0.925rem;
+  --text-lg: 1.1rem;
+  --text-xl: 1.4rem;
+  --text-2xl: 2rem;
+  --text-hero: 3rem;
+
+  /* ── Card Hierarchy ── */
+  --card-l1-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 0 0 1px rgba(0,0,0,0.02);
+  --card-l1-radius: 10px;
+  --card-l1-padding: 20px;
+
+  --card-l2-shadow: none;
+  --card-l2-radius: 8px;
+  --card-l2-padding: 12px;
+}
+
+/* ══════════════════════════════════════════════
+   UTILITY CLASSES
+   ══════════════════════════════════════════════ */
+
+/* Nova label style */
+.nova-label {
+  font-size: var(--label-size);
+  font-weight: var(--label-weight);
+  letter-spacing: var(--label-tracking);
+  text-transform: uppercase;
+  color: var(--label-color);
+}
+
+/* Nova card levels */
+.nova-card {
+  background: var(--bg-card);
+  border-radius: var(--card-l1-radius);
+  box-shadow: var(--card-l1-shadow);
+  padding: var(--card-l1-padding);
+}
+
+.nova-card-nested {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--card-l2-radius);
+  padding: var(--card-l2-padding);
+}
+
+/* Luminosity glows — the signature visual feature */
+.nova-glow-ignited {
+  box-shadow: 0 0 20px var(--nova-ignited-glow), var(--card-l1-shadow);
+}
+
+.nova-glow-radiant {
+  box-shadow: 0 0 20px var(--nova-radiant-glow), var(--card-l1-shadow);
+}
+
+.nova-glow-cooling {
+  box-shadow: 0 0 20px var(--nova-cooling-glow), var(--card-l1-shadow);
+}
+
+.nova-glow-accreting {
+  box-shadow: 0 0 20px var(--nova-accreting-glow), var(--card-l1-shadow);
+}
+
+/* Score glow for high-confidence numbers */
+.nova-score-glow {
+  text-shadow: 0 0 20px var(--nova-ignited-glow);
+}
+
+/* ══════════════════════════════════════════════
+   ANIMATIONS — Slow, warm, light-propagating
+   ══════════════════════════════════════════════ */
+
+/* Signal arrival pulse */
+@keyframes nova-signal-arrive {
+  0% { box-shadow: 0 0 0 0 var(--nova-accreting-glow); }
+  50% { box-shadow: 0 0 24px 4px var(--nova-accreting-glow); }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+.nova-signal-new { animation: nova-signal-arrive 2s ease-out; }
+
+/* Score count-up ignition */
+@keyframes nova-score-ignite {
+  0% { text-shadow: 0 0 0 transparent; opacity: 0.3; }
+  100% { text-shadow: 0 0 20px var(--nova-ignited-glow); opacity: 1; }
+}
+.nova-score-enter { animation: nova-score-ignite 1s ease-out 0.3s both; }
+
+/* Staggered card reveal */
+@keyframes nova-card-reveal {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.nova-card-enter { animation: nova-card-reveal 0.4s ease-out both; }
+.nova-card-enter:nth-child(1) { animation-delay: 0.05s; }
+.nova-card-enter:nth-child(2) { animation-delay: 0.1s; }
+.nova-card-enter:nth-child(3) { animation-delay: 0.15s; }
+.nova-card-enter:nth-child(4) { animation-delay: 0.2s; }
+.nova-card-enter:nth-child(5) { animation-delay: 0.25s; }
+
+/* Core glow breathing — always-on for active deals */
+@keyframes nova-core-breathe {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.6; }
+}
+.nova-core-glow { animation: nova-core-breathe 4s ease-in-out infinite; }
+
+/* Ring accretion — smooth fill */
+.nova-ring-fill { transition: stroke-dashoffset 1.2s cubic-bezier(0.4, 0, 0.2, 1); }
+
+/* Signal severity pulses */
+@keyframes nova-pulse-amber {
+  0% { box-shadow: 0 0 0 0 rgba(194, 133, 10, 0.15); }
+  50% { box-shadow: 0 0 16px 2px rgba(194, 133, 10, 0.15); }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+@keyframes nova-pulse-red {
+  0% { box-shadow: 0 0 0 0 rgba(196, 69, 54, 0.15); }
+  50% { box-shadow: 0 0 16px 2px rgba(196, 69, 54, 0.15); }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+.nova-pulse-attention { animation: nova-pulse-amber 2s ease-out; }
+.nova-pulse-urgent { animation: nova-pulse-red 2s ease-out; }

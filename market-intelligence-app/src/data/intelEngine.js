@@ -79,55 +79,63 @@ function structureLeadership(text, ctx) {
 }
 
 function structureMeetingNote(text, ctx) {
-  // Multi-output: meeting notes can produce signals, pain points, leadership updates, etc.
   const suggestions = [];
 
-  // Look for pain point indicators
+  // Pain points
   const painPatterns = /frustrat|struggle|challenge|problem|issue|pain|difficult|broken|slow|complex|expensive|cost overrun/gi;
   if (painPatterns.test(text)) {
     const painSentences = extractSentencesMatching(text, painPatterns);
-    suggestions.push({
-      targetCategory: 'pain_point',
-      title: extractTitle(painSentences[0] || ''),
-      detail: painSentences.join('. '),
-      confidence: 'likely',
-    });
+    suggestions.push({ targetCategory: 'pain_point', title: extractTitle(painSentences[0] || ''), detail: painSentences.join('. '), confidence: 'likely' });
   }
 
-  // Look for signal indicators
+  // Signals
   const signalPatterns = /announc|plan|strateg|invest|launch|partner|transform|migrat|replac|evaluat|RFP|vendor select/gi;
   if (signalPatterns.test(text)) {
     const signalSentences = extractSentencesMatching(text, signalPatterns);
-    suggestions.push({
-      targetCategory: 'signal',
-      signal: signalSentences[0] || '',
-      implication: signalSentences.slice(1).join('. '),
-      confidence: 'likely',
-    });
+    suggestions.push({ targetCategory: 'signal', signal: signalSentences[0] || '', implication: signalSentences.slice(1).join('. '), confidence: 'likely' });
   }
 
-  // Look for leadership mentions
+  // Leadership mentions
   const leadershipPatterns = /(?:met|spoke|call|meeting) with\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)+)/gi;
   const leaderMatch = leadershipPatterns.exec(text);
   if (leaderMatch) {
+    suggestions.push({ targetCategory: 'leadership', name: leaderMatch[1], detail: 'Direct contact established from meeting notes', confidence: 'confirmed' });
+  }
+
+  // Attribution: "X said/mentioned/confirmed that..." with KDM cross-reference
+  const attrPattern = /([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)\s+(?:said|mentioned|confirmed|noted|stated|explained|indicated|told us|pointed out)\s+(?:that\s+)?(.+?)(?:\.|$)/gi;
+  let attrMatch;
+  while ((attrMatch = attrPattern.exec(text)) !== null) {
+    const speaker = attrMatch[1];
+    const statement = attrMatch[2].trim();
+    const isKnownKdm = (ctx.key_decision_makers || []).some(k => k.name && speaker.toLowerCase().includes(k.name.split(' ').pop().toLowerCase()));
     suggestions.push({
-      targetCategory: 'leadership',
-      name: leaderMatch[1],
-      detail: `Direct contact established — mentioned in meeting notes`,
-      confidence: 'confirmed',
+      targetCategory: 'signal',
+      signal: speaker + ': "' + statement + '"',
+      implication: isKnownKdm ? 'Key stakeholder statement from ' + speaker : 'Attributed statement from ' + speaker,
+      confidence: isKnownKdm ? 'confirmed' : 'likely',
     });
   }
 
-  // Look for product interest
+  // Timeline blockers: "won't consider until 2027", "not before Q3 2026"
+  const blockerPattern = /(?:won't|will not|cannot|can't|not before|not until|after|by)\s+(?:consider|decide|evaluate|move|start|proceed|approve).+?(?:until|before|in)\s+(Q[1-4]\s*20\d{2}|20\d{2}|next (?:year|quarter|month))/gi;
+  let blockMatch;
+  while ((blockMatch = blockerPattern.exec(text)) !== null) {
+    suggestions.push({ targetCategory: 'qualification', update: blockMatch[0].trim(), dimension: 'decision_process', confidence: 'confirmed' });
+  }
+
+  // Future date signals: "planning for Q2 2027", "roadmap targets 2026"
+  const futureDatePattern = /(?:planning|expect|target|aiming|goal|roadmap|timeline).*?(Q[1-4]\s*20\d{2}|20\d{2}|next (?:year|quarter))/gi;
+  let futureMatch;
+  while ((futureMatch = futureDatePattern.exec(text)) !== null) {
+    suggestions.push({ targetCategory: 'signal', signal: futureMatch[0].trim(), implication: 'Timeline reference: ' + futureMatch[1], confidence: 'likely' });
+  }
+
+  // Product interest
   const productPatterns = /backbase|wealth|retail|business banking|onboarding|engagement|origination|lending|payment/gi;
   if (productPatterns.test(text)) {
     const productSentences = extractSentencesMatching(text, productPatterns);
-    suggestions.push({
-      targetCategory: 'qualification',
-      update: productSentences.join('. '),
-      dimension: 'landing_zones',
-      confidence: 'likely',
-    });
+    suggestions.push({ targetCategory: 'qualification', update: productSentences.join('. '), dimension: 'landing_zones', confidence: 'likely' });
   }
 
   return {

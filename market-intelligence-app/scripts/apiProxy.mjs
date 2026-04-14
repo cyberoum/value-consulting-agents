@@ -88,6 +88,9 @@ server.listen(PORT, () => {
   console.log(`    GET  /api/countries     — List countries`);
   console.log(`    GET  /api/stats         — Dashboard stats`);
   console.log(`    GET  /api/search?q=     — Full-text search`);
+  console.log(`    GET  /api/signals       — Live + static signals (blended)`);
+  console.log(`    POST /api/signals/refresh — Trigger signal refresh`);
+  console.log(`    GET  /api/signals/status — Refresh status & stats`);
   console.log(`\n  Ingestion Endpoints:`);
   console.log(`    GET  /api/ingestion-log          — Pipeline audit trail`);
   console.log(`    GET  /api/banks/:key/freshness   — Data freshness per source`);

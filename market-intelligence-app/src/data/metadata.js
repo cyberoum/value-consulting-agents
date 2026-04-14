@@ -2,8 +2,8 @@
 // This file is the single source of truth for when data was collected and last verified.
 
 export const DATASET_VERSION = '1.0.0';
-export const DATASET_DATE = '2026-03-10'; // When this dataset was authored
 export const DATASET_LABEL = 'Q1 2026 Intelligence Cycle';
+// DATASET_DATE is derived after BANK_METADATA is defined (see bottom of file)
 
 // Categories of time-sensitive fields and their typical shelf life (in days)
 export const FIELD_SHELF_LIFE = {
@@ -87,6 +87,13 @@ export function calcFreshness(dateStr) {
   if (days <= 365) return { age: days, level: 'aging', label: `${Math.round(days / 30)}mo ago`, color: '#E65100', bg: '#FFF3E0' };
   return { age: days, level: 'stale', label: `${Math.round(days / 365)}yr+ ago`, color: '#C62828', bg: '#FFEBEE' };
 }
+
+// Derive DATASET_DATE from the most recent bank's as_of date (auto-updates, never stale)
+export const DATASET_DATE = Object.values(BANK_METADATA)
+  .map(m => m.as_of)
+  .filter(Boolean)
+  .sort()
+  .reverse()[0] || '2026-01-01';
 
 // Get freshness for a specific bank
 export function bankFreshness(bankKey) {

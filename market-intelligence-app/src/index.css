@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700&display=swap');
 @import "tailwindcss";
 
 @theme {
@@ -18,32 +18,50 @@
   --color-success-subtle: #E8F5E9;
   --color-warning: #F57F17;
   --color-warning-subtle: #FFF8E1;
-  --color-surface: #FFFFFF;
-  --color-surface-2: #F8F9FA;
-  --color-surface-3: #F1F3F5;
-  --color-border: #E9ECEF;
-  --color-border-strong: #DEE2E6;
-  --color-fg: #091C35;
-  --color-fg-subtle: #495057;
-  --color-fg-muted: #868E96;
-  --color-fg-disabled: #ADB5BD;
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --color-surface: #ffffff;
+  --color-surface-2: #f5f4f0;
+  --color-surface-3: #efeee9;
+  --color-border: #e5e2db;
+  --color-border-strong: #d4d0c8;
+  --color-fg: #1a1816;
+  --color-fg-subtle: #5c564e;
+  --color-fg-muted: #9c958b;
+  --color-fg-disabled: #b8b2a8;
+  --font-sans: 'DM Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+  /* ── Intelligence Layer Design Tokens ── */
+  --color-il-accent: #0e7490;
+  --color-il-accent-light: #ecfeff;
+  --color-il-accent-border: #a5f3fc;
+  --color-il-growth: #059669;
+  --color-il-growth-bg: #ecfdf5;
+  --color-il-attention: #d97706;
+  --color-il-attention-bg: #fffbeb;
+  --color-il-risk: #dc2626;
+  --color-il-risk-bg: #fef2f2;
+  --color-il-complete: #7c3aed;
+  --color-il-complete-bg: #f5f3ff;
+  --color-il-info: #6b7280;
+  --color-il-info-bg: #f9fafb;
+  --color-il-card-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --color-il-card-shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --il-radius: 10px;
 }
 
 * { box-sizing: border-box; }
-body { margin: 0; font-family: var(--font-sans); -webkit-font-smoothing: antialiased; }
+body { margin: 0; font-family: var(--font-sans); -webkit-font-smoothing: antialiased; background: #fafaf8; color: #1a1816; }
 
 .dark body, .dark { color-scheme: dark; }
 .dark {
-  --color-surface: #0D1B2A;
-  --color-surface-2: #1B2838;
-  --color-surface-3: #243447;
-  --color-border: #2A3A4E;
-  --color-border-strong: #3A4E66;
-  --color-fg: #E8EDF3;
-  --color-fg-subtle: #B8C4D0;
-  --color-fg-muted: #8A98A8;
-  --color-fg-disabled: #5A6A7A;
+  --color-surface: #1a1816;
+  --color-surface-2: #252220;
+  --color-surface-3: #302d2a;
+  --color-border: #3d3935;
+  --color-border-strong: #504b45;
+  --color-fg: #f0ede8;
+  --color-fg-subtle: #c4bfb6;
+  --color-fg-muted: #8a8279;
+  --color-fg-disabled: #5c564e;
 }
 
 ::-webkit-scrollbar { width: 6px; height: 6px; }

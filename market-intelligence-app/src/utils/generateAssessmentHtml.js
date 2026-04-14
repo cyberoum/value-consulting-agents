@@ -165,7 +165,7 @@ export function generateAssessmentHtml({ bankKey, bankData, qualData, cxData, co
         <span>${esc(bd.country)}</span>
         <span>${region} Region</span>
         <span>Generated: ${today}</span>
-        <span>Backbase Market Intelligence</span>
+        <span>Nova by Backbase</span>
       </div>
     </div>
   </div>
@@ -276,7 +276,7 @@ export function generateAssessmentHtml({ bankKey, bankData, qualData, cxData, co
   </div>
 
   <div class="footer">
-    <p>Backbase Market Intelligence \u2022 Confidential</p>
+    <p>Nova by Backbase \u2022 Confidential</p>
     <p>Generated ${today} \u2022 ${esc(bd.bank_name)} Intelligence Dashboard</p>
     <p style="margin-top:8px;font-size:10px">Disclaimer: High-level estimates for pre-meeting preparation. Numbers should be validated through discovery.</p>
   </div>

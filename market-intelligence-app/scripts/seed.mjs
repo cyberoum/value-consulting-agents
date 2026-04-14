@@ -6,6 +6,7 @@
 import { getDb, closeDb } from './db.mjs';
 import { extractAllEntities } from './lib/entityExtractor.mjs';
 import { resolveAllPersonAliases } from './lib/entityResolver.mjs';
+import { writeProvenance } from './lib/provenanceWriter.mjs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 
@@ -23,6 +24,7 @@ const { MARKETS_META, MARKET_DATA } = await import(join(srcData, 'markets.js'));
 const { COUNTRY_DATA } = await import(join(srcData, 'countries.js'));
 const { GROUP_RELATIONSHIPS } = await import(join(srcData, 'relationships.js'));
 const { SOURCES } = await import(join(srcData, 'sources.js'));
+const { BANK_METADATA } = await import(join(srcData, 'metadata.js'));
 
 const db = getDb();
 
@@ -207,6 +209,72 @@ const seed = db.transaction(() => {
   if (resolverResult.clustersFound > 0) {
     console.log(`  Alias Resolution: ${resolverResult.clustersFound} clusters, ${resolverResult.aliasesWritten} aliases`);
   }
+
+  // ── LOB Inference for Org Chart ──
+  console.log('\n  Inferring LOB from roles...');
+  const LOB_PATTERNS = [
+    { pattern: /\b(technology|digital|IT|CTO|CIO|tech|platform|engineering|software)\b/i, lob: 'Technology' },
+    { pattern: /\b(retail|personal|consumer)\b/i, lob: 'Retail Banking' },
+    { pattern: /\b(SME|business|commercial|corporate)\b/i, lob: 'Business Banking' },
+    { pattern: /\b(wealth|asset|investment|advisory|private)\b/i, lob: 'Wealth Management' },
+    { pattern: /\b(finance|CFO|treasury|accounting)\b/i, lob: 'Finance' },
+    { pattern: /\b(risk|compliance|CRO|audit|AML|KYC)\b/i, lob: 'Risk & Compliance' },
+    { pattern: /\b(marketing|CMO|brand|communications)\b/i, lob: 'Marketing' },
+    { pattern: /\b(operations|COO|process|efficiency)\b/i, lob: 'Operations' },
+    { pattern: /\b(people|HR|human|talent)\b/i, lob: 'Human Resources' },
+  ];
+  function inferLob(role) {
+    if (!role) return null;
+    for (const { pattern, lob } of LOB_PATTERNS) {
+      if (pattern.test(role)) return lob;
+    }
+    return null;
+  }
+  const updateLob = db.prepare('UPDATE persons SET lob = ? WHERE bank_key = ? AND canonical_name = ?');
+  let lobCount = 0;
+  const allPersonsForLob = db.prepare('SELECT bank_key, canonical_name, role FROM persons').all();
+  for (const p of allPersonsForLob) {
+    const lob = inferLob(p.role);
+    if (lob) {
+      updateLob.run(lob, p.bank_key, p.canonical_name);
+      lobCount++;
+    }
+  }
+  console.log(`  LOB assigned: ${lobCount}/${allPersonsForLob.length} persons`);
+
+  // ── Provenance Backfill (Layer 1) — track curated fields ──
+  console.log('\n  Backfilling provenance for curated data...');
+
+  // Helper: extract KPI value from kpis[] array by label prefix
+  function kpiValue(d, labelPrefix) {
+    if (d.operational_profile?.[labelPrefix]) return d.operational_profile[labelPrefix];
+    const kpi = d.kpis?.find(k => k.label?.toLowerCase().startsWith(labelPrefix.toLowerCase()));
+    return kpi ? kpi.value : null;
+  }
+
+  const CURATED_FIELDS = [
+    { path: 'operational_profile.total_assets',       get: d => kpiValue(d, 'total_assets') || kpiValue(d, 'total assets') },
+    { path: 'operational_profile.cost_income_ratio',  get: d => kpiValue(d, 'cost_income_ratio') || kpiValue(d, 'cost/income') || kpiValue(d, 'cost_income') },
+    { path: 'operational_profile.roe',                get: d => kpiValue(d, 'roe') },
+    { path: 'operational_profile.total_customers',    get: d => kpiValue(d, 'total_customers') || kpiValue(d, 'customers') },
+    { path: 'operational_profile.employees',          get: d => kpiValue(d, 'employees') },
+    { path: 'digital_strategy',                       get: d => typeof d.digital_strategy === 'string' ? d.digital_strategy : (d.digital_strategy ? JSON.stringify(d.digital_strategy) : null) },
+    { path: 'overview',                               get: d => d.overview },
+  ];
+  const today = new Date().toISOString().slice(0, 10);
+  let provenanceCount = 0;
+  for (const [key, bankData] of Object.entries(BANK_DATA)) {
+    const meta = BANK_METADATA[key];
+    const sourceDate = meta?.as_of || today;
+    for (const field of CURATED_FIELDS) {
+      const value = field.get(bankData);
+      if (value != null && String(value).trim()) {
+        writeProvenance('bank', key, field.path, String(value), 'manual', null, sourceDate, 2);
+        provenanceCount++;
+      }
+    }
+  }
+  console.log(`  Provenance: ${provenanceCount} curated field records`);
 });
 
 console.log('\nSeeding database...');

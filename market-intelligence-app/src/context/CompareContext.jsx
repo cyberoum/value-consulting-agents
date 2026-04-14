@@ -17,15 +17,23 @@ function saveToStorage(selected) {
 export function CompareProvider({ children }) {
   const [selected, setSelected] = useState(loadFromStorage);
 
+  const [limitReached, setLimitReached] = useState(false);
+
   const toggle = useCallback((bankKey) => {
     setSelected(prev => {
-      let next;
       if (prev.includes(bankKey)) {
-        next = prev.filter(k => k !== bankKey);
-      } else {
-        if (prev.length >= 4) return prev; // max 4 (up from 3)
-        next = [...prev, bankKey];
+        setLimitReached(false);
+        const next = prev.filter(k => k !== bankKey);
+        saveToStorage(next);
+        return next;
       }
+      if (prev.length >= 4) {
+        setLimitReached(true);
+        setTimeout(() => setLimitReached(false), 3000); // Auto-dismiss after 3s
+        return prev;
+      }
+      setLimitReached(false);
+      const next = [...prev, bankKey];
       saveToStorage(next);
       return next;
     });
@@ -39,7 +47,7 @@ export function CompareProvider({ children }) {
   const isSelected = useCallback((bankKey) => selected.includes(bankKey), [selected]);
 
   return (
-    <CompareContext.Provider value={{ selected, toggle, clear, isSelected }}>
+    <CompareContext.Provider value={{ selected, toggle, clear, isSelected, limitReached }}>
       {children}
     </CompareContext.Provider>
   );

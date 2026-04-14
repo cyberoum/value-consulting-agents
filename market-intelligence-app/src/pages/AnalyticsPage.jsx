@@ -403,7 +403,7 @@ function OverviewTab({ analytics, navigate }) {
           <div className="bg-surface border border-border rounded-xl p-6">
             <h3 className="text-lg font-bold text-fg mb-2">Opportunity Map</h3>
             <p className="text-[10px] text-fg-muted mb-3">Score vs deal value — bubble size = deal magnitude</p>
-            <BubbleChart items={analytics.bubbleItems} height={280} />
+            <BubbleChart items={analytics.bubbleItems} height={280} onBankClick={(key) => navigate(`/bank/${key}`)} />
           </div>
         )}
       </div>

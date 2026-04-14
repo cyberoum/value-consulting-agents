@@ -1,9 +1,17 @@
 import { createContext, useContext, useState, useCallback, useEffect, useMemo } from 'react';
 
 const INITIAL_STATE = {
+  // Mode: 'stakeholder' (default) or 'position'
+  mode: 'stakeholder',
   attendees: [], scopeKnown: 'unknown', painPointKnown: 'unknown',
   scopeText: '', painText: '', personResearch: {}, contextEnrichment: null,
   topics: [], meetingPrepBrief: null,
+  // Position-First Mode fields
+  positionProduct: '',        // e.g. "APA", "SME Banking", "Conversational Banking"
+  positionPainPoints: '',     // optional free text: known scope or pain points
+  // Competitive context (shared across both modes)
+  competitors: [],            // e.g. ["Temenos", "Mambu"]
+  region: '',                 // e.g. "Middle East", "Nordics"
 };
 
 const MeetingContext = createContext(null);

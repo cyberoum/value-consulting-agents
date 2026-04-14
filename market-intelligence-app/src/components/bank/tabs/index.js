@@ -11,3 +11,5 @@ export { default as OpportunityTab } from './OpportunityTab';
 export { default as ValueTab } from './ValueTab';
 export { default as DiscoveryQuestionsTab } from './DiscoveryQuestionsTab';
 export { default as ConsultingKnowledgeTab } from './ConsultingKnowledgeTab';
+export { default as MeetingHistoryTab } from './MeetingHistoryTab';
+export { default as AccountPlanTab } from './AccountPlanTab';

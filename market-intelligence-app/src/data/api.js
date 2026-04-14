@@ -6,7 +6,8 @@
  *   - Retry with exponential backoff for transient failures (network, 5xx, 429)
  *   - Caller-initiated abort support (e.g., search cancellation)
  */
-const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:3001';
+const API_BASE = import.meta.env.VITE_API_BASE || '';
+const enc = encodeURIComponent; // shorthand for URL encoding
 
 const DEFAULT_TIMEOUT = 15000; // 15s for data reads
 const AI_TIMEOUT = 150000;    // 150s for AI-powered endpoints
@@ -139,6 +140,61 @@ export const researchPerson = (data) => request('/api/research/person', { method
 export const enrichContext = (data) => request('/api/research/context', { method: 'POST', body: JSON.stringify(data), timeout: AI_TIMEOUT });
 export const generateMeetingPrep = (data) => request('/api/research/meeting-prep', { method: 'POST', body: JSON.stringify(data), timeout: AI_TIMEOUT });
 export const generateEngagementPlan = (data) => request('/api/research/engagement-plan', { method: 'POST', body: JSON.stringify(data), timeout: AI_TIMEOUT });
+export const generateAccountPlan = (data) => request('/api/research/account-plan', { method: 'POST', body: JSON.stringify(data), timeout: AI_TIMEOUT });
+export const generateExecutiveBrief = (data) => request('/api/research/executive-brief', { method: 'POST', body: JSON.stringify(data), timeout: AI_TIMEOUT });
+export const generateAccountPlanDoc = (data) => request('/api/generate-account-plan', { method: 'POST', body: JSON.stringify(data), timeout: AI_TIMEOUT });
+export const getCachedAccountPlan = (bankKey) => request(`/api/account-plan/${encodeURIComponent(bankKey)}`);
+export const generateEmailDraft = (data) => request('/api/research/email-draft', { method: 'POST', body: JSON.stringify(data), timeout: AI_TIMEOUT });
+
+// ── Pipeline Settings / Bank Status ──
+export const getPipelineSettings = () => request('/api/pipeline-settings');
+export const getBankStatus = (bankKey) => request(`/api/banks/${encodeURIComponent(bankKey)}/status`);
+export const updateBankStatus = (bankKey, { excluded, status, disqualify_reason } = {}) =>
+  request(`/api/pipeline-settings/${encodeURIComponent(bankKey)}`, { method: 'PUT', body: JSON.stringify({ excluded, status, disqualify_reason }) });
+
+// ── Intelligence Layer: Plays ──
+export const createPlay = (dealId, data) => request(`/api/deals/${enc(dealId)}/plays`, { method: 'POST', body: JSON.stringify(data) });
+export const getPlays = (dealId) => request(`/api/deals/${enc(dealId)}/plays`);
+export const getPlayDetail = (dealId, playId) => request(`/api/deals/${enc(dealId)}/plays/${enc(playId)}`);
+export const updatePlay = (dealId, playId, data) => request(`/api/deals/${enc(dealId)}/plays/${enc(playId)}`, { method: 'PUT', body: JSON.stringify(data) });
+export const generatePlayOutputs = (dealId, playId) => request(`/api/deals/${enc(dealId)}/plays/${enc(playId)}/generate`, { method: 'POST', timeout: AI_TIMEOUT });
+
+// ── Intelligence Layer: Play Outputs ──
+export const getPlayOutputs = (playId) => request(`/api/plays/${enc(playId)}/outputs`);
+export const updatePlayOutput = (playId, outputId, data) => request(`/api/plays/${enc(playId)}/outputs/${enc(outputId)}`, { method: 'PUT', body: JSON.stringify(data) });
+export const submitOutputFeedback = (playId, outputId, data) => request(`/api/plays/${enc(playId)}/outputs/${enc(outputId)}/feedback`, { method: 'POST', body: JSON.stringify(data) });
+
+// ── Intelligence Layer: Signals ──
+export const createSignal = (dealId, data) => request(`/api/deals/${enc(dealId)}/signals`, { method: 'POST', body: JSON.stringify(data) });
+export const getSignals = (dealId, params = {}) => {
+  const qs = Object.entries(params).filter(([,v]) => v).map(([k,v]) => `${k}=${encodeURIComponent(v)}`).join('&');
+  return request(`/api/deals/${enc(dealId)}/signals${qs ? '?' + qs : ''}`);
+};
+export const updateSignal = (dealId, signalId, data) => request(`/api/deals/${enc(dealId)}/signals/${enc(signalId)}`, { method: 'PUT', body: JSON.stringify(data) });
+export const getSignalSummary = (dealId) => request(`/api/deals/${enc(dealId)}/signals/summary`);
+
+// ── Intelligence Layer: Deal Twin ──
+export const getDealTwin = (dealId) => request(`/api/deals/${enc(dealId)}/twin`);
+export const recalculateDealTwin = (dealId) => request(`/api/deals/${enc(dealId)}/twin/recalculate`, { method: 'POST', timeout: AI_TIMEOUT });
+export const getDealTwinHistory = (dealId) => request(`/api/deals/${enc(dealId)}/twin/history`);
+
+// ── Conversation Intelligence ──
+export const getConversationIntelligence = () => request('/api/conversation-intelligence');
+
+// ── Competitive Intelligence ──
+export const generateBattlecard = (data) => request('/api/research/battlecard', { method: 'POST', body: JSON.stringify(data), timeout: AI_TIMEOUT });
+export const getCompetitiveLandscape = () => request('/api/competitive-landscape');
+
+// ── Meeting Deck ──
+export const generateMeetingDeck = (data) => request('/api/research/meeting-deck', { method: 'POST', body: JSON.stringify(data), timeout: AI_TIMEOUT });
+
+// ── Morning Brief ──
+export const getMorningBrief = () => request('/api/morning-brief');
+
+// ── Deal Outcomes ──
+export const recordDealOutcome = (data) => request('/api/deal-outcomes', { method: 'POST', body: JSON.stringify(data) });
+export const getDealOutcomes = (bankKey) => request(bankKey ? `/api/deal-outcomes?bankKey=${encodeURIComponent(bankKey)}` : '/api/deal-outcomes');
+export const getDealOutcomeStats = () => request('/api/deal-outcomes/stats');
 
 // ── Landing Zones ──
 export const fetchLandingZoneMatrix = (key) => request(`/api/banks/${encodeURIComponent(key)}/landing-zones`);
@@ -175,3 +231,10 @@ export const createMeeting = (bankKey, data) => request(`/api/banks/${encodeURIC
 export const getMeetings = (bankKey, { limit } = {}) => request(`/api/banks/${encodeURIComponent(bankKey)}/meetings${limit ? `?limit=${limit}` : ''}`);
 export const updateMeeting = (bankKey, meetingId, data) => request(`/api/banks/${encodeURIComponent(bankKey)}/meetings/${encodeURIComponent(meetingId)}`, { method: 'PUT', body: JSON.stringify(data) });
 export const extractMeetingFromTranscript = (bankKey, transcript) => request(`/api/banks/${encodeURIComponent(bankKey)}/meetings/extract`, { method: 'POST', body: JSON.stringify({ transcript }), timeout: AI_TIMEOUT });
+
+// ── Change Detection (Layer 3) ──
+export const getRecentChanges = (bankKey, { limit } = {}) => request(`/api/banks/${encodeURIComponent(bankKey)}/changes${limit ? `?limit=${limit}` : ''}`);
+
+// ── Power Map (MEDDICC) ──
+export const generatePowerMap = (bankKey, { persona } = {}) => request(`/api/banks/${encodeURIComponent(bankKey)}/power-map`, { method: 'POST', body: JSON.stringify({ persona }), timeout: AI_TIMEOUT });
+export const getPowerMap = (bankKey) => request(`/api/banks/${encodeURIComponent(bankKey)}/power-map`);

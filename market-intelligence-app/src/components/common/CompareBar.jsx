@@ -5,7 +5,7 @@ import { useCompare } from '../../context/CompareContext';
 import { BANK_DATA } from '../../data/utils';
 
 export default function CompareBar() {
-  const { selected, clear } = useCompare();
+  const { selected, clear, limitReached } = useCompare();
   const navigate = useNavigate();
 
   return (
@@ -42,6 +42,11 @@ export default function CompareBar() {
             >
               Compare
             </motion.button>
+          )}
+          {limitReached && (
+            <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-[9px] text-amber-300 font-bold">
+              Max 4 banks
+            </motion.span>
           )}
           <button onClick={clear} className="p-1 hover:bg-white/20 rounded transition-colors"><X size={14} /></button>
         </motion.div>

@@ -10,6 +10,7 @@
 
 import { callClaude, isApiKeyConfigured } from './claudeClient.mjs';
 import { getDb } from '../db.mjs';
+import { writeProvenance } from '../lib/provenanceWriter.mjs';
 
 // ── Google News RSS Search ──
 
@@ -161,6 +162,9 @@ Generate a comprehensive intelligence brief for a Backbase sales consultant prep
           bankKey,
           name,
         );
+        // Layer 1: write provenance for this person research
+        const today = new Date().toISOString().slice(0, 10);
+        writeProvenance('person', bankKey, `person.${name}`, result.personSummary || '', 'person_research', null, today, 2);
       } catch (err) {
         console.error(`   Warning: Failed to update persons table for ${name}: ${err.message}`);
       }

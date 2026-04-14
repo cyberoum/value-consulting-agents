@@ -4,8 +4,8 @@ import { scoreColor } from '../../data/utils';
 
 ChartJS.register(LinearScale, PointElement, Tooltip);
 
-export default function BubbleChart({ items, height = 300 }) {
-  // items: [{ name, score, dealValue, r }]
+export default function BubbleChart({ items, height = 300, onBankClick }) {
+  // items: [{ name, key, score, dealValue, r }]
   const data = {
     datasets: items.map(item => ({
       label: item.name,
@@ -33,9 +33,17 @@ export default function BubbleChart({ items, height = 300 }) {
     },
   };
 
+  const handleClick = (event, elements) => {
+    if (elements.length > 0 && onBankClick) {
+      const idx = elements[0].datasetIndex;
+      const item = items[idx];
+      if (item?.key) onBankClick(item.key);
+    }
+  };
+
   return (
-    <div style={{ height }}>
-      <Bubble data={data} options={options} />
+    <div style={{ height, cursor: onBankClick ? 'pointer' : 'default' }}>
+      <Bubble data={data} options={{ ...options, onClick: handleClick }} />
     </div>
   );
 }

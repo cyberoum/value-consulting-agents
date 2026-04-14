@@ -8,7 +8,14 @@ import { CompareProvider } from './context/CompareContext';
 import { ExportProvider } from './context/ExportContext';
 import ErrorBoundary from './components/ErrorBoundary';
 import App from './App';
+import { validateDataIntegrity } from './data/utils';
 import './index.css';
+import './nova-design-system.css';
+
+// Run data integrity check once on startup (dev only)
+if (import.meta.env.DEV) {
+  validateDataIntegrity();
+}
 
 const queryClient = new QueryClient({
   defaultOptions: {

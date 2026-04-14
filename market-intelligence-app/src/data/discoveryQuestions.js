@@ -96,6 +96,33 @@ export const ROLES = {
     aliases: ['CRO', 'Chief Risk Officer', 'Head of Risk', 'Chief Compliance Officer', 'Head of Anti-Money Laundering'],
     objective: 'Understand compliance challenges, KYC/AML pain points, and regulatory technology needs',
   },
+  chief_ai_officer: {
+    key: 'chief_ai_officer',
+    title: 'Chief AI Officer / Head of AI',
+    icon: '🤖',
+    color: '#6366F1',
+    description: 'AI strategy, intelligent automation, data-driven decisioning',
+    aliases: ['Chief AI Officer', 'Head of AI', 'Head of Artificial Intelligence', 'VP AI', 'Director of AI', 'Head of AI Strategy', 'Head of Data & AI', 'Chief Data & AI Officer'],
+    objective: 'Understand AI maturity, automation roadmap, and how AI fits into operational and customer-facing processes',
+  },
+  head_digital_transformation: {
+    key: 'head_digital_transformation',
+    title: 'Head of Digital Transformation',
+    icon: '🔄',
+    color: '#0EA5E9',
+    description: 'Transformation programs, change management, operational modernization',
+    aliases: ['Head of Digital Transformation', 'Chief Transformation Officer', 'Head of Transformation', 'VP Digital Transformation', 'Director of Transformation', 'Head of Change', 'Head of Business Transformation'],
+    objective: 'Understand transformation priorities, organizational readiness, and how digital modernization maps to business outcomes',
+  },
+  head_efficiency: {
+    key: 'head_efficiency',
+    title: 'Head of Efficiency / Automation',
+    icon: '⚡',
+    color: '#F59E0B',
+    description: 'Process optimization, STP rates, cost reduction, automation programs',
+    aliases: ['Head of Efficiency', 'Head of Automation', 'Head of Process Optimization', 'VP Efficiency', 'Director of Automation', 'Head of Continuous Improvement', 'Head of Process Excellence', 'Head of Operational Excellence'],
+    objective: 'Understand automation targets, STP rate goals, process bottlenecks, and cost-per-transaction reduction priorities',
+  },
 };
 
 // ── Question Templates (Phase-Based) ──────────────────────────────────
@@ -501,6 +528,123 @@ const QUESTION_TEMPLATES = {
       },
     ],
   },
+
+  chief_ai_officer: {
+    opening: [
+      {
+        question: "What's your AI strategy for banking operations — where are you seeing the most impact today?",
+        intent: "Understand AI maturity and current deployment areas",
+        tip: "Listen for whether they're in experimentation vs. production-scale AI",
+      },
+      {
+        question: "Where are you still relying on manual processes that intelligent automation could address?",
+        intent: "Surface automation gaps and prioritize AI opportunities",
+        tip: "Common areas: customer service routing, credit decisioning, document processing",
+      },
+    ],
+    deep_dive: [
+      {
+        question: "How are you thinking about GenAI for customer-facing vs. employee-facing use cases?",
+        intent: "Map their GenAI priorities to Backbase capabilities",
+        tip: "Position Backbase APA as the orchestration layer for both",
+      },
+      {
+        question: "What's your data readiness for AI — can you get real-time customer context into decisioning?",
+        intent: "Understand data infrastructure maturity for AI",
+        tip: "Backbase's unified data layer is a key enabler — 360-degree customer view",
+      },
+      {
+        question: "How do you measure AI ROI today — cost reduction, revenue uplift, or experience improvement?",
+        intent: "Understand how they justify AI investments",
+        tip: "Frame Backbase AI capabilities against their specific measurement framework",
+      },
+    ],
+    validation: [
+      {
+        question: "If you could automate one high-volume process end-to-end this year, what would it be?",
+        intent: "Identify the entry point use case for APA/AI",
+        tip: "This becomes your proof-of-value opportunity",
+      },
+    ],
+  },
+
+  head_digital_transformation: {
+    opening: [
+      {
+        question: "What's the core business outcome driving your transformation program — cost, growth, or experience?",
+        intent: "Understand the transformation north star",
+        tip: "This frames every subsequent conversation about platform and capabilities",
+      },
+      {
+        question: "Where are you in the transformation journey — foundational, scaling, or optimizing?",
+        intent: "Gauge maturity and budget phase",
+        tip: "Early = more greenfield opportunity; scaling = integration & migration focus",
+      },
+    ],
+    deep_dive: [
+      {
+        question: "What legacy systems are proving hardest to modernize, and what's the cost of delay?",
+        intent: "Surface legacy pain and urgency",
+        tip: "Connect Backbase's progressive modernization approach to their specific legacy challenges",
+      },
+      {
+        question: "How do you manage change across business lines — is transformation centralized or federated?",
+        intent: "Understand organizational structure for implementation planning",
+        tip: "Backbase supports both models — important for sizing and sequencing",
+      },
+      {
+        question: "What's your biggest people/process challenge in transformation — beyond technology?",
+        intent: "Surface organizational blockers",
+        tip: "Backbase's pre-built journeys reduce change management burden",
+      },
+    ],
+    validation: [
+      {
+        question: "What does success look like in 12 months for your transformation program?",
+        intent: "Define measurable outcomes to anchor the business case",
+        tip: "Tie specific Backbase capabilities to their 12-month targets",
+      },
+    ],
+  },
+
+  head_efficiency: {
+    opening: [
+      {
+        question: "What are your top operational KPIs — STP rates, cost-per-transaction, processing time?",
+        intent: "Understand how they measure operational efficiency",
+        tip: "Mirror their KPIs when presenting Backbase value — speak their language",
+      },
+      {
+        question: "Where do you have the most manual intervention in customer-facing processes?",
+        intent: "Identify high-volume automation candidates",
+        tip: "Onboarding, loan processing, and service requests typically have highest manual overhead",
+      },
+    ],
+    deep_dive: [
+      {
+        question: "What percentage of your processes run straight-through today vs. require manual touchpoints?",
+        intent: "Quantify the automation gap",
+        tip: "Industry best is 80%+ STP; most banks are 40-60%",
+      },
+      {
+        question: "How are you measuring cost-to-serve per customer across channels?",
+        intent: "Build the self-service and channel shift business case",
+        tip: "Branch: $5-8 per interaction; digital: $0.10-0.50 — the math is compelling",
+      },
+      {
+        question: "Where are your process bottlenecks creating customer experience issues?",
+        intent: "Connect efficiency to customer satisfaction",
+        tip: "This bridges ops efficiency to CX improvement — dual value story",
+      },
+    ],
+    validation: [
+      {
+        question: "If you could eliminate one process bottleneck this quarter, which would unlock the most value?",
+        intent: "Identify the quick-win entry point",
+        tip: "This becomes your Phase 1 POC opportunity",
+      },
+    ],
+  },
 };
 
 // ── Bank-Specific Question Generators ─────────────────────────────────
@@ -524,6 +668,9 @@ function generateBankContextQuestions(bankKey, roleKey) {
       if (roleKey === 'cro' && (p.title?.toLowerCase().includes('compliance') || p.title?.toLowerCase().includes('aml') || p.title?.toLowerCase().includes('kyc'))) return true;
       if (roleKey === 'head_retail' && (p.title?.toLowerCase().includes('customer') || p.title?.toLowerCase().includes('retail') || p.title?.toLowerCase().includes('digital'))) return true;
       if (roleKey === 'coo' && (p.title?.toLowerCase().includes('operations') || p.title?.toLowerCase().includes('legacy') || p.title?.toLowerCase().includes('process'))) return true;
+      if (roleKey === 'chief_ai_officer' && (p.title?.toLowerCase().includes('ai') || p.title?.toLowerCase().includes('automat') || p.title?.toLowerCase().includes('intelligence') || p.title?.toLowerCase().includes('manual'))) return true;
+      if (roleKey === 'head_digital_transformation' && (p.title?.toLowerCase().includes('digital') || p.title?.toLowerCase().includes('legacy') || p.title?.toLowerCase().includes('transform') || p.title?.toLowerCase().includes('modern'))) return true;
+      if (roleKey === 'head_efficiency' && (p.title?.toLowerCase().includes('cost') || p.title?.toLowerCase().includes('efficien') || p.title?.toLowerCase().includes('process') || p.title?.toLowerCase().includes('manual') || p.title?.toLowerCase().includes('automat'))) return true;
       return false;
     });
 
@@ -541,7 +688,7 @@ function generateBankContextQuestions(bankKey, roleKey) {
   // ── Strategy-derived questions ──
   if (bank.digital_strategy) {
     const stratSnippet = bank.digital_strategy.substring(0, 100);
-    if (roleKey === 'ceo' || roleKey === 'head_digital' || roleKey === 'cto') {
+    if (roleKey === 'ceo' || roleKey === 'head_digital' || roleKey === 'cto' || roleKey === 'head_digital_transformation') {
       questions.push({
         question: `Your digital strategy mentions "${stratSnippet.split('.')[0]}..." — how is that translating into specific initiatives this year?`,
         intent: 'Validate strategic priorities and execution status',
@@ -626,7 +773,7 @@ function generateBankContextQuestions(bankKey, roleKey) {
   }
 
   // ── ROI-anchored questions ──
-  if (roleKey === 'cfo' || roleKey === 'ceo' || roleKey === 'coo') {
+  if (roleKey === 'cfo' || roleKey === 'ceo' || roleKey === 'coo' || roleKey === 'head_efficiency') {
     try {
       const roi = calculateRoi(bankKey);
       if (roi?.base) {
@@ -650,7 +797,7 @@ function generateBankContextQuestions(bankKey, roleKey) {
   if (bank.kpis) {
     const countryKpi = bank.kpis.find(k => k.label?.toLowerCase().includes('countries') || k.label?.toLowerCase().includes('markets'));
     if (countryKpi && parseInt(countryKpi.value) > 1) {
-      if (roleKey === 'cto' || roleKey === 'coo' || roleKey === 'ceo') {
+      if (roleKey === 'cto' || roleKey === 'coo' || roleKey === 'ceo' || roleKey === 'head_digital_transformation') {
         questions.push({
           question: `Operating across ${countryKpi.value} markets — are you running separate digital platforms per market, or do you have a unified approach?`,
           intent: 'Surface multi-market platform consolidation opportunity',
@@ -742,6 +889,27 @@ const MEETING_TIPS = {
     "Discuss KYC/AML automation and digital identity",
     "Frame customer experience improvement as compliance-compatible",
     "Address data residency and security requirements upfront",
+  ],
+  chief_ai_officer: [
+    "Lead with operational AI use cases, not chatbot demos",
+    "Discuss Backbase APA as the AI orchestration layer",
+    "Know their current AI maturity — don't oversell if they're early stage",
+    "Frame AI as ops efficiency tool first, CX enhancer second",
+    "Bring concrete metrics: % automation, cost-per-decision reduction",
+  ],
+  head_digital_transformation: [
+    "Speak in business outcomes and transformation milestones, not features",
+    "Understand their transformation timeline and budget cycle",
+    "Reference progressive modernization — not big-bang replacement",
+    "Address organizational change management challenges",
+    "Frame Backbase as accelerating transformation, not adding another platform",
+  ],
+  head_efficiency: [
+    "Lead with operational metrics: STP rates, cost-per-transaction, processing times",
+    "Bring industry benchmarks for their specific processes",
+    "Discuss before/after scenarios for specific processes",
+    "Frame everything as FTE reallocation, not FTE reduction",
+    "Position Backbase as unlocking straight-through processing at scale",
   ],
 };
 

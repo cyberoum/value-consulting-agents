@@ -169,12 +169,20 @@ export function useCountryBanks(name) {
   });
 }
 
-// ── Stats ──
+// ── Stats & Signals ──
 export function useStats() {
   return useQuery({
     queryKey: queryKeys.stats,
     queryFn: api.fetchStats,
     staleTime: 5 * 60 * 1000,
+  });
+}
+
+export function useSignals(limit = 8) {
+  return useQuery({
+    queryKey: ['signals', limit],
+    queryFn: () => api.fetchSignals(limit),
+    staleTime: 2 * 60 * 1000,
   });
 }
 

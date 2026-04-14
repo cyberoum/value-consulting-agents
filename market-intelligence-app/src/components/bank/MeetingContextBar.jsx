@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { Users, ChevronDown, ChevronUp, X, Plus, Search, Sparkles, HelpCircle, Target, Eye, EyeOff, Loader2, Globe, Lightbulb, AlertTriangle, MessageSquare, ArrowRight, Tag, Zap } from 'lucide-react';
+import { Users, ChevronDown, ChevronUp, X, Plus, Search, Sparkles, HelpCircle, Target, Eye, EyeOff, Loader2, Globe, Lightbulb, AlertTriangle, MessageSquare, ArrowRight, Tag, Zap, Package, UserCheck, Shield, MapPin } from 'lucide-react';
 import { ROLES } from '../../data/discoveryQuestions';
 import { getRoleForKDM } from '../../utils/meetingTailoring';
 import { researchPerson as apiResearchPerson, enrichContext as apiEnrichContext, checkResearchStatus } from '../../data/api';
@@ -270,14 +270,234 @@ function ContextEnrichmentCard({ enrichment }) {
   );
 }
 
+// ── Backbase Products / Initiatives ───────────────────────────────────
+// Curated list for the Position-First dropdown. Users can also type free text.
+
+const BACKBASE_PRODUCTS = [
+  { value: 'Engagement Banking Platform', label: 'Engagement Banking Platform', category: 'Platform' },
+  { value: 'APA (App Platform Accelerator)', label: 'APA (App Platform Accelerator)', category: 'Platform' },
+  { value: 'Conversational Banking', label: 'Conversational Banking', category: 'Capability' },
+  { value: 'Retail Banking', label: 'Retail Banking', category: 'Vertical' },
+  { value: 'SME Banking', label: 'SME Banking', category: 'Vertical' },
+  { value: 'Wealth Management', label: 'Wealth Management', category: 'Vertical' },
+  { value: 'Corporate Banking', label: 'Corporate Banking', category: 'Vertical' },
+  { value: 'Investment Services', label: 'Investment Services', category: 'Vertical' },
+  { value: 'Digital Onboarding', label: 'Digital Onboarding & Origination', category: 'Capability' },
+  { value: 'Mobile Banking', label: 'Mobile Banking', category: 'Capability' },
+  { value: 'Payments Hub', label: 'Payments Hub', category: 'Capability' },
+  { value: 'Lending Origination', label: 'Lending Origination', category: 'Capability' },
+  { value: 'AI & Intelligence', label: 'AI & Intelligence', category: 'Capability' },
+  { value: 'Self-Service & Automation', label: 'Self-Service & Automation', category: 'Capability' },
+  { value: 'Digital Sales', label: 'Digital Sales', category: 'Capability' },
+  { value: 'Customer 360', label: 'Customer 360 / Unified View', category: 'Capability' },
+];
+
+// ── Competitive Landscape Constants ─────────────────────────────────
+
+const COMPETITORS = [
+  { value: 'Temenos', label: 'Temenos' },
+  { value: 'Mambu', label: 'Mambu' },
+  { value: 'Thought Machine', label: 'Thought Machine' },
+  { value: 'Oracle FLEXCUBE', label: 'Oracle FLEXCUBE' },
+  { value: 'SAP', label: 'SAP' },
+  { value: 'Finastra', label: 'Finastra' },
+  { value: 'In-house build', label: 'In-house build' },
+];
+
+const REGIONS = [
+  { value: 'Middle East', label: 'Middle East' },
+  { value: 'Nordics', label: 'Nordics' },
+  { value: 'DACH', label: 'DACH' },
+  { value: 'Benelux', label: 'Benelux' },
+  { value: 'Southern Europe', label: 'Southern Europe' },
+  { value: 'UK & Ireland', label: 'UK & Ireland' },
+  { value: 'Africa', label: 'Africa' },
+  { value: 'Asia-Pacific', label: 'Asia-Pacific' },
+  { value: 'North America', label: 'North America' },
+  { value: 'Latin America', label: 'Latin America' },
+];
+
+// ── Mode Toggle ────────────────────────────────────────────────────
+
+function ModeToggle({ mode, onChange }) {
+  return (
+    <div className="flex bg-surface-2 rounded-lg p-0.5 border border-border">
+      <button
+        onClick={() => onChange('stakeholder')}
+        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-bold transition-all ${
+          mode === 'stakeholder'
+            ? 'bg-white text-primary shadow-sm border border-primary/20'
+            : 'text-fg-muted hover:text-fg'
+        }`}
+      >
+        <UserCheck size={12} />
+        Prep by Stakeholder
+      </button>
+      <button
+        onClick={() => onChange('position')}
+        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-[11px] font-bold transition-all ${
+          mode === 'position'
+            ? 'bg-white text-violet-600 shadow-sm border border-violet-200'
+            : 'text-fg-muted hover:text-fg'
+        }`}
+      >
+        <Package size={12} />
+        Prep by Product
+      </button>
+    </div>
+  );
+}
+
+// ── Competitor & Region Input ───────────────────────────────────────
+
+function CompetitorRegionInput({ competitors, region, onCompetitorsChange, onRegionChange, accentColor = 'indigo' }) {
+  const [showCustomCompetitor, setShowCustomCompetitor] = useState(false);
+  const [customCompetitor, setCustomCompetitor] = useState('');
+  const [expanded, setExpanded] = useState(competitors.length > 0 || !!region);
+
+  const toggleCompetitor = (value) => {
+    if (competitors.includes(value)) {
+      onCompetitorsChange(competitors.filter(c => c !== value));
+    } else {
+      onCompetitorsChange([...competitors, value]);
+    }
+  };
+
+  const addCustomCompetitor = () => {
+    const trimmed = customCompetitor.trim();
+    if (trimmed && !competitors.includes(trimmed)) {
+      onCompetitorsChange([...competitors, trimmed]);
+    }
+    setCustomCompetitor('');
+    setShowCustomCompetitor(false);
+  };
+
+  const borderColor = accentColor === 'violet' ? 'border-violet-100' : 'border-indigo-100';
+  const headerText = accentColor === 'violet' ? 'text-violet-500' : 'text-indigo-500';
+
+  return (
+    <div className={`pt-2 border-t ${borderColor}`}>
+      <button
+        onClick={() => setExpanded(!expanded)}
+        className="w-full flex items-center gap-1.5 text-left group"
+      >
+        <Shield size={10} className={headerText} />
+        <span className="text-[10px] font-bold text-fg-muted uppercase tracking-wider">
+          Competitive Context
+        </span>
+        <span className="text-[9px] text-fg-disabled">(optional)</span>
+        {competitors.length > 0 && (
+          <span className="px-1.5 py-0.5 rounded-full text-[8px] font-bold bg-amber-100 text-amber-700 border border-amber-200">
+            {competitors.length} competitor{competitors.length > 1 ? 's' : ''}
+          </span>
+        )}
+        {region && (
+          <span className="px-1.5 py-0.5 rounded-full text-[8px] font-bold bg-blue-100 text-blue-700 border border-blue-200">
+            {region}
+          </span>
+        )}
+        <div className="flex-1" />
+        {expanded ? <ChevronUp size={10} className="text-fg-disabled" /> : <ChevronDown size={10} className="text-fg-disabled" />}
+      </button>
+
+      {expanded && (
+        <div className="mt-2 space-y-3">
+          {/* Competitor multi-select chips */}
+          <div>
+            <div className="flex items-center gap-1 mb-1.5">
+              <span className="text-[9px] font-bold text-fg-muted uppercase tracking-wider">Known Competitors in This Deal</span>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
+              {COMPETITORS.map(c => {
+                const isSelected = competitors.includes(c.value);
+                return (
+                  <button
+                    key={c.value}
+                    onClick={() => toggleCompetitor(c.value)}
+                    className={`px-2.5 py-1 rounded-full text-[10px] font-bold border transition-all ${
+                      isSelected
+                        ? 'bg-amber-100 text-amber-800 border-amber-300 ring-1 ring-offset-1 ring-amber-200'
+                        : 'bg-surface border-border text-fg-muted hover:bg-amber-50 hover:border-amber-200 hover:text-amber-700'
+                    }`}
+                  >
+                    {isSelected && <span className="mr-0.5">✓</span>}
+                    {c.label}
+                  </button>
+                );
+              })}
+              {/* Custom competitors already added */}
+              {competitors.filter(c => !COMPETITORS.some(p => p.value === c)).map(c => (
+                <span key={c} className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300">
+                  ✓ {c}
+                  <button onClick={() => onCompetitorsChange(competitors.filter(x => x !== c))} className="hover:text-danger">
+                    <X size={8} />
+                  </button>
+                </span>
+              ))}
+              {/* Add custom competitor */}
+              {!showCustomCompetitor ? (
+                <button
+                  onClick={() => setShowCustomCompetitor(true)}
+                  className="px-2.5 py-1 rounded-full text-[10px] font-bold border border-dashed border-gray-300 text-fg-muted hover:border-amber-300 hover:text-amber-700 transition-colors"
+                >
+                  <Plus size={8} className="inline mr-0.5" />
+                  Other
+                </button>
+              ) : (
+                <div className="flex items-center gap-1">
+                  <input
+                    type="text"
+                    value={customCompetitor}
+                    onChange={e => setCustomCompetitor(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && addCustomCompetitor()}
+                    placeholder="Competitor name..."
+                    className="px-2 py-1 text-[10px] border border-amber-200 rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-amber-300 w-28"
+                    autoFocus
+                  />
+                  <button onClick={addCustomCompetitor} disabled={!customCompetitor.trim()}
+                    className="px-2 py-1 text-[9px] font-bold bg-amber-600 text-white rounded-lg disabled:opacity-40">Add</button>
+                  <button onClick={() => { setShowCustomCompetitor(false); setCustomCompetitor(''); }}
+                    className="text-fg-muted hover:text-fg"><X size={10} /></button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Region dropdown */}
+          <div>
+            <div className="flex items-center gap-1 mb-1.5">
+              <MapPin size={9} className="text-blue-500" />
+              <span className="text-[9px] font-bold text-fg-muted uppercase tracking-wider">Region</span>
+            </div>
+            <select
+              value={region}
+              onChange={e => onRegionChange(e.target.value)}
+              className="px-2.5 py-1.5 text-[11px] border border-border rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-blue-300 w-full sm:w-48"
+            >
+              <option value="">Not specified</option>
+              {REGIONS.map(r => (
+                <option key={r.value} value={r.value}>{r.label}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Main Component ──────────────────────────────────────────────────
 
 /**
  * MeetingContextBar — interactive panel where the consultant sets up meeting context.
  *
+ * Supports two modes:
+ * - "stakeholder" (default): Select attendees → topics → generate brief
+ * - "position": Select product → personas → pain points → generate positioning brief
+ *
  * Props:
  * - kdms: Array of key decision makers from bank data
- * - meetingContext: { attendees, scopeKnown, painPointKnown, scopeText, painText, personResearch, contextEnrichment }
+ * - meetingContext: { mode, attendees, topics, positionProduct, positionPainPoints, ... }
  * - onContextChange: (newContext) => void
  * - bankName: string — name of the bank (for research queries)
  * - bankKey: string — key of the bank
@@ -297,6 +517,7 @@ export default function MeetingContextBar({ kdms = [], meetingContext, onContext
   const cascadeRunning = cascadeStatus && Object.values(cascadeStatus).some(s => s === 'running');
 
   const {
+    mode = 'stakeholder',
     attendees = [],
     scopeKnown = 'unknown',
     painPointKnown = 'unknown',
@@ -306,6 +527,10 @@ export default function MeetingContextBar({ kdms = [], meetingContext, onContext
     contextEnrichment = null,
     topics = [],
     meetingPrepBrief = null,
+    positionProduct = '',
+    positionPainPoints = '',
+    competitors = [],
+    region = '',
   } = meetingContext || {};
 
   const isActive = attendees.length > 0;
@@ -464,30 +689,46 @@ export default function MeetingContextBar({ kdms = [], meetingContext, onContext
 
   // Cascade trigger — delegates to parent BankPage for full cascade orchestration
   const triggerCascade = useCallback(() => {
-    if (!bankName || !bankKey || topics.length === 0) return;
+    if (!bankName || !bankKey) return;
+    // In stakeholder mode, require topics; in position mode, require product
+    if (mode === 'stakeholder' && topics.length === 0) return;
+    if (mode === 'position' && !positionProduct) return;
+
     if (onCascade) {
       // Delegate to parent cascade handler (Meeting Prep → Storyline → LZ → VH in parallel)
-      onCascade({
+      const payload = {
+        mode,
         attendees: attendees.map(a => ({
           name: a.name,
           role: a.role,
           customRole: a.customRole,
           isKDM: a.isKDM,
         })),
-        topics,
+        topics: mode === 'position' ? [positionProduct] : topics,
         scopeKnown,
         painPointKnown,
         scopeText,
         painText,
-      });
+        competitors,
+        region,
+      };
+
+      // Position-First Mode additions
+      if (mode === 'position') {
+        payload.positionProduct = positionProduct;
+        payload.positionPainPoints = positionPainPoints;
+      }
+
+      onCascade(payload);
     }
-  }, [bankName, bankKey, attendees, topics, scopeKnown, painPointKnown, scopeText, painText, onCascade]);
+  }, [bankName, bankKey, mode, attendees, topics, positionProduct, positionPainPoints, scopeKnown, painPointKnown, scopeText, painText, competitors, region, onCascade]);
 
   const resetContext = () => {
     onContextChange({
-      attendees: [], scopeKnown: 'unknown', painPointKnown: 'unknown',
+      mode: 'stakeholder', attendees: [], scopeKnown: 'unknown', painPointKnown: 'unknown',
       scopeText: '', painText: '', personResearch: {}, contextEnrichment: null,
-      topics: [], meetingPrepBrief: null,
+      topics: [], meetingPrepBrief: null, positionProduct: '', positionPainPoints: '',
+      competitors: [], region: '',
     });
     setExpanded(false);
   };
@@ -495,10 +736,14 @@ export default function MeetingContextBar({ kdms = [], meetingContext, onContext
   // ── Collapsed View ──
 
   if (!expanded) {
+    const isConfigured = isActive || !!positionProduct;
+
     return (
       <div className={`mb-5 rounded-xl border transition-all ${
-        isActive
-          ? 'bg-gradient-to-r from-primary-50 to-violet-50 border-primary/20'
+        isConfigured
+          ? mode === 'position'
+            ? 'bg-gradient-to-r from-violet-50 to-indigo-50 border-violet-200'
+            : 'bg-gradient-to-r from-primary-50 to-violet-50 border-primary/20'
           : 'bg-surface-2 border-border hover:border-primary/20'
       }`}>
         <button
@@ -506,30 +751,36 @@ export default function MeetingContextBar({ kdms = [], meetingContext, onContext
           className="w-full flex items-center gap-3 px-4 py-3 text-left"
         >
           <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${
-            isActive ? 'bg-primary text-white' : 'bg-surface border border-border text-fg-muted'
+            isConfigured
+              ? mode === 'position' ? 'bg-violet-600 text-white' : 'bg-primary text-white'
+              : 'bg-surface border border-border text-fg-muted'
           }`}>
-            {isActive ? <Sparkles size={14} /> : <Users size={14} />}
+            {isConfigured ? (mode === 'position' ? <Package size={14} /> : <Sparkles size={14} />) : <Users size={14} />}
           </div>
           <div className="flex-1 min-w-0">
-            {isActive ? (
+            {isActive || positionProduct ? (
               <>
-                <div className="text-[10px] font-bold text-primary uppercase tracking-wider">Meeting Tailored</div>
+                <div className={`text-[10px] font-bold uppercase tracking-wider ${mode === 'position' ? 'text-violet-600' : 'text-primary'}`}>
+                  {mode === 'position' ? `Positioning: ${positionProduct}` : 'Meeting Tailored'}
+                </div>
                 <div className="text-xs text-fg-subtle truncate">
                   {attendees.map(a => a.name).join(', ')}
-                  {topics.length > 0 && (
+                  {mode === 'stakeholder' && topics.length > 0 && (
                     <span className="text-indigo-500 ml-2">
                       | Topics: {topics.join(', ')}
                     </span>
                   )}
-                  <span className="text-fg-disabled ml-2">
-                    | Scope: {scopeKnown} | Pain: {painPointKnown}
-                  </span>
+                  {mode === 'stakeholder' && (
+                    <span className="text-fg-disabled ml-2">
+                      | Scope: {scopeKnown} | Pain: {painPointKnown}
+                    </span>
+                  )}
                 </div>
               </>
             ) : (
               <>
                 <div className="text-xs font-bold text-fg">Who are you meeting?</div>
-                <div className="text-[10px] text-fg-disabled">Select attendees to tailor this brief to your meeting</div>
+                <div className="text-[10px] text-fg-disabled">Select attendees to tailor this brief — or switch to product positioning mode</div>
               </>
             )}
           </div>
@@ -556,12 +807,16 @@ export default function MeetingContextBar({ kdms = [], meetingContext, onContext
       {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-primary/10">
         <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center">
-            <Users size={13} className="text-white" />
+          <div className={`w-7 h-7 rounded-full flex items-center justify-center ${
+            mode === 'position' ? 'bg-violet-600' : 'bg-primary'
+          }`}>
+            {mode === 'position' ? <Package size={13} className="text-white" /> : <Users size={13} className="text-white" />}
           </div>
           <div>
             <div className="text-xs font-black text-fg">Meeting Setup</div>
-            <div className="text-[10px] text-fg-disabled">Select who you're meeting and what you know</div>
+            <div className="text-[10px] text-fg-disabled">
+              {mode === 'position' ? 'Position a product to the right people' : 'Select who you\'re meeting and what you know'}
+            </div>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -576,7 +831,263 @@ export default function MeetingContextBar({ kdms = [], meetingContext, onContext
         </div>
       </div>
 
+      {/* Mode Toggle */}
+      <div className="px-4 pt-3 pb-1">
+        <ModeToggle
+          mode={mode}
+          onChange={(m) => onContextChange({ ...meetingContext, mode: m })}
+        />
+      </div>
+
       <div className="p-4 space-y-4">
+
+        {/* ══════════════════════════════════════════════════════════════════ */}
+        {/* POSITION-FIRST MODE                                              */}
+        {/* ══════════════════════════════════════════════════════════════════ */}
+        {mode === 'position' && (
+          <>
+            {/* Step 1: Product / Initiative */}
+            <div>
+              <div className="flex items-center gap-1.5 mb-2">
+                <Package size={10} className="text-violet-500" />
+                <span className="text-[10px] font-bold text-fg-muted uppercase tracking-wider">Step 1 — What are you positioning?</span>
+              </div>
+              <div className="space-y-2">
+                <select
+                  value={BACKBASE_PRODUCTS.some(p => p.value === positionProduct) ? positionProduct : (positionProduct ? '__custom__' : '')}
+                  onChange={e => {
+                    if (e.target.value === '__custom__') {
+                      onContextChange({ ...meetingContext, positionProduct: '' });
+                    } else {
+                      onContextChange({ ...meetingContext, positionProduct: e.target.value });
+                    }
+                  }}
+                  className="w-full px-3 py-2.5 text-xs bg-white border border-violet-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-violet-300 focus:border-violet-400"
+                >
+                  <option value="">Select a product or initiative...</option>
+                  {Object.entries(
+                    BACKBASE_PRODUCTS.reduce((acc, p) => { (acc[p.category] = acc[p.category] || []).push(p); return acc; }, {})
+                  ).map(([cat, products]) => (
+                    <optgroup key={cat} label={cat}>
+                      {products.map(p => (
+                        <option key={p.value} value={p.value}>{p.label}</option>
+                      ))}
+                    </optgroup>
+                  ))}
+                  <option value="__custom__">✏️ Other (type custom)</option>
+                </select>
+                {(positionProduct === '' && document.activeElement?.tagName !== 'SELECT' || (!BACKBASE_PRODUCTS.some(p => p.value === positionProduct) && positionProduct !== '')) && (
+                  <input
+                    type="text"
+                    value={BACKBASE_PRODUCTS.some(p => p.value === positionProduct) ? '' : positionProduct}
+                    onChange={e => onContextChange({ ...meetingContext, positionProduct: e.target.value })}
+                    placeholder="Type the product, capability, or initiative name..."
+                    className="w-full px-3 py-2 text-xs bg-violet-50/50 border border-violet-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-violet-300 placeholder:text-violet-300"
+                  />
+                )}
+                {positionProduct && (
+                  <div className="flex items-center gap-2 px-3 py-2 bg-violet-50 border border-violet-200 rounded-lg">
+                    <Package size={12} className="text-violet-600 shrink-0" />
+                    <span className="text-[11px] font-bold text-violet-700">Positioning: {positionProduct}</span>
+                    <span className="text-[9px] text-violet-500">at {bankName}</span>
+                    <button
+                      onClick={() => onContextChange({ ...meetingContext, positionProduct: '' })}
+                      className="ml-auto text-violet-400 hover:text-danger transition-colors"
+                    >
+                      <X size={10} />
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Step 2: Personas (reuse KDM selector) */}
+            {positionProduct && (
+              <div className="pt-2 border-t border-violet-100">
+                <div className="flex items-center gap-1.5 mb-2">
+                  <Users size={10} className="text-violet-500" />
+                  <span className="text-[10px] font-bold text-fg-muted uppercase tracking-wider">Step 2 — Who are you pitching to?</span>
+                </div>
+
+                {/* Selected attendees */}
+                {attendees.length > 0 && (
+                  <div className="mb-2">
+                    <div className="flex flex-wrap gap-1.5">
+                      {attendees.map(a => (
+                        <PersonChip
+                          key={a.name}
+                          person={a}
+                          onRemove={() => removeAttendee(a.name)}
+                          onResearch={researchAvailable ? triggerPersonResearch : null}
+                          isResearching={researchingPerson === a.name}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* KDM grid (compact) */}
+                <div className="relative mb-2">
+                  <Search size={12} className="absolute left-2.5 top-1/2 -translate-y-1/2 text-fg-disabled" />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={e => setSearchQuery(e.target.value)}
+                    placeholder="Search by name or role..."
+                    className="w-full pl-7 pr-3 py-2 text-xs bg-white border border-border rounded-lg focus:outline-none focus:ring-1 focus:ring-violet-300"
+                  />
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 max-h-36 overflow-y-auto">
+                  {filteredKDMs.map((kdm, i) => {
+                    const role = kdm.roleKey ? ROLES[kdm.roleKey] : null;
+                    return (
+                      <button
+                        key={i}
+                        onClick={() => kdm.isSelected ? removeAttendee(kdm.name) : addAttendee(kdm)}
+                        className={`flex items-center gap-2 p-2 rounded-lg border text-left transition-all ${
+                          kdm.isSelected
+                            ? 'bg-violet-50 border-violet-300 ring-1 ring-violet-200'
+                            : 'bg-white border-border hover:border-violet-200'
+                        }`}
+                      >
+                        <span className="text-sm shrink-0">{role?.icon || '👤'}</span>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-[11px] font-bold text-fg truncate">{kdm.name}</div>
+                          <div className="text-[9px] text-fg-disabled truncate">{kdm.role}</div>
+                        </div>
+                        {kdm.isSelected && <span className="text-[9px] font-bold text-violet-600">✓</span>}
+                      </button>
+                    );
+                  })}
+                </div>
+                {/* Add custom person link */}
+                {!showCustomInput ? (
+                  <button
+                    onClick={() => setShowCustomInput(true)}
+                    className="flex items-center gap-1.5 mt-2 text-[10px] font-bold text-violet-500 hover:text-violet-700 transition-colors"
+                  >
+                    <Plus size={10} /> Add someone not in the list
+                  </button>
+                ) : (
+                  <div className="mt-2 p-3 bg-white border border-border rounded-lg space-y-2">
+                    <input
+                      type="text"
+                      value={customName}
+                      onChange={e => setCustomName(e.target.value)}
+                      placeholder="Full name..."
+                      className="w-full px-2.5 py-1.5 text-xs border border-border rounded-lg focus:outline-none focus:ring-1 focus:ring-violet-300"
+                    />
+                    <select
+                      value={customRole}
+                      onChange={e => { setCustomRole(e.target.value); if (e.target.value !== 'Other') setCustomRoleText(''); }}
+                      className="w-full px-2.5 py-1.5 text-xs border border-border rounded-lg bg-white focus:outline-none focus:ring-1 focus:ring-violet-300"
+                    >
+                      <option value="">Select role...</option>
+                      {Object.entries(ROLES).map(([key, role]) => (
+                        <option key={key} value={role.aliases[0]}>{role.icon} {role.title}</option>
+                      ))}
+                      <option value="Other">✏️ Other</option>
+                    </select>
+                    {customRole === 'Other' && (
+                      <input type="text" value={customRoleText} onChange={e => setCustomRoleText(e.target.value)}
+                        placeholder="Type role..." className="w-full px-2.5 py-1.5 text-xs border border-violet-200 rounded-lg bg-violet-50/50 focus:outline-none focus:ring-1 focus:ring-violet-300" />
+                    )}
+                    <div className="flex gap-2">
+                      <button onClick={addCustomPerson} disabled={!customName.trim()}
+                        className="px-3 py-1.5 bg-violet-600 text-white text-[10px] font-bold rounded-lg disabled:opacity-40 hover:bg-violet-700 transition-colors">
+                        {researchAvailable ? 'Add & Research' : 'Add'}
+                      </button>
+                      <button onClick={() => { setShowCustomInput(false); setCustomName(''); setCustomRole(''); setCustomRoleText(''); }}
+                        className="px-3 py-1.5 text-[10px] font-bold text-fg-muted hover:text-fg transition-colors">Cancel</button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Step 3: Known pain points / scope (optional) */}
+            {positionProduct && attendees.length > 0 && (
+              <div className="pt-2 border-t border-violet-100">
+                <div className="flex items-center gap-1.5 mb-2">
+                  <Target size={10} className="text-violet-500" />
+                  <span className="text-[10px] font-bold text-fg-muted uppercase tracking-wider">Step 3 — Known context</span>
+                  <span className="text-[9px] text-fg-disabled">(optional)</span>
+                </div>
+                <textarea
+                  value={positionPainPoints}
+                  onChange={e => onContextChange({ ...meetingContext, positionPainPoints: e.target.value })}
+                  placeholder="Any known pain points, current vendor situation, previous conversations, budget context, or specific angles to leverage..."
+                  rows={3}
+                  className="w-full px-3 py-2 text-[11px] bg-white border border-violet-200 rounded-lg focus:outline-none focus:ring-1 focus:ring-violet-300 placeholder:text-violet-300 resize-none leading-relaxed"
+                />
+              </div>
+            )}
+
+            {/* Competitive Context (position mode) */}
+            {positionProduct && attendees.length > 0 && (
+              <CompetitorRegionInput
+                competitors={competitors}
+                region={region}
+                onCompetitorsChange={val => onContextChange({ ...meetingContext, competitors: val })}
+                onRegionChange={val => onContextChange({ ...meetingContext, region: val })}
+                accentColor="violet"
+              />
+            )}
+
+            {/* Generate Positioning Brief (Cascade) */}
+            {researchAvailable && positionProduct && attendees.length > 0 && (
+              <div className="pt-2 border-t border-violet-200">
+                <button
+                  onClick={triggerCascade}
+                  disabled={cascadeRunning}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-violet-600 to-indigo-600 text-white text-sm font-black rounded-xl hover:from-violet-700 hover:to-indigo-700 transition-all disabled:opacity-60 shadow-lg shadow-violet-500/20"
+                >
+                  {cascadeRunning ? (
+                    <><Loader2 size={16} className="animate-spin" /> Generating Positioning Brief...</>
+                  ) : (
+                    <><Zap size={16} /> Position {positionProduct} to {attendees.length} {attendees.length === 1 ? 'person' : 'people'}</>
+                  )}
+                </button>
+                <div className="text-center text-[9px] text-fg-disabled mt-1.5">
+                  {cascadeRunning
+                    ? `AI is building: "How to position ${positionProduct} to ${attendees.map(a => a.role || a.name).join(' & ')} at ${bankName}"`
+                    : `→ positioning brief, storyline, landing zones & value hypothesis for ${positionProduct}`
+                  }
+                </div>
+                {meetingPrepBrief && !cascadeRunning && (
+                  <div className="flex items-center gap-2 mt-2 px-3 py-2 bg-violet-50 border border-violet-200 rounded-lg">
+                    <span className="text-violet-700 font-bold text-[11px]">✓ Positioning brief ready</span>
+                    <span className="text-[9px] text-violet-500">Anchored to {positionProduct}</span>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Position-First mode summary */}
+            {positionProduct && attendees.length > 0 && (
+              <div className="flex items-center gap-3 pt-3 border-t border-violet-100">
+                <Package size={14} className="text-violet-600 shrink-0" />
+                <div className="flex-1 text-[11px] text-fg-subtle leading-relaxed">
+                  <span className="font-bold text-violet-600">Positioning {positionProduct}</span>{' '}
+                  to {attendees.map(a => a.name).join(', ')} at {bankName}.
+                  {positionPainPoints && <span className="text-emerald-600"> + Custom context provided.</span>}
+                </div>
+                <button
+                  onClick={() => setExpanded(false)}
+                  className="px-4 py-2 bg-violet-600 text-white text-xs font-bold rounded-lg hover:bg-violet-700 transition-colors shrink-0"
+                >
+                  Apply
+                </button>
+              </div>
+            )}
+          </>
+        )}
+
+        {/* ══════════════════════════════════════════════════════════════════ */}
+        {/* STAKEHOLDER-FIRST MODE (original flow)                           */}
+        {/* ══════════════════════════════════════════════════════════════════ */}
+        {mode === 'stakeholder' && (
+          <>
         {/* Selected attendees */}
         {attendees.length > 0 && (
           <div>
@@ -870,6 +1381,16 @@ export default function MeetingContextBar({ kdms = [], meetingContext, onContext
           </div>
         )}
 
+        {/* ── Competitive Context (optional, shared across modes) ── */}
+        {attendees.length > 0 && topics.length > 0 && (
+          <CompetitorRegionInput
+            competitors={competitors}
+            region={region}
+            onCompetitorsChange={val => onContextChange({ ...meetingContext, competitors: val })}
+            onRegionChange={val => onContextChange({ ...meetingContext, region: val })}
+          />
+        )}
+
         {/* ── Prepare Full Meeting Intelligence (Cascade) ── */}
         {researchAvailable && attendees.length > 0 && topics.length > 0 && (
           <div className="pt-2 border-t border-indigo-200">
@@ -922,6 +1443,9 @@ export default function MeetingContextBar({ kdms = [], meetingContext, onContext
             </button>
           </div>
         )}
+          </>
+        )}
+        {/* end stakeholder / position mode conditional */}
       </div>
     </div>
   );

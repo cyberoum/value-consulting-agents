@@ -37,6 +37,7 @@ import { fetchAllAppRatings } from './fetchers/appRatings.mjs';
 import { fetchAllNewsSignals } from './fetchers/newsSignals.mjs';
 import { fetchAllStockData } from './fetchers/stockData.mjs';
 import { analyzeAllBankNews, isClaudeAvailable } from './fetchers/claudeAnalyzer.mjs';
+import { runContactDiscovery } from './fetchers/contactDiscovery.mjs';
 
 // ── CLI Flags ──
 const args = process.argv.slice(2);
@@ -46,6 +47,7 @@ const runNews = runAll || args.includes('--news');
 const runStocks = runAll || args.includes('--stocks');
 const runAnalyze = args.includes('--analyze');
 const runSignals = args.includes('--signals');
+const runContacts = runAll || args.includes('--contacts');
 const runProvenance = runAll || args.includes('--provenance');
 const dryRun = args.includes('--dry-run');
 
@@ -65,12 +67,26 @@ const log = {
 // Build a lookup once at startup so we can translate config → DB keys.
 function buildKeyMap(db) {
   const keyMap = {};
+  let excluded = 0;
+
+  // Read UI-managed exclusions from pipeline_settings table
+  const dbExclusions = new Set();
+  try {
+    const rows = db.prepare('SELECT bank_key FROM pipeline_settings WHERE excluded = 1').all();
+    rows.forEach(r => dbExclusions.add(r.bank_key));
+  } catch { /* table may not exist yet */ }
+
   for (const [configKey, cfg] of Object.entries(BANK_SOURCES)) {
+    // Skip if excluded via config OR via UI settings
+    if (cfg.excluded || dbExclusions.has(configKey)) { excluded++; continue; }
     const dbKey = resolveBankKey(db, configKey, cfg.name);
     if (dbKey) {
+      // Also check if the resolved DB key is excluded
+      if (dbExclusions.has(dbKey)) { excluded++; continue; }
       keyMap[configKey] = dbKey;
     }
   }
+  if (excluded > 0) console.log(`  ⏭️  ${excluded} bank(s) excluded from pipeline`);
   return keyMap;
 }
 
@@ -83,7 +99,7 @@ async function runPipeline() {
   log.header('Market Intelligence Data Pipeline (SQLite)');
   console.log(`  📅 ${new Date().toISOString()}`);
   console.log(`  🆔 Run: ${runId.slice(0, 8)}`);
-  console.log(`  🎯 Fetchers: ${[runRatings && 'Ratings', runNews && 'News', runStocks && 'Stocks', runAnalyze && 'AI Analysis', runSignals && 'Live Signals'].filter(Boolean).join(', ')}`);
+  console.log(`  🎯 Fetchers: ${[runRatings && 'Ratings', runNews && 'News', runStocks && 'Stocks', runAnalyze && 'AI Analysis', runSignals && 'Live Signals', runContacts && 'Contact Discovery'].filter(Boolean).join(', ')}`);
   if (dryRun) console.log('  🧪 DRY RUN — will not write to database');
   if (runAnalyze && !isClaudeAvailable()) {
     log.warn('ANTHROPIC_API_KEY not set — skipping AI analysis');
@@ -371,7 +387,22 @@ async function runPipeline() {
     }
   }
 
-  // ── 6. Provenance Staleness Check ──
+  // ── 6. Contact Discovery ──
+  if (runContacts && !dryRun) {
+    log.section('Contact Discovery (Press Releases + Web Search + Job Postings)');
+    const contactStart = Date.now();
+    try {
+      const contactStats = await runContactDiscovery();
+      stats.contacts = contactStats;
+      log.done(`${contactStats.verified} verified, ${contactStats.inserted} inserted, ${contactStats.updated} updated (${((Date.now() - contactStart) / 1000).toFixed(1)}s)`);
+    } catch (err) {
+      log.error(`Contact discovery failed: ${err.message}`);
+      stats.contacts = { banksProcessed: 0, verified: 0, inserted: 0, updated: 0, skipped: 0 };
+      if (!dryRun) logIngestion(db, runId, null, 'contact_discovery', 'error', null, err.message);
+    }
+  }
+
+  // ── 7. Provenance Staleness Check ──
   if (runProvenance && !dryRun) {
     log.section('Provenance Staleness Check');
     try {
@@ -417,6 +448,7 @@ async function runPipeline() {
   if (runRatings) console.log(`     Ratings:  ${stats.ratings.written} written, ${stats.ratings.skipped} skipped, ${stats.ratings.errors} errors`);
   if (runAnalyze) console.log(`     Analysis: ${stats.analysis.written} written, ${stats.analysis.skipped} skipped, ${stats.analysis.errors} errors`);
   if (runSignals) console.log(`     Signals:  ${stats.signals?.stored || 0} stored, ${stats.signals?.classified || 0} classified, ${stats.signals?.errors || 0} errors`);
+  if (runContacts && stats.contacts) console.log(`     Contacts: ${stats.contacts.verified} verified, ${stats.contacts.inserted} inserted, ${stats.contacts.linkedinResolved || 0} LinkedIn, ${stats.contacts.staleFlagged || 0} stale`);
   if (runProvenance && stats.provenance) console.log(`     Provenance: ${stats.provenance.checked} checked, ${stats.provenance.markedStale} stale`);
   console.log(`  ─────────────`);
   console.log(`  Total: ${totalWritten} writes, ${totalErrors} errors`);

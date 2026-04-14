@@ -71,7 +71,7 @@ export default function ComparePage() {
     md += `| iOS Rating | ${banks.map(b => b.cx?.app_rating_ios || '—').join(' | ')} |\n`;
     md += `| Android Rating | ${banks.map(b => b.cx?.app_rating_android || '—').join(' | ')} |\n`;
     md += `| Core Banking | ${banks.map(b => b.comp?.core_banking || '—').join(' | ')} |\n`;
-    md += `\n*Generated from Market Intelligence Command Center • ${new Date().toLocaleDateString('en-GB')}*\n`;
+    md += `\n*Generated from Nova by Backbase • ${new Date().toLocaleDateString('en-GB')}*\n`;
 
     navigator.clipboard.writeText(md).then(() => {
       setCopied(true);

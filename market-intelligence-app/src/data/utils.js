@@ -40,7 +40,10 @@ export function getMarketForCountry(countryName) {
   return Object.entries(MARKETS_META).find(([k, m]) => m.countries.includes(countryName))?.[0] || null;
 }
 
-// Get all banks for a given country
+// Minimum score threshold — banks at or below this are excluded from country/market listings
+const MIN_QUALIFICATION_SCORE = 3;
+
+// Get all banks for a given country (excludes banks with score <= 3)
 export function getBanksForCountry(countryName) {
   const cd = COUNTRY_DATA[countryName];
   if (!cd?.top_banks) return [];
@@ -50,7 +53,9 @@ export function getBanksForCountry(countryName) {
     const bd = BANK_DATA[key];
     const q = bd?.backbase_qualification;
     return { ...b, key, score, bankData: bd, qualification: q };
-  }).sort((a, b) => b.score - a.score);
+  })
+  .filter(b => b.score > MIN_QUALIFICATION_SCORE)
+  .sort((a, b) => b.score - a.score);
 }
 
 // Get all banks for a market
@@ -155,6 +160,23 @@ export function buildSearchIndex() {
   });
 
   return items;
+}
+
+// ── Data integrity validation — run once on startup ──
+
+export function validateDataIntegrity() {
+  const bankKeys = Object.keys(BANK_DATA);
+  const issues = [];
+  bankKeys.forEach(key => {
+    if (!QUAL_DATA[key]) issues.push(`${key}: missing qualification data`);
+    if (!CX_DATA[key]) issues.push(`${key}: missing CX data`);
+    if (!COMP_DATA[key]) issues.push(`${key}: missing competition data`);
+    if (!VALUE_SELLING[key]) issues.push(`${key}: missing value selling data`);
+  });
+  if (issues.length > 0) {
+    console.warn(`[Nova] Data integrity issues (${issues.length}):\n` + issues.join('\n'));
+  }
+  return issues;
 }
 
 // Format a bank key into parts

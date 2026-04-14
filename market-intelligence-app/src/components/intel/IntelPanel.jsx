@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Send, Sparkles, ChevronDown, Cpu, Zap, Loader2 } from 'lucide-react';
-import { INTEL_CATEGORIES, CONFIDENCE_LEVELS, addIntel } from '../../data/userIntel';
+import { X, Send, Sparkles, ChevronDown, Cpu, Zap, Loader2, Download, Upload } from 'lucide-react';
+import { INTEL_CATEGORIES, CONFIDENCE_LEVELS, addIntel, exportIntel, importIntel } from '../../data/userIntel';
 import { structureIntel } from '../../data/intelEngine';
 import { checkAiAvailability, analyzeWithAI } from '../../data/aiService';
 import IntelSuggestion from './IntelSuggestion';
@@ -103,9 +103,41 @@ export default function IntelPanel({ bankKey, bankName, isOpen, onClose, onAdded
                 <h3 className="text-sm font-bold text-white">Add Intelligence</h3>
                 <p className="text-[10px] text-white/60 mt-0.5">{bankName}</p>
               </div>
-              <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-white/10 text-white/60 hover:text-white transition-colors">
-                <X size={18} />
-              </button>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => { const count = exportIntel(); console.log(`Exported ${count} intel entries`); }}
+                  title="Export all intel as JSON"
+                  className="p-1.5 rounded-lg hover:bg-white/10 text-white/40 hover:text-white transition-colors"
+                >
+                  <Download size={14} />
+                </button>
+                <label
+                  title="Import intel from JSON file"
+                  className="p-1.5 rounded-lg hover:bg-white/10 text-white/40 hover:text-white transition-colors cursor-pointer"
+                >
+                  <Upload size={14} />
+                  <input
+                    type="file"
+                    accept=".json"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      const reader = new FileReader();
+                      reader.onload = (ev) => {
+                        const result = importIntel(ev.target.result);
+                        if (result.error) alert('Import failed: ' + result.error);
+                        else { alert(`Imported ${result.imported} entries (${result.skipped} duplicates skipped)`); onAdded?.(); }
+                      };
+                      reader.readAsText(file);
+                      e.target.value = ''; // Reset so same file can be re-imported
+                    }}
+                  />
+                </label>
+                <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-white/10 text-white/60 hover:text-white transition-colors">
+                  <X size={18} />
+                </button>
+              </div>
             </div>
 
             {/* Content */}

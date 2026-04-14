@@ -24,6 +24,9 @@ const ROLE_ZONE_KEYWORDS = {
   head_wealth:  ['wealth', 'asset', 'investment', 'advisory', 'private', 'portfolio'],
   coo:          ['operations', 'origination', 'assist', 'employee', 'process', 'servicing'],
   cro:          ['compliance', 'kyc', 'aml', 'onboarding', 'risk', 'identity', 'verification'],
+  chief_ai_officer:          ['ai', 'intelligence', 'automation', 'assist', 'engagement', 'conversational', 'copilot', 'self-service'],
+  head_digital_transformation: ['digital', 'engagement', 'platform', 'origination', 'onboarding', 'mobile', 'modernization'],
+  head_efficiency:           ['operations', 'origination', 'assist', 'servicing', 'automation', 'self-service', 'cost'],
 };
 
 // ── Role → ROI Lever Relevance ──────────────────────────────────────
@@ -39,6 +42,9 @@ const ROLE_LEVER_PRIORITY = {
   head_wealth:  ['cross_sell', 'onboarding', 'channel_shift', 'platform', 'cost_to_serve'],
   coo:          ['cost_to_serve', 'channel_shift', 'platform', 'onboarding', 'cross_sell'],
   cro:          ['onboarding', 'cost_to_serve', 'platform', 'channel_shift', 'cross_sell'],
+  chief_ai_officer:          ['cost_to_serve', 'channel_shift', 'cross_sell', 'onboarding', 'platform'],
+  head_digital_transformation: ['channel_shift', 'platform', 'onboarding', 'cost_to_serve', 'cross_sell'],
+  head_efficiency:           ['cost_to_serve', 'platform', 'channel_shift', 'onboarding', 'cross_sell'],
 };
 
 // ── Role → ROI Framing ──────────────────────────────────────────────
@@ -54,6 +60,9 @@ const ROLE_ROI_FRAMING = {
   head_wealth:  'Emphasize advisor productivity and AUM growth potential. Frame around client experience and cross-sell.',
   coo:          'Lead with operational efficiency and cost-to-serve reduction. Show STP rate improvements and FTE impact.',
   cro:          'Frame around compliance cost reduction and KYC automation. Show onboarding drop-off recovery as revenue.',
+  chief_ai_officer: 'Lead with AI-powered automation ROI — reduction in manual interventions, intelligent routing, and copilot-driven productivity gains. Frame Backbase APA as the AI orchestration layer.',
+  head_digital_transformation: 'Emphasize platform modernization savings and time-to-market acceleration. Show how Backbase replaces fragmented point solutions with a unified engagement platform.',
+  head_efficiency: 'Lead with STP rate improvements, cost-per-transaction reduction, and FTE reallocation. Show concrete process automation use cases with before/after metrics.',
 };
 
 // ── Role → Signal Relevance Keywords ────────────────────────────────
@@ -68,6 +77,9 @@ const ROLE_SIGNAL_KEYWORDS = {
   head_wealth:  ['wealth', 'asset', 'invest', 'advisor', 'portfolio', 'private', 'hnw'],
   coo:          ['operation', 'process', 'automat', 'efficien', 'legacy', 'cost', 'service'],
   cro:          ['compliance', 'regulat', 'risk', 'aml', 'kyc', 'gdpr', 'psd', 'dora'],
+  chief_ai_officer:          ['ai', 'automat', 'intelligen', 'machine learn', 'copilot', 'chatbot', 'genai', 'data'],
+  head_digital_transformation: ['transform', 'moderniz', 'digital', 'migration', 'platform', 'legacy', 'change'],
+  head_efficiency:           ['efficien', 'automat', 'process', 'cost', 'stp', 'manual', 'optimiz', 'streamlin'],
 };
 
 // ── Core Functions ──────────────────────────────────────────────────

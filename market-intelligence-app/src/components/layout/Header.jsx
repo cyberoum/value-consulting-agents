@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Search, Moon, Sun, Heart, BarChart3, GitCompare, X, Clock, ArrowRight, Building2, User, Globe, Map, Command } from 'lucide-react';
+import { Search, Moon, Sun, Heart, BarChart3, GitCompare, X, Clock, ArrowRight, Building2, User, Globe, Map, Command, Star, Kanban } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from '../../context/ThemeContext';
 import { useCompare } from '../../context/CompareContext';
@@ -112,13 +112,30 @@ export default function Header() {
     <>
       <header className="sticky top-0 z-50 bg-surface/80 backdrop-blur-lg border-b border-border px-4 py-3 flex items-center gap-3">
         {/* Logo */}
-        <div className="flex items-center gap-3 cursor-pointer group" onClick={() => navigate('/')}>
-          <div className="w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center font-extrabold text-sm group-hover:shadow-lg group-hover:shadow-primary/25 transition-shadow">MI</div>
-          <span className="font-bold text-fg text-sm hidden sm:block">Market Intelligence</span>
+        <div className="flex items-center gap-2 cursor-pointer group" onClick={() => navigate('/')}>
+          <div className="w-8 h-8 rounded-xl overflow-hidden group-hover:shadow-lg group-hover:shadow-primary/30 transition-all duration-200 shrink-0">
+            <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
+              <defs>
+                <linearGradient id="nova-bg" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+                  <stop offset="0%" stopColor="#4D7AFF"/>
+                  <stop offset="100%" stopColor="#2244CC"/>
+                </linearGradient>
+              </defs>
+              <rect width="32" height="32" rx="9" fill="url(#nova-bg)"/>
+              {/* North star — clean 4-point star with elongated vertical axis */}
+              <path d="M16 4 L17.8 13.2 L16 12 L14.2 13.2 Z" fill="white"/>
+              <path d="M16 28 L14.2 18.8 L16 20 L17.8 18.8 Z" fill="white"/>
+              <path d="M4 16 L13.2 14.2 L12 16 L13.2 17.8 Z" fill="white" opacity="0.7"/>
+              <path d="M28 16 L18.8 17.8 L20 16 L18.8 14.2 Z" fill="white" opacity="0.7"/>
+              {/* Bright core */}
+              <circle cx="16" cy="16" r="2.8" fill="white"/>
+            </svg>
+          </div>
+          <span className="hidden sm:block text-[15px] font-bold tracking-[-0.02em] text-fg" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>Nova</span>
         </div>
 
-        {/* Search trigger */}
-        <div className="flex-1 max-w-md mx-2 sm:mx-4">
+        {/* Search trigger — now the primary header element */}
+        <div className="flex-1 max-w-lg mx-2 sm:mx-4">
           <button
             onClick={() => setSearchOpen(true)}
             className="w-full flex items-center gap-2 px-3 py-1.5 bg-surface-2 border border-border rounded-lg text-fg-muted text-xs hover:border-primary/40 hover:bg-surface transition-all focus-ring"
@@ -129,14 +146,8 @@ export default function Header() {
           </button>
         </div>
 
-        {/* Action icons */}
+        {/* Minimal action icons — most nav moved to Sidebar */}
         <div className="flex items-center gap-1">
-          <button onClick={() => navigate('/analytics')} className="p-2 rounded-lg hover:bg-surface-2 text-fg-muted hover:text-primary transition-all focus-ring" title="Analytics (A)">
-            <BarChart3 size={16} />
-          </button>
-          <button onClick={() => navigate('/favorites')} className="p-2 rounded-lg hover:bg-surface-2 text-fg-muted hover:text-red-500 transition-all focus-ring" title="Favorites (F)">
-            <Heart size={16} />
-          </button>
           {selected.length > 0 && (
             <motion.button
               initial={{ scale: 0 }}
@@ -156,11 +167,7 @@ export default function Header() {
               </motion.span>
             </motion.button>
           )}
-          <button onClick={toggle} className="p-2 rounded-lg hover:bg-surface-2 text-fg-muted transition-all focus-ring" title="Toggle dark mode (D)">
-            <motion.div key={dark ? 'sun' : 'moon'} initial={{ rotate: -90, opacity: 0 }} animate={{ rotate: 0, opacity: 1 }} transition={{ duration: 0.2 }}>
-              {dark ? <Sun size={16} /> : <Moon size={16} />}
-            </motion.div>
-          </button>
+          {/* Dark mode toggle moved to Sidebar */}
         </div>
       </header>
 

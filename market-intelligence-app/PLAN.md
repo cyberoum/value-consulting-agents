@@ -230,6 +230,11 @@ export const STALENESS_THRESHOLDS = {
 **Depends on: Layer 2 (persons table needed for attendee linking)**
 **Result: meeting_history table with source field for multi-integration support. CRUD API (POST/GET/PUT) with partial update. AI transcript extraction endpoint with messy format handling. formatMeetingHistoryForPrompt with outstanding commitments aggregation. Brief receives ## PRIOR MEETINGS section. Client API methods for all 4 endpoints.**
 
+### Layer 5 — Intelligence Layer (Deal Plays, Signals, Deal Twin)
+**Status: COMPLETE (2026-04-14)**
+**Depends on: Layers 1-4 (full data model needed for AI context injection)**
+**Result: 8 new tables (deal_plays, play_outputs, deal_signals, deal_twin_state, deal_twin_history, output_feedback, play_templates, deal_play_template_usage). Full CRUD routes for plays, signals, outputs, feedback. AI play generation endpoint with 5 play types (discovery, value, competitive, proposal, expansion). Deal Twin recalculation via Claude with 6-dimension scoring (stakeholder alignment, strategic fit, competitive position, momentum, value clarity, info completeness). Frontend: PlayDashboard, PlayDetail, PlayCard, PlayActivator, OutputCard, OutputFeedbackButtons, PostMeetingCapture, StakeholderIntelView, SignalFeed, SignalCard, SignalCreator, SignalBadge, DealHealthDashboard, HealthTrendLine, IntelligenceOnboarding. Nova design system CSS with stellar physics theme. All wired into BankPage.**
+
 ---
 
 ## Per-layer specs
@@ -468,9 +473,7 @@ Claude API via `scripts/fetchers/claudeClient.mjs`
 
 ## Open questions
 
-1. **Dual-truth resolution:** `src/data/banks.js` and SQLite are currently both sources
-   of truth. Long-term, the bundle should be generated from SQLite at build time.
-   This is a significant refactor — not in scope for Layers 1-4, but needs a plan.
+1. **Dual-truth resolution:** RESOLVED (2026-03-18). SQLite is now the single source of truth. `scripts/generateBundle.mjs` reads all 9 tables and writes `src/data/` files with identical export shapes. Workflow: seed → pipeline → generate-bundle → build. Compound scripts: `seed-and-bundle`, `refresh-and-bundle`.
 
 2. **CRM integration:** Layer 4 currently uses manual meeting entry. Future: pull from
    Salesforce or HubSpot API. Decide on CRM before building Layer 4 API shape.

@@ -31,6 +31,7 @@ export const PIPELINE_CONFIG = {
 /**
  * Bank data source registry
  * Each bank has: googlePlayId, appStoreId, ticker, rssFeed, irUrl
+ * Set excluded: true to skip a bank in all pipeline runs (stocks, ratings, news, contacts)
  */
 export const BANK_SOURCES = {
   // ── SWEDEN ──
@@ -207,8 +208,8 @@ export const BANK_SOURCES = {
     country: 'Finland',
     googlePlayId: 'fi.op.android.opbank',
     appStoreId: '524192375',
-    ticker: null,              // Cooperative
-    rssFeed: null,
+    ticker: null,              // Cooperative — not publicly listed
+    rssFeed: 'https://news.cision.com/op-pohjola?format=rss',
     irUrl: 'https://www.op.fi/op-financial-group/investor-relations',
   },
   'Aktia Bank_Finland': {

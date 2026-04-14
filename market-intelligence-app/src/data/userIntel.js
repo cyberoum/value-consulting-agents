@@ -171,6 +171,34 @@ export function getApprovedIntelByTarget(bankKey) {
   return grouped;
 }
 
+/** Export all intel as a downloadable JSON file */
+export function exportIntel() {
+  const all = getAll();
+  const blob = new Blob([JSON.stringify(all, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `nova-intel-${new Date().toISOString().slice(0, 10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  return all.length;
+}
+
+/** Import intel from a JSON file, deduplicating by id */
+export function importIntel(jsonString) {
+  try {
+    const incoming = JSON.parse(jsonString);
+    if (!Array.isArray(incoming)) return { imported: 0, skipped: 0, error: 'Invalid format — expected an array' };
+    const existing = getAll();
+    const existingIds = new Set(existing.map(e => e.id));
+    const newEntries = incoming.filter(e => e.id && !existingIds.has(e.id));
+    saveAll([...newEntries, ...existing]);
+    return { imported: newEntries.length, skipped: incoming.length - newEntries.length, error: null };
+  } catch (err) {
+    return { imported: 0, skipped: 0, error: err.message };
+  }
+}
+
 /** Get recent intel across all banks (for dashboard) */
 export function getRecentIntel(limit = 10) {
   return getAll().slice(0, limit);

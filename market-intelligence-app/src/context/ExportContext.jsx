@@ -51,7 +51,7 @@ export function ExportProvider({ children }) {
       });
     });
 
-    md += `---\n*Backbase Market Intelligence • Confidential*\n`;
+    md += `---\n*Nova by Backbase • Confidential*\n`;
     return md;
   }, [selected]);
 
