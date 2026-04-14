@@ -6,6 +6,81 @@ Format follows [Keep a Changelog](https://keepachangelog.com/). Versioning follo
 
 ---
 
+## [1.2.0] - 2026-04-13
+
+Major release covering 45 commits since v1.1.0 (Feb 3 → Apr 13). Three headline themes:
+**(1)** comprehensive security hardening + PII anonymization, **(2)** ROI pipeline v2 — two-agent architecture with hypothesis-driven lever identification, **(3)** ENGAGE Americas 2026 design system refresh (colors + font).
+
+### Security & Privacy
+
+- **PII anonymization pipeline** (`scripts/anonymize_transcript.py`) — strips client names, person names, emails, phone numbers, SSNs, account numbers, and client URLs from transcripts before they are sent to the Anthropic API. Round-trip de-anonymization restores real names in final deliverables. Wired automatically into `step_discovery()` in orchestrator; agent prompts also instructed to invoke it when run standalone.
+- **Prompt injection defense protocol** (`knowledge/standards/security_protocol.md`) — 8-section mandatory standard covering untrusted data handling, web search validation, MCP query anonymization (no client names/financials in Backbase MCP queries), tone calibration bounds, unconsidered needs validation, and checkpoint security tables.
+- **14 code-level security vulnerabilities fixed** across 8 files:
+  - **Critical:** Removed credential from git URL (orchestrate.py) — now uses `GIT_ASKPASS` helper. Added path traversal protection to dev_agent.py with `REPO_ROOT` sandboxing — blocks absolute paths, `../` traversal, `.git/`, and `.github/workflows/` writes.
+  - **High:** LLM response schema validation, CI/CD input sanitization (`ACTIONS_STEP_DEBUG: false`), `.env` added to `.gitignore`, retry-with-exponential-backoff for GitHub API.
+  - **Medium/Low:** Configurable repo owner/name via env vars, sanitized error messages, GitHub API token validation, `chmod 600` on `.env`.
+- **Security protocol referenced** by 9 agent files (discovery, market-context, narrative-assembler, workshop-prep, journey-builder, capability-assessment, roi-business-case-builder, roi-financial-modeler, roi-hypothesis-builder) plus `CLAUDE.md` governance table.
+
+### Added
+
+- **ROI Pipeline v2** — two-agent architecture: `roi-hypothesis-builder` (defines problem, builds hypothesis tree, derives lever candidates) and `roi-financial-modeler` (receives validated levers, computes gap-based impacts, builds financial model). Orchestrated by new `/build-roi` skill outside the full pipeline.
+- **Hypothesis-driven lever identification** with three new methodology docs: `value_lever_framework.md`, `hypothesis_tree_decomposition.md`, `capability_driven_patterns.md`.
+- **Gap-based `backbase_impact` methodology** — replaces static ranges with capability-gap-driven calculation. Capped at 60% to prevent inflated ROI (BECU root cause).
+- **Knowledge harvest auto-runs without token** — silent post-pipeline PR flow, zero consultant setup required. Engagement-level knowledge writes back to shared knowledge base via auto-opened harvest PR.
+- **Two-phase agent protocol** — phased execution with checkpoint files, context reduction, pipeline hardening (per-agent timeouts, 3-way sharding for capability heatmap).
+- **Journey Experience Map pipeline** — two-layer pipeline with strengthened checkpoint enforcement.
+- **Lifecycle-stage capability heatmap** — new `02e` lifecycle pipeline architecture.
+- **`/build-roi` skill** — standalone orchestrator for the new two-agent ROI architecture.
+- **`/generate-roi-questionnaire` skill** — Phase A questionnaire generation, separated from the calculation engine.
+- **Mariam promoted to architect** — full path access granted.
+- **NFIS, SeABank, and Managed Hosting Commercial test suites** added under `tests/` — fixture transcripts + expected outputs for ROI pipeline regression testing.
+- **ROI Pipeline Redesign Presentation** (`tests/roi_pipeline_v2/ROI_Pipeline_Redesign_Presentation.html`).
+
+### Changed
+
+- **Design System refreshed to ENGAGE Americas 2026 keynote palette:**
+  - Primary dark: `#091C35` → `#0F172A` (darker, more neutral navy)
+  - Primary blue: `#3366FF` (unchanged — verified against keynote slides 7, 9, 10)
+  - Red/Coral: `#FF7262` → `#FF6B5E` (warmer)
+  - Green: `#26BC71` → `#93C47D` (vibrant → muted sage)
+  - Amber: `#FFAC09` → `#E8B931` (amber → gold)
+  - Background: `#F5FAFF`/`#F8FAFC` → `#FFFFFF` (pure white base)
+  - Primary font: Libre Franklin → **Inter** (geometric, uniform strokes — matches keynote)
+  - All deprecated colors documented in `knowledge/design-system.md` migration table.
+- **ROI agent split:** old monolithic `roi-business-case-builder.md` deprecated and preserved at `.claude/agents/deprecated/`. New two-agent split is canonical.
+- **Phase A questionnaire converted from agent to skill** (`/generate-roi-questionnaire`) — universal across all engagement types.
+- **Phase B always routes to Mariam's calculation engine** (`roi-financial-modeler`).
+- **Orchestrator slimmed** — `value-consulting-orchestrator` agent reduced to thin router; logic moved to `scripts/orchestrate.py`.
+- **`orchestrate_v4.py` consolidated into `orchestrate.py`** — single canonical orchestrator.
+- **V5 pipeline** — 3-way sharding, per-agent timeouts, HTML template optimization.
+- **`<checkpoint>` tag instructions** added to all 9 agent prompts.
+- **"Read the Room" tone calibration protocol** added across 4 agents — direct/measured/opportunity-framed framings without changing conclusions.
+- **Consultant Interaction Model** renamed to **Consultant Checkpoint** (market-context-researcher).
+
+### Removed
+
+- **Cyan** (`#69FEFF`) and **Purple** (`#7B2FFF`) — no longer in Backbase brand palette.
+- **`html_report_generator.py`** — replaced by `/generate-assessment-html` skill.
+
+### Fixed
+
+- **Knowledge harvest token requirement** — pipeline now runs without it; harvest is best-effort.
+- **Systemic ROI bugs:** investment lever calculation, scenario switching, calibrator integration.
+- **ROI agent ↔ assembler ↔ HTML dashboard data contracts** synced.
+- **`backbase_impact` cap at 60%** — prevents inflated ROI seen in BECU engagement.
+- **Flywheel quality check failures** — binary file skip in test agent, bash syntax error in workflow, `.md`-only filter for changed files in CI.
+- **Post-commit hook** — resolves `outputs/` subdirectory to engagement root.
+- **V4 version label** removed from orchestrator banner.
+- **ROI routing** — Phase A questionnaire universal, Phase B always Mariam's engine.
+
+### Infrastructure
+
+- **CI gating tightened** — `check-scope` enforces contribution tier permissions on every PR.
+- **Test agent** validates agent definition structure on every PR.
+- **`.gitignore`** expanded to exclude `.env`, `.env.local`, `.git_askpass.sh`, `.pii_mapping.json`, `.anon_*` artifacts.
+
+---
+
 ## [1.1.0] - 2026-02-03
 
 ### Added
