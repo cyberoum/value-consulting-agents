@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Check } from 'lucide-react';
 import { useCountry, useCountryBanks } from '../hooks/useData';
@@ -11,16 +11,23 @@ import FilterPanel from '../components/common/FilterPanel';
 import { ScoreBadge, ConfidenceBadge } from '../components/common/Badge';
 import { useCompare } from '../context/CompareContext';
 import BarChart from '../components/charts/BarChart';
+import FintechLandscapeGrid from '../components/country/FintechLandscapeGrid';
+import RegulatoryPanel from '../components/country/RegulatoryPanel';
+import MarketTrends from '../components/country/MarketTrends';
+import CustomerNeedsPanel from '../components/country/CustomerNeedsPanel';
+import CountryRefreshButton from '../components/country/CountryRefreshButton';
 
 export default function CountryPage() {
   const { countryName } = useParams();
   const navigate = useNavigate();
   const country = decodeURIComponent(countryName);
-  const { data: countryData, isLoading, error } = useCountry(country);
+  const { data: countryData, isLoading, error, refetch } = useCountry(country);
   const { data: countryBanks } = useCountryBanks(country);
   const marketKey = getMarketForCountry(country);
   const { toggle: toggleCompare, isSelected } = useCompare();
   const [filters, setFilters] = useState({ minScore: 0, maxScore: 10, confidence: 'all', hasPowerMap: false, dealSize: 'all', hasValueSelling: false, sortBy: 'score' });
+
+  const handleRefreshed = useCallback(() => { refetch(); }, [refetch]);
 
   if (isLoading) return <LoadingState message="Loading country data..." />;
   if (error) return <ErrorState message={error.message} />;
@@ -94,12 +101,11 @@ export default function CountryPage() {
   const prospects = allBanks.filter(b => b.score >= 5);
   const hotBanks = allBanks.filter(b => b.score >= 8);
   const powerMaps = allBanks.filter(b => b._qualData?.power_map?.activated).length;
-  const valueHypos = allBanks.filter(b => b._valueSelling).length;
   const avgScore = prospects.length > 0
     ? (prospects.reduce((sum, b) => sum + b.score, 0) / prospects.length).toFixed(1)
     : '—';
 
-  // Banks needing attention (low confidence, no power map on high-score banks)
+  // Banks needing attention
   const needsAttention = allBanks.filter(b => {
     if (b.score < 6) return false;
     const conf = dataConfidenceFromData(b.key, b.bankData);
@@ -107,6 +113,9 @@ export default function CountryPage() {
   });
 
   const sw = data.strengths_weaknesses;
+  const fintechCategories = data.fintech_landscape?.categories?.length || 0;
+  const regulationCount = data.regulatory_environment?.key_regulations?.length || 0;
+  const trendCount = (data.market_news?.trends?.length || 0) + (data.market_news?.recent_deals?.length || 0);
 
   /* ─── TARGET TAB ─── */
   const TargetTab = () => (
@@ -208,12 +217,12 @@ export default function CountryPage() {
     </div>
   );
 
-  /* ─── PITCH TAB ─── */
-  const PitchTab = () => (
-    <div className="space-y-4">
-      {/* SWOT — positioning context */}
+  /* ─── INTEL TAB (consolidated from old Pitch + Intel) ─── */
+  const IntelTab = () => (
+    <div className="space-y-1">
+      {/* SWOT — moved from old Pitch tab */}
       {sw && (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
           <div className="p-4 bg-primary-50 border border-primary/20 rounded-lg">
             <h4 className="text-[10px] font-bold text-primary uppercase tracking-wide mb-2">✓ Market Strengths</h4>
             <div className="flex flex-wrap gap-1">{sw.strengths.map((s, i) => <span key={i} className="text-[10px] bg-primary/8 text-fg-subtle px-2 py-0.5 rounded">{s}</span>)}</div>
@@ -224,33 +233,21 @@ export default function CountryPage() {
           </div>
         </div>
       )}
-
-      {/* Backbase signals */}
+      {/* Backbase signals — moved from old Pitch tab */}
       {data.backbase_opportunities && (
-        <div>
+        <div className="mb-3">
           <h3 className="text-xs font-bold text-fg-muted uppercase tracking-wide mb-2">Backbase Signals</h3>
           <div className="p-4 bg-primary-700/5 border border-primary-700/10 rounded-xl">
             <p className="text-xs text-fg-subtle leading-relaxed">{data.backbase_opportunities}</p>
           </div>
         </div>
       )}
-
-      {/* Spending trends */}
-      {data.spending_trends && (
-        <Section title="Spending Trends">
-          <p className="text-sm text-fg-subtle leading-relaxed">{data.spending_trends}</p>
-        </Section>
-      )}
-    </div>
-  );
-
-  /* ─── INTEL TAB ─── */
-  const IntelTab = () => (
-    <div className="space-y-1">
+      {/* Country context sections */}
       {data.demographics && <Section title="Demographics"><p className="text-sm text-fg-subtle leading-relaxed">{data.demographics}</p></Section>}
       {data.banking_sector && <Section title="Banking Sector"><p className="text-sm text-fg-subtle leading-relaxed">{data.banking_sector}</p></Section>}
       {data.digital_banking && <Section title="Digital Banking" defaultOpen={false}><p className="text-sm text-fg-subtle leading-relaxed">{data.digital_banking}</p></Section>}
       {data.consumer_segments && <Section title="Consumer Segments" defaultOpen={false}><p className="text-sm text-fg-subtle leading-relaxed">{data.consumer_segments}</p></Section>}
+      {data.spending_trends && <Section title="Spending Trends" defaultOpen={false}><p className="text-sm text-fg-subtle leading-relaxed">{data.spending_trends}</p></Section>}
     </div>
   );
 
@@ -260,20 +257,23 @@ export default function CountryPage() {
         <ArrowLeft size={16} /> Back
       </button>
 
-      {/* Compact header */}
-      <h2 className="text-xl font-black text-fg">{country}</h2>
+      {/* Header with refresh button */}
+      <div className="flex items-start justify-between mb-1">
+        <h2 className="text-xl font-black text-fg">{country}</h2>
+        <CountryRefreshButton countryName={country} data={data} onRefreshed={handleRefreshed} />
+      </div>
       <p className="text-primary text-xs italic mb-2">{data.tagline}</p>
 
       {/* Inline KPI badges */}
       <div className="flex gap-1.5 flex-wrap mb-4">
-        {data.kpis.map((k, i) => (
+        {(data.kpis || []).map((k, i) => (
           <span key={i} className="text-[9px] bg-surface border border-border rounded-full px-2.5 py-1 inline-flex items-center gap-1">
             <span className="text-fg-disabled">{k.label}:</span> <strong className="text-fg">{k.value}</strong>
           </span>
         ))}
       </div>
 
-      {/* Task-based tabs */}
+      {/* 5-tab layout */}
       <TabBar id="country-tabs" sticky tabs={[
         {
           label: '🎯 Target',
@@ -281,12 +281,28 @@ export default function CountryPage() {
           content: <TargetTab />,
         },
         {
-          label: '⚡ Pitch',
-          badge: sw ? 'dot' : null,
-          content: <PitchTab />,
+          label: '🏗️ Fintech',
+          badge: fintechCategories || null,
+          content: <FintechLandscapeGrid data={data.fintech_landscape} countryName={country} />,
+        },
+        {
+          label: '📜 Regulatory',
+          badge: regulationCount || null,
+          content: <RegulatoryPanel data={data.regulatory_environment} countryName={country} />,
+        },
+        {
+          label: '📰 Trends',
+          badge: trendCount || null,
+          content: (
+            <div className="space-y-6">
+              <MarketTrends data={data.market_news} countryName={country} />
+              <CustomerNeedsPanel data={data.customer_needs} countryName={country} />
+            </div>
+          ),
         },
         {
           label: '📊 Intel',
+          badge: sw ? 'dot' : null,
           content: <IntelTab />,
         },
       ]} />

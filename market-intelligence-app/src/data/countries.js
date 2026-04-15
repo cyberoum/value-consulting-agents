@@ -101,7 +101,896 @@ export const COUNTRY_DATA = {
         "total_assets": "$2B",
         "headline": "Leading Nordic neobank; raised significant funding; expanding"
       }
-    ]
+    ],
+    "fintech_landscape": {
+      "last_refreshed": "2026-04-14T12:00:00Z",
+      "summary": "Denmark has a mature fintech ecosystem anchored by MobilePay (now part of Vipps MobilePay), strong open banking adoption via PSD2, and a banking sector dominated by a few large players running legacy core systems. The competitive landscape for engagement banking is relatively open — most banks use in-house or legacy digital channels with limited vendor adoption of modern engagement platforms.",
+      "maturity_level": "advanced",
+      "categories": [
+        {
+          "id": "cbs",
+          "name": "Core Banking Systems",
+          "vendors": [
+            {
+              "name": "Temenos",
+              "type": "global",
+              "presence": "moderate",
+              "notable_clients": [
+                "Jyske Bank"
+              ],
+              "threat_level": "medium",
+              "notes": "T24/Transact deployed at mid-tier banks; limited at tier-1"
+            },
+            {
+              "name": "Thought Machine",
+              "type": "global",
+              "presence": "emerging",
+              "notable_clients": [
+                "Lunar"
+              ],
+              "threat_level": "low",
+              "notes": "Vault platform powers Lunar's cloud-native core"
+            },
+            {
+              "name": "SDC (Bankernes EDB Central)",
+              "type": "regional",
+              "presence": "strong",
+              "notable_clients": [
+                "Spar Nord",
+                "Sydbank",
+                "40+ smaller banks"
+              ],
+              "threat_level": "low",
+              "notes": "Shared IT cooperative serving most Danish banks outside top 3; deeply embedded"
+            },
+            {
+              "name": "Bankdata",
+              "type": "regional",
+              "presence": "strong",
+              "notable_clients": [
+                "Jyske Bank",
+                "Sydbank",
+                "local banks"
+              ],
+              "threat_level": "low",
+              "notes": "Danish banking IT cooperative; builds and runs core banking for member banks"
+            },
+            {
+              "name": "In-house / Legacy",
+              "type": "local",
+              "presence": "strong",
+              "notable_clients": [
+                "Danske Bank",
+                "Nykredit"
+              ],
+              "threat_level": "low",
+              "notes": "Tier-1 banks run proprietary mainframe cores; Danske Bank transforming"
+            }
+          ]
+        },
+        {
+          "id": "engagement_banking",
+          "name": "Engagement Banking / Digital Experience",
+          "vendors": [
+            {
+              "name": "Backbase",
+              "type": "global",
+              "presence": "emerging",
+              "notable_clients": [],
+              "threat_level": "low",
+              "notes": "No confirmed Danish deployments yet — significant whitespace opportunity"
+            },
+            {
+              "name": "Temenos (Infinity/DXP)",
+              "type": "global",
+              "presence": "moderate",
+              "notable_clients": [
+                "Jyske Bank"
+              ],
+              "threat_level": "medium",
+              "notes": "Bundled with T24 core; limited standalone adoption"
+            },
+            {
+              "name": "In-house portals",
+              "type": "local",
+              "presence": "strong",
+              "notable_clients": [
+                "Danske Bank",
+                "Nykredit",
+                "Nordea"
+              ],
+              "threat_level": "medium",
+              "notes": "Most tier-1 banks built proprietary digital banking portals; aging and costly to maintain"
+            },
+            {
+              "name": "Sigma Conso (e-Boks integration)",
+              "type": "regional",
+              "presence": "moderate",
+              "notable_clients": [
+                "Most Danish banks"
+              ],
+              "threat_level": "low",
+              "notes": "Secure document delivery platform used by all major banks; not a full engagement layer"
+            }
+          ]
+        },
+        {
+          "id": "payments",
+          "name": "Payments",
+          "vendors": [
+            {
+              "name": "Vipps MobilePay",
+              "type": "regional",
+              "presence": "strong",
+              "notable_clients": [
+                "All Danish banks"
+              ],
+              "threat_level": "low",
+              "notes": "Universal P2P and merchant payments; merged Vipps+MobilePay+Pivo in 2022"
+            },
+            {
+              "name": "Nets (Nexi Group)",
+              "type": "regional",
+              "presence": "strong",
+              "notable_clients": [
+                "All Danish banks"
+              ],
+              "threat_level": "low",
+              "notes": "Dominant card processing and acquiring in Denmark; part of Nexi since 2021"
+            },
+            {
+              "name": "Mastercard / Visa",
+              "type": "global",
+              "presence": "strong",
+              "notable_clients": [
+                "All banks"
+              ],
+              "threat_level": "low",
+              "notes": "Standard card schemes; Denmark has high card usage per capita"
+            },
+            {
+              "name": "Banking Circle",
+              "type": "regional",
+              "presence": "moderate",
+              "notable_clients": [
+                "Fintechs",
+                "PSPs"
+              ],
+              "threat_level": "low",
+              "notes": "Danish-founded payments infrastructure for financial institutions and fintechs"
+            },
+            {
+              "name": "Clearhaus",
+              "type": "local",
+              "presence": "moderate",
+              "notable_clients": [
+                "SME merchants"
+              ],
+              "threat_level": "low",
+              "notes": "Danish card acquiring focused on e-commerce SMEs"
+            }
+          ]
+        },
+        {
+          "id": "cards",
+          "name": "Card Issuing & Processing",
+          "vendors": [
+            {
+              "name": "Nets (Nexi)",
+              "type": "regional",
+              "presence": "strong",
+              "notable_clients": [
+                "Danske Bank",
+                "Jyske Bank",
+                "Nykredit"
+              ],
+              "threat_level": "low",
+              "notes": "Dominant card processor for Dankort (national debit) and international schemes"
+            },
+            {
+              "name": "Enfuce",
+              "type": "regional",
+              "presence": "emerging",
+              "notable_clients": [
+                "Lunar"
+              ],
+              "threat_level": "low",
+              "notes": "Finnish cloud-native card issuing platform used by Nordic fintechs"
+            },
+            {
+              "name": "Marqeta",
+              "type": "global",
+              "presence": "emerging",
+              "notable_clients": [],
+              "threat_level": "low",
+              "notes": "Modern card issuing platform entering Nordic market"
+            }
+          ]
+        },
+        {
+          "id": "aml_compliance",
+          "name": "AML / Compliance / RegTech",
+          "vendors": [
+            {
+              "name": "NICE Actimize",
+              "type": "global",
+              "presence": "strong",
+              "notable_clients": [
+                "Danske Bank"
+              ],
+              "threat_level": "low",
+              "notes": "Enterprise AML/fraud platform; Danske Bank's choice post-scandal"
+            },
+            {
+              "name": "Norkom (Deloitte)",
+              "type": "global",
+              "presence": "moderate",
+              "notable_clients": [
+                "Nordea"
+              ],
+              "threat_level": "low",
+              "notes": "Legacy AML monitoring in Nordea's operations"
+            },
+            {
+              "name": "KYC Portal (Regnology)",
+              "type": "global",
+              "presence": "moderate",
+              "notable_clients": [
+                "Mid-tier banks"
+              ],
+              "threat_level": "low",
+              "notes": "KYC/AML regulatory reporting"
+            },
+            {
+              "name": "Comply Advantage",
+              "type": "global",
+              "presence": "emerging",
+              "notable_clients": [
+                "Lunar",
+                "fintechs"
+              ],
+              "threat_level": "low",
+              "notes": "AI-powered AML screening for digital-first players"
+            },
+            {
+              "name": "Muinmos",
+              "type": "local",
+              "presence": "emerging",
+              "notable_clients": [
+                "Wealth managers"
+              ],
+              "threat_level": "low",
+              "notes": "Danish RegTech for automated client classification and regulatory compliance"
+            }
+          ]
+        },
+        {
+          "id": "crm",
+          "name": "CRM / Customer Intelligence",
+          "vendors": [
+            {
+              "name": "Salesforce",
+              "type": "global",
+              "presence": "strong",
+              "notable_clients": [
+                "Danske Bank",
+                "Jyske Bank"
+              ],
+              "threat_level": "medium",
+              "notes": "Financial Services Cloud widely deployed; competes on customer 360 with Backbase"
+            },
+            {
+              "name": "Microsoft Dynamics 365",
+              "type": "global",
+              "presence": "moderate",
+              "notable_clients": [
+                "Sydbank",
+                "smaller banks"
+              ],
+              "threat_level": "medium",
+              "notes": "Often used alongside existing Microsoft stack"
+            },
+            {
+              "name": "SAS (analytics)",
+              "type": "regional",
+              "presence": "moderate",
+              "notable_clients": [
+                "Danske Bank"
+              ],
+              "threat_level": "low",
+              "notes": "Customer analytics and risk modeling; legacy in Nordic banking"
+            }
+          ]
+        },
+        {
+          "id": "wealth_management",
+          "name": "Wealth Management",
+          "vendors": [
+            {
+              "name": "SimCorp (Deutsche Börse)",
+              "type": "regional",
+              "presence": "strong",
+              "notable_clients": [
+                "Danske Bank",
+                "pension funds"
+              ],
+              "threat_level": "low",
+              "notes": "Danish-founded investment management platform; HQ in Copenhagen"
+            },
+            {
+              "name": "Temenos (WealthSuite)",
+              "type": "global",
+              "presence": "moderate",
+              "notable_clients": [],
+              "threat_level": "low",
+              "notes": "Portfolio management and advisory tools"
+            },
+            {
+              "name": "Avaloq",
+              "type": "global",
+              "presence": "emerging",
+              "notable_clients": [],
+              "threat_level": "low",
+              "notes": "Entering Nordic wealth market; strong in Swiss/Asian private banking"
+            },
+            {
+              "name": "Monta (robo-advisory)",
+              "type": "local",
+              "presence": "emerging",
+              "notable_clients": [
+                "Saxo Bank"
+              ],
+              "threat_level": "low",
+              "notes": "Danish robo-advisory/automated investing"
+            }
+          ]
+        },
+        {
+          "id": "lending_platforms",
+          "name": "Lending & Mortgage Platforms",
+          "vendors": [
+            {
+              "name": "In-house / Bankdata",
+              "type": "local",
+              "presence": "strong",
+              "notable_clients": [
+                "Nykredit",
+                "Jyske Bank"
+              ],
+              "threat_level": "medium",
+              "notes": "Denmark's unique covered bond mortgage system requires specialized platforms"
+            },
+            {
+              "name": "Mambu",
+              "type": "global",
+              "presence": "emerging",
+              "notable_clients": [
+                "Lunar"
+              ],
+              "threat_level": "medium",
+              "notes": "Cloud-native lending engine; gaining traction with neobanks"
+            },
+            {
+              "name": "nCino",
+              "type": "global",
+              "presence": "emerging",
+              "notable_clients": [],
+              "threat_level": "low",
+              "notes": "Commercial lending platform on Salesforce; entering Nordics"
+            }
+          ]
+        },
+        {
+          "id": "ai_ml",
+          "name": "AI / Machine Learning",
+          "vendors": [
+            {
+              "name": "SAS",
+              "type": "global",
+              "presence": "strong",
+              "notable_clients": [
+                "Danske Bank",
+                "Nordea"
+              ],
+              "threat_level": "low",
+              "notes": "Traditional analytics and ML models for risk, fraud, customer analytics"
+            },
+            {
+              "name": "Supwiz",
+              "type": "local",
+              "presence": "emerging",
+              "notable_clients": [
+                "Danske Bank"
+              ],
+              "threat_level": "low",
+              "notes": "Danish AI company; conversational AI and automation for financial services"
+            },
+            {
+              "name": "Boost.ai",
+              "type": "regional",
+              "presence": "moderate",
+              "notable_clients": [
+                "Nordea",
+                "DNB"
+              ],
+              "threat_level": "low",
+              "notes": "Norwegian conversational AI platform used by Nordic banks"
+            },
+            {
+              "name": "Microsoft Azure AI",
+              "type": "global",
+              "presence": "moderate",
+              "notable_clients": [
+                "Danske Bank"
+              ],
+              "threat_level": "low",
+              "notes": "Cloud AI services; Danske Bank is a Microsoft-first shop"
+            }
+          ]
+        },
+        {
+          "id": "open_banking",
+          "name": "Open Banking / APIs",
+          "vendors": [
+            {
+              "name": "Nordic API Gateway (Aiia/Mastercard)",
+              "type": "regional",
+              "presence": "strong",
+              "notable_clients": [
+                "50+ Nordic banks"
+              ],
+              "threat_level": "low",
+              "notes": "Danish-founded; dominant open banking aggregation in Nordics; acquired by Mastercard"
+            },
+            {
+              "name": "Tink (Visa)",
+              "type": "regional",
+              "presence": "moderate",
+              "notable_clients": [
+                "European banks"
+              ],
+              "threat_level": "low",
+              "notes": "Swedish open banking platform acquired by Visa; PFM and data enrichment"
+            },
+            {
+              "name": "Plaid",
+              "type": "global",
+              "presence": "emerging",
+              "notable_clients": [
+                "Fintechs"
+              ],
+              "threat_level": "low",
+              "notes": "US-based open banking expanding into Europe"
+            }
+          ]
+        },
+        {
+          "id": "channels",
+          "name": "Digital Channels / Omnichannel",
+          "vendors": [
+            {
+              "name": "In-house",
+              "type": "local",
+              "presence": "strong",
+              "notable_clients": [
+                "Danske Bank",
+                "Nykredit",
+                "Nordea"
+              ],
+              "threat_level": "medium",
+              "notes": "Tier-1 banks built proprietary mobile/web apps; high maintenance cost"
+            },
+            {
+              "name": "SDC (shared mobile banking)",
+              "type": "regional",
+              "presence": "strong",
+              "notable_clients": [
+                "40+ member banks"
+              ],
+              "threat_level": "medium",
+              "notes": "Shared mobile banking platform for SDC cooperative members"
+            },
+            {
+              "name": "Backbase",
+              "type": "global",
+              "presence": "emerging",
+              "notable_clients": [],
+              "threat_level": "low",
+              "notes": "Primary opportunity — most banks need to modernize aging channel layers"
+            }
+          ]
+        },
+        {
+          "id": "identity_verification",
+          "name": "Identity / KYC / Digital Onboarding",
+          "vendors": [
+            {
+              "name": "MitID (national)",
+              "type": "local",
+              "presence": "strong",
+              "notable_clients": [
+                "All Danish banks"
+              ],
+              "threat_level": "low",
+              "notes": "National digital ID replacing NemID in 2022; mandatory for all banking"
+            },
+            {
+              "name": "Signicat",
+              "type": "regional",
+              "presence": "moderate",
+              "notable_clients": [
+                "Nordic banks"
+              ],
+              "threat_level": "low",
+              "notes": "Norwegian digital identity and e-signing platform"
+            },
+            {
+              "name": "Onfido",
+              "type": "global",
+              "presence": "emerging",
+              "notable_clients": [
+                "Fintechs"
+              ],
+              "threat_level": "low",
+              "notes": "AI-based identity verification for digital onboarding"
+            }
+          ]
+        },
+        {
+          "id": "trading",
+          "name": "Trading / Capital Markets",
+          "vendors": [
+            {
+              "name": "Saxo Bank (platform)",
+              "type": "local",
+              "presence": "strong",
+              "notable_clients": [
+                "White-label clients globally"
+              ],
+              "threat_level": "low",
+              "notes": "Danish-founded; leading multi-asset trading platform; white-labels to 200+ institutions"
+            },
+            {
+              "name": "SimCorp",
+              "type": "regional",
+              "presence": "strong",
+              "notable_clients": [
+                "Pension funds",
+                "asset managers"
+              ],
+              "threat_level": "low",
+              "notes": "Investment management and trading operations"
+            },
+            {
+              "name": "Refinitiv (LSEG)",
+              "type": "global",
+              "presence": "moderate",
+              "notable_clients": [
+                "Danske Bank",
+                "Nordea"
+              ],
+              "threat_level": "low",
+              "notes": "Market data and trading infrastructure"
+            }
+          ]
+        },
+        {
+          "id": "data_analytics",
+          "name": "Data & Analytics Platforms",
+          "vendors": [
+            {
+              "name": "SAS",
+              "type": "global",
+              "presence": "strong",
+              "notable_clients": [
+                "Danske Bank",
+                "Nordea"
+              ],
+              "threat_level": "low",
+              "notes": "Deep roots in Nordic banking analytics"
+            },
+            {
+              "name": "Snowflake",
+              "type": "global",
+              "presence": "emerging",
+              "notable_clients": [
+                "Danske Bank"
+              ],
+              "threat_level": "low",
+              "notes": "Cloud data warehouse gaining adoption"
+            },
+            {
+              "name": "Microsoft Power BI / Fabric",
+              "type": "global",
+              "presence": "moderate",
+              "notable_clients": [
+                "Multiple banks"
+              ],
+              "threat_level": "low",
+              "notes": "Business intelligence and data visualization"
+            }
+          ]
+        }
+      ]
+    },
+    "regulatory_environment": {
+      "last_refreshed": "2026-04-14T12:00:00Z",
+      "summary": "Denmark has a robust and mature regulatory framework supervised by the Danish FSA (Finanstilsynet). The Danske Bank AML scandal (€200B+ in suspicious transactions) triggered a wave of compliance reforms that still shape the market. Open banking is well-established via PSD2. MitID replaced NemID as the national digital identity in 2022.",
+      "central_bank": "Danmarks Nationalbank (pegged to EUR via ERM II)",
+      "key_regulations": [
+        {
+          "name": "PSD2 / Open Banking",
+          "status": "implemented",
+          "effective_date": "2018",
+          "impact": "Full API access mandated; strong fintech ecosystem enabled",
+          "relevance": "high"
+        },
+        {
+          "name": "5th Anti-Money Laundering Directive (5AMLD)",
+          "status": "implemented",
+          "effective_date": "2020",
+          "impact": "Stricter KYC and beneficial ownership requirements; post-Danske scandal enforcement",
+          "relevance": "high"
+        },
+        {
+          "name": "DORA (Digital Operational Resilience Act)",
+          "status": "in_progress",
+          "effective_date": "2025-01",
+          "impact": "ICT risk management, incident reporting, resilience testing mandated for all financial entities",
+          "relevance": "high"
+        },
+        {
+          "name": "MiCA (Markets in Crypto-Assets)",
+          "status": "in_progress",
+          "effective_date": "2024-2025",
+          "impact": "Crypto-asset service provider licensing; stablecoin regulation",
+          "relevance": "medium"
+        },
+        {
+          "name": "Danish AML Act (Hvidvaskloven) Amendments",
+          "status": "implemented",
+          "effective_date": "2022",
+          "impact": "Enhanced penalties, whistleblower protections, expanded FSA investigatory powers",
+          "relevance": "high"
+        },
+        {
+          "name": "Instant Payments Regulation (EU)",
+          "status": "in_progress",
+          "effective_date": "2025",
+          "impact": "Mandatory instant SEPA credit transfers; impacts domestic Straksclearing",
+          "relevance": "medium"
+        },
+        {
+          "name": "AI Act (EU)",
+          "status": "planned",
+          "effective_date": "2026",
+          "impact": "Credit scoring and automated decision-making classified as high-risk AI; compliance overhead",
+          "relevance": "medium"
+        }
+      ],
+      "licensing": {
+        "digital_banking_license": true,
+        "neobank_framework": true,
+        "sandbox_available": true,
+        "notes": "FT Lab (Finanstilsynet sandbox) allows fintechs to test under relaxed requirements. Lunar obtained full banking license in 2019."
+      },
+      "open_banking": {
+        "status": "advanced",
+        "standard": "PSD2 / Berlin Group NextGenPSD2",
+        "api_adoption_rate": "High — Nordic API Gateway (Aiia/Mastercard) connects 50+ Danish banks",
+        "notes": "Denmark leads Nordic open banking adoption. Aiia (now Mastercard) was founded here. Account aggregation widely used by fintechs."
+      },
+      "aml_kyc": {
+        "digital_onboarding_allowed": true,
+        "ekyc_framework": true,
+        "notes": "MitID provides strong digital identity. Video KYC accepted. Post-Danske enforcement means all banks invest heavily in transaction monitoring."
+      }
+    },
+    "market_news": {
+      "last_refreshed": "2026-04-14T12:00:00Z",
+      "trends": [
+        {
+          "title": "Danske Bank Platform Transformation",
+          "category": "digital_transformation",
+          "summary": "Danske Bank continues its multi-year technology transformation, migrating from legacy mainframes to cloud-native architecture. The bank is investing heavily in API-first infrastructure and has partnered with Microsoft for cloud services.",
+          "impact": "high",
+          "date": "2026-Q1"
+        },
+        {
+          "title": "Jyske Bank Integration of Handelsbanken Denmark",
+          "category": "m_and_a",
+          "summary": "Jyske Bank completed the acquisition and integration of Handelsbanken's Danish operations, becoming the clear #3 bank. Integration created IT modernization needs.",
+          "impact": "high",
+          "date": "2025-Q4"
+        },
+        {
+          "title": "Vipps MobilePay Cross-Border Expansion",
+          "category": "fintech",
+          "summary": "The merged Vipps MobilePay entity is expanding P2P and merchant payments across all Nordic countries, creating a unified payment ecosystem.",
+          "impact": "medium",
+          "date": "2026-Q1"
+        },
+        {
+          "title": "MitID Full Rollout Completed",
+          "category": "regulation",
+          "summary": "Denmark completed the full transition from NemID to MitID, the new national digital identity. All banks have integrated. Creates smoother digital onboarding flows.",
+          "impact": "medium",
+          "date": "2025-Q3"
+        },
+        {
+          "title": "Embedded Finance Growth in E-Commerce",
+          "category": "consumer",
+          "summary": "Danish e-commerce platforms increasingly embed BNPL and instant credit through partnerships with fintechs. Traditional banks losing share in point-of-sale lending.",
+          "impact": "medium",
+          "date": "2026-Q1"
+        },
+        {
+          "title": "ESG and Green Finance Acceleration",
+          "category": "sustainability",
+          "summary": "Danish banks face increasing pressure to offer green mortgage products and sustainable investment options. Nykredit leads with green covered bonds.",
+          "impact": "medium",
+          "date": "2026-Q1"
+        }
+      ],
+      "recent_deals": [
+        {
+          "type": "acquisition",
+          "parties": [
+            "Jyske Bank",
+            "Handelsbanken Denmark"
+          ],
+          "value": "~DKK 3B",
+          "date": "2023-2025",
+          "significance": "Created Denmark's #3 bank; integration driving IT modernization needs"
+        },
+        {
+          "type": "partnership",
+          "parties": [
+            "Vipps",
+            "MobilePay",
+            "Pivo"
+          ],
+          "value": "Merged entity",
+          "date": "2022",
+          "significance": "Created unified Nordic payments platform; 11M+ users"
+        },
+        {
+          "type": "acquisition",
+          "parties": [
+            "Mastercard",
+            "Aiia (Nordic API Gateway)"
+          ],
+          "value": "Undisclosed",
+          "date": "2021",
+          "significance": "Open banking infrastructure now part of Mastercard ecosystem"
+        },
+        {
+          "type": "funding",
+          "parties": [
+            "Lunar"
+          ],
+          "value": "~€70M Series D",
+          "date": "2024",
+          "significance": "Leading Nordic neobank continuing to scale; challenge to incumbents"
+        }
+      ],
+      "digital_transformation_score": 8
+    },
+    "customer_needs": {
+      "last_refreshed": "2026-04-14T12:00:00Z",
+      "summary": "Danish banking customers are among the most digitally sophisticated in the world. Mobile banking penetration exceeds 90%. The expectation bar is set by non-banking experiences (e.g., e-Boks, Sundhed.dk). Key unmet needs center on personalization, seamless multi-product journeys, and SME banking modernization.",
+      "digital_adoption": {
+        "mobile_banking_penetration": "92%",
+        "online_banking_penetration": "95%",
+        "contactless_payments": "88%",
+        "open_banking_usage": "35%"
+      },
+      "unmet_needs": [
+        {
+          "segment": "retail",
+          "need": "Personalized financial advice and product recommendations",
+          "gap_severity": "high",
+          "opportunity": "AI-driven next-best-action engines within digital banking apps",
+          "evidence": "App store reviews consistently cite generic experiences"
+        },
+        {
+          "segment": "retail",
+          "need": "Seamless mortgage journey from application to closing",
+          "gap_severity": "high",
+          "opportunity": "End-to-end digital mortgage origination — Denmark's unique covered bond system makes this complex",
+          "evidence": "Average mortgage process takes 3-4 weeks with significant manual intervention"
+        },
+        {
+          "segment": "sme",
+          "need": "Modern SME onboarding and day-to-day banking",
+          "gap_severity": "high",
+          "opportunity": "SME banking platforms with integrated invoicing, cash flow forecasting, and lending",
+          "evidence": "Multiple fintechs targeting this gap; banks acknowledge underinvestment"
+        },
+        {
+          "segment": "sme",
+          "need": "Integrated cash flow management tools",
+          "gap_severity": "medium",
+          "opportunity": "PFM-like tools for businesses with open banking aggregation",
+          "evidence": "Small businesses still rely on spreadsheets for cash management"
+        },
+        {
+          "segment": "corporate",
+          "need": "Real-time treasury and liquidity management",
+          "gap_severity": "medium",
+          "opportunity": "Modern corporate banking portals with API connectivity",
+          "evidence": "Treasurers report legacy portals are slow and lack real-time data"
+        },
+        {
+          "segment": "wealth",
+          "need": "Digital wealth management and pension dashboard",
+          "gap_severity": "medium",
+          "opportunity": "Unified view of investments, pension, and insurance across providers",
+          "evidence": "Denmark has high pension savings but fragmented digital experience"
+        }
+      ],
+      "customer_pain_points": [
+        {
+          "pain": "Fragmented digital experience across bank products",
+          "affected_segments": [
+            "retail",
+            "sme"
+          ],
+          "prevalence": "widespread"
+        },
+        {
+          "pain": "Slow and paper-heavy mortgage application process",
+          "affected_segments": [
+            "retail"
+          ],
+          "prevalence": "widespread"
+        },
+        {
+          "pain": "Generic product offerings without personalization",
+          "affected_segments": [
+            "retail",
+            "wealth"
+          ],
+          "prevalence": "common"
+        },
+        {
+          "pain": "Poor SME banking tools compared to consumer banking",
+          "affected_segments": [
+            "sme"
+          ],
+          "prevalence": "widespread"
+        },
+        {
+          "pain": "Limited integration between banking and accounting software",
+          "affected_segments": [
+            "sme"
+          ],
+          "prevalence": "common"
+        }
+      ],
+      "behavioral_shifts": [
+        {
+          "shift": "Branch visits declining 15-20% annually",
+          "trend_direction": "accelerating",
+          "implication": "Banks must invest in digital-first service delivery"
+        },
+        {
+          "shift": "Demand for real-time payments and instant credit decisions",
+          "trend_direction": "accelerating",
+          "implication": "Legacy batch processing systems need modernization"
+        },
+        {
+          "shift": "Growing adoption of open banking for account aggregation",
+          "trend_direction": "steady",
+          "implication": "Banks risk disintermediation if they don't own the aggregation experience"
+        },
+        {
+          "shift": "Sustainability-conscious financial product selection",
+          "trend_direction": "accelerating",
+          "implication": "Green mortgages, ESG investments, and carbon tracking becoming expected"
+        }
+      ]
+    }
   },
   "Finland": {
     "tagline": "Cooperative banking powerhouse with advanced digital infrastructure and Nordea's headquarters",

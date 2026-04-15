@@ -1206,5 +1206,118 @@ export async function handleDataRoute(req, res, { path, url, db, parseRow, parse
     return true;
   }
 
+  // ══════════════════════════════════════════════════════════════
+  // STRATEGIC ACCOUNT PLAN — Person CRUD (stakeholder map editing)
+  // ══════════════════════════════════════════════════════════════
+
+  // Helper: serialize JSON fields before writing
+  const serializePersonJsonFields = (body) => {
+    const out = { ...body };
+    for (const key of ['meddicc_roles', 'priorities', 'kpis_of_interest', 'aliases']) {
+      if (out[key] !== undefined && out[key] !== null && typeof out[key] !== 'string') {
+        out[key] = JSON.stringify(out[key]);
+      }
+    }
+    return out;
+  };
+
+  // ── POST /api/banks/:key/persons — Create a new person ──
+  match = path.match(/^\/api\/banks\/([^/]+)\/persons$/);
+  if (match && req.method === 'POST') {
+    const bankKey = decodeURIComponent(match[1]);
+    const body = await parseBody(req);
+    if (!body.canonical_name) { jsonResponse(res, 400, { error: 'canonical_name required' }); return true; }
+    const id = crypto.randomUUID();
+    const data = serializePersonJsonFields(body);
+    try {
+      db.prepare(`INSERT INTO persons (
+        id, bank_key, canonical_name, role, role_category, lob, reports_to, seniority_order,
+        linkedin_url, note, confidence_tier, aliases,
+        meddicc_roles, influence_score, engagement_status, support_status,
+        relationship_type, linkedin_intel, priorities, kpis_of_interest,
+        discovery_source, created_at, updated_at
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), datetime('now'))`).run(
+        id, bankKey,
+        data.canonical_name, data.role || null, data.role_category || null,
+        data.lob || null, data.reports_to || null, data.seniority_order || null,
+        data.linkedin_url || null, data.note || null, data.confidence_tier || 2, data.aliases || null,
+        data.meddicc_roles || null, data.influence_score || null, data.engagement_status || 'neutral',
+        data.support_status || 'neutral', data.relationship_type || null, data.linkedin_intel || null,
+        data.priorities || null, data.kpis_of_interest || null,
+        data.discovery_source || 'manual'
+      );
+      const created = db.prepare('SELECT * FROM persons WHERE id = ?').get(id);
+      jsonResponse(res, 201, parseRow('persons', created));
+    } catch (err) {
+      if (err.code === 'SQLITE_CONSTRAINT_UNIQUE') {
+        jsonResponse(res, 409, { error: `Person '${body.canonical_name}' already exists for ${bankKey}` });
+      } else {
+        jsonResponse(res, 500, { error: err.message });
+      }
+    }
+    return true;
+  }
+
+  // ── PUT /api/banks/:key/persons/:id — Update any person fields ──
+  match = path.match(/^\/api\/banks\/([^/]+)\/persons\/([^/]+)$/);
+  if (match && req.method === 'PUT') {
+    const personId = decodeURIComponent(match[2]);
+    const body = await parseBody(req);
+    const existing = db.prepare('SELECT id FROM persons WHERE id = ?').get(personId);
+    if (!existing) { jsonResponse(res, 404, { error: 'Person not found' }); return true; }
+
+    // Whitelist updatable fields
+    const updatable = [
+      'canonical_name', 'role', 'role_category', 'lob', 'reports_to', 'seniority_order',
+      'linkedin_url', 'note', 'confidence_tier', 'aliases',
+      'meddicc_roles', 'influence_score', 'engagement_status', 'support_status',
+      'relationship_type', 'linkedin_intel', 'priorities', 'kpis_of_interest',
+    ];
+    const data = serializePersonJsonFields(body);
+    const updates = [];
+    const values = [];
+    for (const field of updatable) {
+      if (data[field] !== undefined) {
+        updates.push(`${field} = ?`);
+        values.push(data[field]);
+      }
+    }
+    if (updates.length === 0) { jsonResponse(res, 400, { error: 'No updatable fields provided' }); return true; }
+    updates.push("updated_at = datetime('now')");
+    values.push(personId);
+    db.prepare(`UPDATE persons SET ${updates.join(', ')} WHERE id = ?`).run(...values);
+    const updated = db.prepare('SELECT * FROM persons WHERE id = ?').get(personId);
+    jsonResponse(res, 200, parseRow('persons', updated));
+    return true;
+  }
+
+  // ── DELETE /api/banks/:key/persons/:id — Remove a person ──
+  match = path.match(/^\/api\/banks\/([^/]+)\/persons\/([^/]+)$/);
+  if (match && req.method === 'DELETE') {
+    const personId = decodeURIComponent(match[2]);
+    const result = db.prepare('DELETE FROM persons WHERE id = ?').run(personId);
+    if (result.changes === 0) { jsonResponse(res, 404, { error: 'Person not found' }); return true; }
+    jsonResponse(res, 200, { deleted: true, id: personId });
+    return true;
+  }
+
+  // ── PATCH /api/banks/:key/persons/:id/position — Drag-and-drop position update ──
+  // Lightweight endpoint for the stakeholder matrix — only influence_score + engagement_status
+  match = path.match(/^\/api\/banks\/([^/]+)\/persons\/([^/]+)\/position$/);
+  if (match && req.method === 'PATCH') {
+    const personId = decodeURIComponent(match[2]);
+    const body = await parseBody(req);
+    const existing = db.prepare('SELECT id FROM persons WHERE id = ?').get(personId);
+    if (!existing) { jsonResponse(res, 404, { error: 'Person not found' }); return true; }
+    const score = Math.max(1, Math.min(10, parseInt(body.influence_score) || 5));
+    const status = ['champion', 'engaged', 'neutral', 'unaware', 'blocker'].includes(body.engagement_status)
+      ? body.engagement_status : 'neutral';
+    db.prepare(`UPDATE persons SET influence_score = ?, engagement_status = ?, updated_at = datetime('now') WHERE id = ?`)
+      .run(score, status, personId);
+    const updated = db.prepare('SELECT * FROM persons WHERE id = ?').get(personId);
+    jsonResponse(res, 200, parseRow('persons', updated));
+    return true;
+  }
+
   return false;
 }

@@ -33,16 +33,16 @@ export const CX_DATA = {
         "reviews": null,
         "source": "app_store",
         "error": "No results",
-        "fetchedAt": "2026-04-08T23:40:32.813Z"
+        "fetchedAt": "2026-04-15T08:09:44.948Z"
       },
       "android": {
         "rating": null,
         "reviews": null,
         "source": "google_play",
         "error": "HTTP 404",
-        "fetchedAt": "2026-04-08T23:40:31.074Z"
+        "fetchedAt": "2026-04-15T08:09:43.238Z"
       },
-      "fetchedAt": "2026-04-08T23:40:47.843Z"
+      "fetchedAt": "2026-04-15T08:09:59.868Z"
     }
   },
   "Arion Bank_Iceland": {
@@ -76,16 +76,16 @@ export const CX_DATA = {
         "reviews": null,
         "source": "app_store",
         "error": "No results",
-        "fetchedAt": "2026-04-08T23:40:46.314Z"
+        "fetchedAt": "2026-04-15T08:09:58.341Z"
       },
       "android": {
         "rating": null,
         "reviews": null,
         "source": "google_play",
         "error": "HTTP 404",
-        "fetchedAt": "2026-04-08T23:40:44.584Z"
+        "fetchedAt": "2026-04-15T08:09:56.611Z"
       },
-      "fetchedAt": "2026-04-08T23:40:47.845Z"
+      "fetchedAt": "2026-04-15T08:09:59.871Z"
     }
   },
   "DNB_Norway": {
@@ -123,16 +123,16 @@ export const CX_DATA = {
         "reviews": null,
         "source": "app_store",
         "error": "No results",
-        "fetchedAt": "2026-04-08T23:39:58.709Z"
+        "fetchedAt": "2026-04-15T08:09:11.065Z"
       },
       "android": {
         "rating": null,
         "reviews": null,
         "source": "google_play",
         "error": "HTTP 404",
-        "fetchedAt": "2026-04-08T23:39:56.908Z"
+        "fetchedAt": "2026-04-15T08:09:09.381Z"
       },
-      "fetchedAt": "2026-04-08T23:40:47.837Z"
+      "fetchedAt": "2026-04-15T08:09:59.857Z"
     }
   },
   "Danske Bank Finland_Finland": {
@@ -192,15 +192,15 @@ export const CX_DATA = {
         "reviews": null,
         "source": "app_store",
         "error": "No results",
-        "fetchedAt": "2026-04-08T23:40:09.192Z"
+        "fetchedAt": "2026-04-15T08:09:21.624Z"
       },
       "android": {
         "rating": 3.6363637447357178,
-        "reviews": 14471,
+        "reviews": 14482,
         "source": "google_play",
-        "fetchedAt": "2026-04-08T23:40:07.375Z"
+        "fetchedAt": "2026-04-15T08:09:19.946Z"
       },
-      "fetchedAt": "2026-04-08T23:40:47.840Z"
+      "fetchedAt": "2026-04-15T08:09:59.863Z"
     }
   },
   "Handelsbanken Norway_Norway": {
@@ -257,16 +257,16 @@ export const CX_DATA = {
         "reviews": null,
         "source": "app_store",
         "error": "No results",
-        "fetchedAt": "2026-04-08T23:39:41.617Z"
+        "fetchedAt": "2026-04-15T08:08:54.276Z"
       },
       "android": {
         "rating": null,
         "reviews": null,
         "source": "google_play",
         "error": "HTTP 404",
-        "fetchedAt": "2026-04-08T23:39:39.935Z"
+        "fetchedAt": "2026-04-15T08:08:52.540Z"
       },
-      "fetchedAt": "2026-04-08T23:40:47.831Z"
+      "fetchedAt": "2026-04-15T08:09:59.851Z"
     }
   },
   "Jyske Bank_Denmark": {
@@ -302,16 +302,16 @@ export const CX_DATA = {
         "reviews": null,
         "source": "app_store",
         "error": "No results",
-        "fetchedAt": "2026-04-08T23:40:16.005Z"
+        "fetchedAt": "2026-04-15T08:09:28.207Z"
       },
       "android": {
         "rating": null,
         "reviews": null,
         "source": "google_play",
         "error": "HTTP 404",
-        "fetchedAt": "2026-04-08T23:40:14.195Z"
+        "fetchedAt": "2026-04-15T08:09:26.519Z"
       },
-      "fetchedAt": "2026-04-08T23:40:47.841Z"
+      "fetchedAt": "2026-04-15T08:09:59.865Z"
     }
   },
   "Klarna Bank_Sweden": {
@@ -374,16 +374,16 @@ export const CX_DATA = {
         "reviews": null,
         "source": "app_store",
         "error": "No results",
-        "fetchedAt": "2026-04-08T23:40:39.602Z"
+        "fetchedAt": "2026-04-15T08:09:51.618Z"
       },
       "android": {
         "rating": null,
         "reviews": null,
         "source": "google_play",
         "error": "HTTP 404",
-        "fetchedAt": "2026-04-08T23:40:37.801Z"
+        "fetchedAt": "2026-04-15T08:09:49.860Z"
       },
-      "fetchedAt": "2026-04-08T23:40:47.844Z"
+      "fetchedAt": "2026-04-15T08:09:59.870Z"
     }
   },
   "Lunar_Denmark": {
@@ -419,15 +419,15 @@ export const CX_DATA = {
         "reviews": null,
         "source": "app_store",
         "error": "No results",
-        "fetchedAt": "2026-04-08T23:40:19.480Z"
+        "fetchedAt": "2026-04-15T08:09:31.659Z"
       },
       "android": {
-        "rating": 4.525000095367432,
-        "reviews": 19361,
+        "rating": 4.512820720672607,
+        "reviews": 19410,
         "source": "google_play",
-        "fetchedAt": "2026-04-08T23:40:17.745Z"
+        "fetchedAt": "2026-04-15T08:09:29.935Z"
       },
-      "fetchedAt": "2026-04-08T23:40:47.841Z"
+      "fetchedAt": "2026-04-15T08:09:59.866Z"
     }
   },
   "Länsförsäkringar_Sweden": {
@@ -464,16 +464,16 @@ export const CX_DATA = {
         "reviews": null,
         "source": "app_store",
         "error": "No results",
-        "fetchedAt": "2026-04-08T23:39:48.491Z"
+        "fetchedAt": "2026-04-15T08:09:01.030Z"
       },
       "android": {
         "rating": null,
         "reviews": null,
         "source": "google_play",
         "error": "HTTP 404",
-        "fetchedAt": "2026-04-08T23:39:46.757Z"
+        "fetchedAt": "2026-04-15T08:08:59.348Z"
       },
-      "fetchedAt": "2026-04-08T23:40:47.835Z"
+      "fetchedAt": "2026-04-15T08:09:59.854Z"
     }
   },
   "Municipality Finance (MuniFin)_Finland": {
@@ -606,16 +606,16 @@ export const CX_DATA = {
         "reviews": null,
         "source": "app_store",
         "error": "No results",
-        "fetchedAt": "2026-04-08T23:39:34.987Z"
+        "fetchedAt": "2026-04-15T08:08:47.640Z"
       },
       "android": {
         "rating": null,
         "reviews": null,
         "source": "google_play",
         "error": "HTTP 404",
-        "fetchedAt": "2026-04-08T23:39:33.130Z"
+        "fetchedAt": "2026-04-15T08:08:45.815Z"
       },
-      "fetchedAt": "2026-04-08T23:40:47.823Z"
+      "fetchedAt": "2026-04-15T08:09:59.848Z"
     }
   },
   "Nykredit_Denmark": {
@@ -651,16 +651,16 @@ export const CX_DATA = {
         "reviews": null,
         "source": "app_store",
         "error": "No results",
-        "fetchedAt": "2026-04-08T23:40:12.583Z"
+        "fetchedAt": "2026-04-15T08:09:24.914Z"
       },
       "android": {
         "rating": null,
         "reviews": null,
         "source": "google_play",
         "error": "HTTP 404",
-        "fetchedAt": "2026-04-08T23:40:10.854Z"
+        "fetchedAt": "2026-04-15T08:09:23.239Z"
       },
-      "fetchedAt": "2026-04-08T23:40:47.840Z"
+      "fetchedAt": "2026-04-15T08:09:59.864Z"
     }
   },
   "OP Financial Group_Finland": {
@@ -699,16 +699,16 @@ export const CX_DATA = {
         "reviews": null,
         "source": "app_store",
         "error": "No results",
-        "fetchedAt": "2026-04-08T23:40:29.468Z"
+        "fetchedAt": "2026-04-15T08:09:41.608Z"
       },
       "android": {
         "rating": null,
         "reviews": null,
         "source": "google_play",
         "error": "HTTP 404",
-        "fetchedAt": "2026-04-08T23:40:27.784Z"
+        "fetchedAt": "2026-04-15T08:09:39.924Z"
       },
-      "fetchedAt": "2026-04-08T23:40:47.842Z"
+      "fetchedAt": "2026-04-15T08:09:59.868Z"
     }
   },
   "POP Bank Group_Finland": {
@@ -765,16 +765,16 @@ export const CX_DATA = {
         "reviews": null,
         "source": "app_store",
         "error": "No results",
-        "fetchedAt": "2026-04-08T23:40:36.197Z"
+        "fetchedAt": "2026-04-15T08:09:48.239Z"
       },
       "android": {
         "rating": null,
         "reviews": null,
         "source": "google_play",
         "error": "HTTP 404",
-        "fetchedAt": "2026-04-08T23:40:34.450Z"
+        "fetchedAt": "2026-04-15T08:09:46.548Z"
       },
-      "fetchedAt": "2026-04-08T23:40:47.843Z"
+      "fetchedAt": "2026-04-15T08:09:59.869Z"
     }
   },
   "SBAB_Sweden": {
@@ -809,15 +809,15 @@ export const CX_DATA = {
         "reviews": null,
         "source": "app_store",
         "error": "No results",
-        "fetchedAt": "2026-04-08T23:39:51.891Z"
+        "fetchedAt": "2026-04-15T08:09:04.428Z"
       },
       "android": {
         "rating": 4.75,
-        "reviews": 9597,
+        "reviews": 9638,
         "source": "google_play",
-        "fetchedAt": "2026-04-08T23:39:50.144Z"
+        "fetchedAt": "2026-04-15T08:09:02.722Z"
       },
-      "fetchedAt": "2026-04-08T23:40:47.836Z"
+      "fetchedAt": "2026-04-15T08:09:59.855Z"
     }
   },
   "SEB_Sweden": {
@@ -854,16 +854,16 @@ export const CX_DATA = {
         "reviews": null,
         "source": "app_store",
         "error": "No results",
-        "fetchedAt": "2026-04-08T23:39:38.322Z"
+        "fetchedAt": "2026-04-15T08:08:50.934Z"
       },
       "android": {
         "rating": null,
         "reviews": null,
         "source": "google_play",
         "error": "HTTP 404",
-        "fetchedAt": "2026-04-08T23:39:36.592Z"
+        "fetchedAt": "2026-04-15T08:08:49.246Z"
       },
-      "fetchedAt": "2026-04-08T23:40:47.829Z"
+      "fetchedAt": "2026-04-15T08:09:59.850Z"
     }
   },
   "Savings Bank Group (Säästöpankki)_Finland": {
@@ -922,15 +922,15 @@ export const CX_DATA = {
         "reviews": null,
         "source": "app_store",
         "error": "No results",
-        "fetchedAt": "2026-04-08T23:40:02.179Z"
+        "fetchedAt": "2026-04-15T08:09:14.643Z"
       },
       "android": {
-        "rating": 2.307692289352417,
-        "reviews": 8678,
+        "rating": 2.2799999713897705,
+        "reviews": 8676,
         "source": "google_play",
-        "fetchedAt": "2026-04-08T23:40:00.445Z"
+        "fetchedAt": "2026-04-15T08:09:12.740Z"
       },
-      "fetchedAt": "2026-04-08T23:40:47.838Z"
+      "fetchedAt": "2026-04-15T08:09:59.860Z"
     }
   },
   "Skandiabanken_Sweden": {
@@ -964,16 +964,16 @@ export const CX_DATA = {
         "reviews": null,
         "source": "app_store",
         "error": "No results",
-        "fetchedAt": "2026-04-08T23:39:55.301Z"
+        "fetchedAt": "2026-04-15T08:09:07.772Z"
       },
       "android": {
         "rating": null,
         "reviews": null,
         "source": "google_play",
         "error": "HTTP 404",
-        "fetchedAt": "2026-04-08T23:39:53.571Z"
+        "fetchedAt": "2026-04-15T08:09:06.053Z"
       },
-      "fetchedAt": "2026-04-08T23:40:47.837Z"
+      "fetchedAt": "2026-04-15T08:09:59.856Z"
     }
   },
   "Spar Nord_Denmark": {
@@ -1006,16 +1006,16 @@ export const CX_DATA = {
         "reviews": null,
         "source": "app_store",
         "error": "No results",
-        "fetchedAt": "2026-04-08T23:40:26.172Z"
+        "fetchedAt": "2026-04-15T08:09:38.306Z"
       },
       "android": {
         "rating": null,
         "reviews": null,
         "source": "google_play",
         "error": "HTTP 404",
-        "fetchedAt": "2026-04-08T23:40:24.493Z"
+        "fetchedAt": "2026-04-15T08:09:36.583Z"
       },
-      "fetchedAt": "2026-04-08T23:40:47.841Z"
+      "fetchedAt": "2026-04-15T08:09:59.867Z"
     }
   },
   "SpareBank 1 SMN_Norway": {
@@ -1075,15 +1075,15 @@ export const CX_DATA = {
         "reviews": null,
         "source": "app_store",
         "error": "No results",
-        "fetchedAt": "2026-04-08T23:40:05.696Z"
+        "fetchedAt": "2026-04-15T08:09:18.246Z"
       },
       "android": {
         "rating": 4.422535419464111,
-        "reviews": 45965,
+        "reviews": 46064,
         "source": "google_play",
-        "fetchedAt": "2026-04-08T23:40:03.972Z"
+        "fetchedAt": "2026-04-15T08:09:16.563Z"
       },
-      "fetchedAt": "2026-04-08T23:40:47.839Z"
+      "fetchedAt": "2026-04-15T08:09:59.861Z"
     }
   },
   "SpareBank 1 Østlandet_Norway": {
@@ -1137,7 +1137,7 @@ export const CX_DATA = {
     "live_ratings": {
       "ios": null,
       "android": null,
-      "fetchedAt": "2026-04-08T23:40:47.839Z"
+      "fetchedAt": "2026-04-15T08:09:59.862Z"
     }
   },
   "Swedbank_Sweden": {
@@ -1174,15 +1174,15 @@ export const CX_DATA = {
         "reviews": 81,
         "version": "7.86.0",
         "source": "app_store",
-        "fetchedAt": "2026-04-08T23:39:45.079Z"
+        "fetchedAt": "2026-04-15T08:08:57.719Z"
       },
       "android": {
         "rating": 3.5999999046325684,
-        "reviews": 6955,
+        "reviews": 6958,
         "source": "google_play",
-        "fetchedAt": "2026-04-08T23:39:43.360Z"
+        "fetchedAt": "2026-04-15T08:08:56.026Z"
       },
-      "fetchedAt": "2026-04-08T23:40:47.833Z"
+      "fetchedAt": "2026-04-15T08:09:59.852Z"
     }
   },
   "Sydbank_Denmark": {
@@ -1217,16 +1217,16 @@ export const CX_DATA = {
         "reviews": null,
         "source": "app_store",
         "error": "No results",
-        "fetchedAt": "2026-04-08T23:40:22.826Z"
+        "fetchedAt": "2026-04-15T08:09:34.969Z"
       },
       "android": {
         "rating": null,
         "reviews": null,
         "source": "google_play",
         "error": "HTTP 404",
-        "fetchedAt": "2026-04-08T23:40:21.118Z"
+        "fetchedAt": "2026-04-15T08:09:33.285Z"
       },
-      "fetchedAt": "2026-04-08T23:40:47.841Z"
+      "fetchedAt": "2026-04-15T08:09:59.867Z"
     }
   },
   "TF Bank_Sweden": {
@@ -1258,7 +1258,7 @@ export const CX_DATA = {
     "live_ratings": {
       "ios": null,
       "android": null,
-      "fetchedAt": "2026-04-08T23:40:47.837Z"
+      "fetchedAt": "2026-04-15T08:09:59.857Z"
     }
   },
   "Íslandsbanki_Iceland": {
@@ -1290,16 +1290,16 @@ export const CX_DATA = {
         "reviews": null,
         "source": "app_store",
         "error": "No results",
-        "fetchedAt": "2026-04-08T23:40:42.978Z"
+        "fetchedAt": "2026-04-15T08:09:54.999Z"
       },
       "android": {
         "rating": null,
         "reviews": null,
         "source": "google_play",
         "error": "HTTP 404",
-        "fetchedAt": "2026-04-08T23:40:41.274Z"
+        "fetchedAt": "2026-04-15T08:09:53.272Z"
       },
-      "fetchedAt": "2026-04-08T23:40:47.844Z"
+      "fetchedAt": "2026-04-15T08:09:59.870Z"
     }
   }
 };

@@ -323,6 +323,21 @@ function initSchema(db) {
   try { db.exec("ALTER TABLE persons ADD COLUMN is_legacy INTEGER DEFAULT 0"); } catch (e) { /* exists */ }
   try { db.exec("ALTER TABLE persons ADD COLUMN discovery_source TEXT"); } catch (e) { /* exists */ }
 
+  // Migration: Strategic Account Plan — MEDDICC + stakeholder fields (consultant-editable overrides)
+  const stakeholderColumns = [
+    "ALTER TABLE persons ADD COLUMN meddicc_roles TEXT",
+    "ALTER TABLE persons ADD COLUMN influence_score INTEGER",
+    "ALTER TABLE persons ADD COLUMN engagement_status TEXT",
+    "ALTER TABLE persons ADD COLUMN support_status TEXT",
+    "ALTER TABLE persons ADD COLUMN relationship_type TEXT",
+    "ALTER TABLE persons ADD COLUMN linkedin_intel TEXT",
+    "ALTER TABLE persons ADD COLUMN priorities TEXT",
+    "ALTER TABLE persons ADD COLUMN kpis_of_interest TEXT",
+  ];
+  for (const stmt of stakeholderColumns) {
+    try { db.prepare(stmt).run(); } catch (e) { /* column exists */ }
+  }
+
   // Migration: pipeline_settings status + disqualify_reason columns
   try { db.exec("ALTER TABLE pipeline_settings ADD COLUMN status TEXT DEFAULT 'prospect'"); } catch (e) { /* exists */ }
   try { db.exec("ALTER TABLE pipeline_settings ADD COLUMN disqualify_reason TEXT"); } catch (e) { /* exists */ }
@@ -520,7 +535,7 @@ const JSON_FIELDS = {
   brief_feedback: new Set(['sections_used']),
   field_provenance: new Set([]),
   entity_history: new Set([]),
-  persons: new Set(['aliases']),
+  persons: new Set(['aliases', 'meddicc_roles', 'priorities', 'kpis_of_interest']),
   pain_points: new Set([]),
   landing_zones: new Set(['details']),
   meeting_history: new Set(['attendees', 'key_topics', 'objections_raised', 'commitments_made']),

@@ -108,6 +108,8 @@ export const fetchMarketBanks = (key) => request(`/api/markets/${encodeURICompon
 export const fetchCountries = () => request('/api/countries');
 export const fetchCountry = (name) => request(`/api/countries/${encodeURIComponent(name)}`);
 export const fetchCountryBanks = (name) => request(`/api/countries/${encodeURIComponent(name)}/banks`);
+export const refreshCountryIntelligence = (name, data) =>
+  request(`/api/countries/${encodeURIComponent(name)}/refresh-intelligence`, { method: 'POST', body: JSON.stringify(data), timeout: AI_TIMEOUT });
 
 // ── Stats, Search & Signals ──
 export const fetchStats = () => request('/api/stats');
@@ -177,6 +179,22 @@ export const getSignalSummary = (dealId) => request(`/api/deals/${enc(dealId)}/s
 export const getDealTwin = (dealId) => request(`/api/deals/${enc(dealId)}/twin`);
 export const recalculateDealTwin = (dealId) => request(`/api/deals/${enc(dealId)}/twin/recalculate`, { method: 'POST', timeout: AI_TIMEOUT });
 export const getDealTwinHistory = (dealId) => request(`/api/deals/${enc(dealId)}/twin/history`);
+
+// ── Strategic Account Plan: Person CRUD (stakeholder map editing) ──
+export const createPerson = (bankKey, data) =>
+  request(`/api/banks/${enc(bankKey)}/persons`, { method: 'POST', body: JSON.stringify(data) });
+export const updatePerson = (bankKey, personId, data) =>
+  request(`/api/banks/${enc(bankKey)}/persons/${enc(personId)}`, { method: 'PUT', body: JSON.stringify(data) });
+export const deletePerson = (bankKey, personId) =>
+  request(`/api/banks/${enc(bankKey)}/persons/${enc(personId)}`, { method: 'DELETE' });
+export const updatePersonPosition = (bankKey, personId, data) =>
+  request(`/api/banks/${enc(bankKey)}/persons/${enc(personId)}/position`, { method: 'PATCH', body: JSON.stringify(data) });
+
+// ── Strategic Account Plan: AI-generated snapshot + objectives ──
+export const generateStrategicSnapshot = (bankKey) =>
+  request(`/api/banks/${enc(bankKey)}/strategic-snapshot`, { method: 'POST', timeout: AI_TIMEOUT });
+export const generateStrategicObjectives = (bankKey) =>
+  request(`/api/banks/${enc(bankKey)}/strategic-objectives`, { method: 'POST', timeout: AI_TIMEOUT });
 
 // ── Conversation Intelligence ──
 export const getConversationIntelligence = () => request('/api/conversation-intelligence');

@@ -15,6 +15,7 @@ const AnalyticsPage = lazy(() => import('./pages/AnalyticsPage'));
 const FavoritesPage = lazy(() => import('./pages/FavoritesPage'));
 const BriefFeedbackPage = lazy(() => import('./pages/BriefFeedbackPage'));
 const AccountPlanPage = lazy(() => import('./pages/AccountPlanPage'));
+const StrategicAccountPlanPage = lazy(() => import('./pages/StrategicAccountPlanPage'));
 const PipelinePage = lazy(() => import('./pages/PipelinePage'));
 const SettingsPage = lazy(() => import('./pages/SettingsPage'));
 const DesignSystemPage = lazy(() => import('./pages/DesignSystemPage'));
@@ -31,7 +32,8 @@ export default function App() {
         <Route path="/analytics" element={<Suspense fallback={<LoadingState />}><AnalyticsPage /></Suspense>} />
         <Route path="/favorites" element={<Suspense fallback={<LoadingState />}><FavoritesPage /></Suspense>} />
         <Route path="/feedback" element={<Suspense fallback={<LoadingState />}><BriefFeedbackPage /></Suspense>} />
-        <Route path="/account-plan/:bankKey" element={<Suspense fallback={<LoadingState />}><AccountPlanPage /></Suspense>} />
+        <Route path="/account-plan/:bankKey" element={<Suspense fallback={<LoadingState />}><StrategicAccountPlanPage /></Suspense>} />
+        <Route path="/account-plan-doc/:bankKey" element={<Suspense fallback={<LoadingState />}><AccountPlanPage /></Suspense>} />
         <Route path="/pipeline" element={<Suspense fallback={<LoadingState />}><PipelinePage /></Suspense>} />
         <Route path="/settings" element={<Suspense fallback={<LoadingState />}><SettingsPage /></Suspense>} />
         <Route path="/design-system" element={<Suspense fallback={<LoadingState />}><DesignSystemPage /></Suspense>} />

@@ -26,6 +26,7 @@ import { getChangesForBank, formatChangesForPrompt } from '../lib/changeWriter.m
 import { analyzeLandingZones, isLandingZoneAgentAvailable } from '../fetchers/landingZoneAgent.mjs';
 import { generateDiscoveryStoryline, isDiscoveryStorylineAvailable } from '../fetchers/discoveryStorylineAgent.mjs';
 import { generateValueHypothesisForMeeting, isValueHypothesisAvailable } from '../fetchers/valueHypothesisAgent.mjs';
+import { refreshCountryIntelligence, isCountryIntelAvailable } from '../fetchers/countryIntelAgent.mjs';
 import { jsonResponse, parseBody, createRateLimiter } from './helpers.mjs';
 
 // Rate limit: max 20 AI requests per minute (generous for normal use, blocks runaways)
@@ -1733,6 +1734,224 @@ Return ONLY valid JSON. No markdown code fences. Schema:
     const parsed = { ...row };
     try { parsed.result = JSON.parse(row.result); } catch (e) { /* keep as string */ }
     jsonResponse(res, 200, parsed);
+    return true;
+  }
+
+  // ── POST /api/countries/:name/refresh-intelligence — AI-powered country market intelligence ──
+  const countryRefreshMatch = path.match(/^\/api\/countries\/([^/]+)\/refresh-intelligence$/);
+  if (countryRefreshMatch && req.method === 'POST') {
+    if (!aiRateCheck(res)) return true;
+    if (!isCountryIntelAvailable()) { jsonResponse(res, 503, { error: 'ANTHROPIC_API_KEY not configured.' }); return true; }
+
+    const countryName = decodeURIComponent(countryRefreshMatch[1]);
+    const body = await parseBody(req);
+    const sections = body.sections || ['fintech_landscape', 'regulatory_environment', 'market_news', 'customer_needs'];
+    const force = body.force || false;
+
+    const countryRow = db.prepare('SELECT * FROM countries WHERE name = ?').get(countryName);
+    if (!countryRow) { jsonResponse(res, 404, { error: `Country not found: ${countryName}` }); return true; }
+
+    let existingData;
+    try { existingData = JSON.parse(countryRow.data || '{}'); } catch { existingData = {}; }
+
+    const startTime = Date.now();
+    try {
+      const { refreshed, skipped } = await refreshCountryIntelligence(countryName, existingData, sections, force);
+
+      // Merge refreshed sections into existing data
+      const merged = { ...existingData, ...refreshed };
+      db.prepare("UPDATE countries SET data = ?, updated_at = datetime('now') WHERE name = ?")
+        .run(JSON.stringify(merged), countryName);
+
+      jsonResponse(res, 200, {
+        country: countryName,
+        refreshed_sections: Object.keys(refreshed),
+        skipped_sections: skipped,
+        duration_ms: Date.now() - startTime,
+        _source: 'claude-ai',
+      });
+    } catch (err) {
+      console.error(`Country intel refresh failed for ${countryName}:`, err);
+      jsonResponse(res, 500, { error: err.message || 'Country intelligence refresh failed' });
+    }
+    return true;
+  }
+
+  // ══════════════════════════════════════════════════════════════
+  // STRATEGIC ACCOUNT PLAN — AI endpoints
+  // ══════════════════════════════════════════════════════════════
+
+  // Shared helper: load full bank context for AI planning
+  const loadBankContext = (bankKey) => {
+    const bankRow = db.prepare('SELECT * FROM banks WHERE key = ?').get(bankKey);
+    if (!bankRow) return null;
+    const bank = JSON.parse(bankRow.data || '{}');
+    const qualRow = db.prepare('SELECT data FROM qualification WHERE bank_key = ?').get(bankKey);
+    const qual = qualRow ? JSON.parse(qualRow.data || '{}') : {};
+    const compRow = db.prepare('SELECT data FROM competition WHERE bank_key = ?').get(bankKey);
+    const comp = compRow ? JSON.parse(compRow.data || '{}') : {};
+    const cxRow = db.prepare('SELECT * FROM cx WHERE bank_key = ?').get(bankKey);
+    const cx = cxRow ? { digital_maturity: cxRow.digital_maturity, app_rating_ios: cxRow.app_rating_ios, app_rating_android: cxRow.app_rating_android, ...(JSON.parse(cxRow.data || '{}')) } : {};
+    const persons = db.prepare('SELECT canonical_name, role, role_category, lob, meddicc_roles, influence_score, engagement_status, support_status, note FROM persons WHERE bank_key = ? ORDER BY role_category, seniority_order').all(bankKey);
+    const signals = db.prepare('SELECT title, implication FROM live_signals WHERE bank_key = ? ORDER BY fetched_at DESC LIMIT 10').all(bankKey);
+    return { bank_name: bankRow.bank_name, country: bankRow.country, bank, qual, comp, cx, persons, signals };
+  };
+
+  // Helper: upsert account_plans row merging a new section into result JSON
+  const upsertAccountPlanSection = (bankKey, sectionKey, sectionPayload) => {
+    const existing = db.prepare('SELECT result FROM account_plans WHERE bank_key = ? ORDER BY generated_at DESC LIMIT 1').get(bankKey);
+    const base = existing ? (() => { try { return JSON.parse(existing.result); } catch { return {}; } })() : {};
+    const merged = { ...base, [sectionKey]: { ...sectionPayload, _generated_at: new Date().toISOString() } };
+    // Keep only one row per bank (delete old, insert new)
+    db.prepare('DELETE FROM account_plans WHERE bank_key = ?').run(bankKey);
+    db.prepare('INSERT INTO account_plans (id, bank_key, result) VALUES (?, ?, ?)')
+      .run(crypto.randomUUID(), bankKey, JSON.stringify(merged));
+    return merged[sectionKey];
+  };
+
+  // ── POST /api/banks/:key/strategic-snapshot — 6-card strategic snapshot ──
+  const snapshotMatch = path.match(/^\/api\/banks\/([^/]+)\/strategic-snapshot$/);
+  if (snapshotMatch && req.method === 'POST') {
+    if (!aiRateCheck(res)) return true;
+    if (!isClaudeAvailable()) { jsonResponse(res, 503, { error: 'ANTHROPIC_API_KEY not configured.' }); return true; }
+    const bankKey = decodeURIComponent(snapshotMatch[1]);
+    const ctx = loadBankContext(bankKey);
+    if (!ctx) { jsonResponse(res, 404, { error: 'Bank not found' }); return true; }
+
+    const systemPrompt = `You are a senior strategic value consultant for Backbase (engagement banking platform).
+You produce strategic account analyses for banking deals. Your outputs must be:
+- EVIDENCE-BASED: cite specific data points from the inputs
+- ACTIONABLE: every recommendation leads to a concrete next step
+- STRATEGIC: think like a McKinsey partner, not a sales rep
+- HONEST: flag gaps, risks, and competing interests openly
+
+Output ONLY valid JSON matching the requested schema. No markdown fences, no commentary.`;
+
+    const personSummary = ctx.persons.slice(0, 12).map(p =>
+      `- ${p.canonical_name} (${p.role}, ${p.role_category || 'Other'})${p.meddicc_roles ? ' [' + p.meddicc_roles + ']' : ''}${p.note ? ': ' + p.note.substring(0, 100) : ''}`
+    ).join('\n');
+    const signalSummary = ctx.signals.slice(0, 5).map(s => `- ${s.title}`).join('\n');
+
+    const userPrompt = `Generate a Strategic Account Snapshot for ${ctx.bank_name} (${ctx.country}).
+
+BANK CONTEXT:
+Overview: ${(ctx.bank.overview || '').substring(0, 1500)}
+Strategic Initiatives: ${typeof ctx.bank.strategic_initiatives === 'string' ? ctx.bank.strategic_initiatives.substring(0, 800) : JSON.stringify(ctx.bank.strategic_initiatives || {}).substring(0, 800)}
+Pain Points: ${(ctx.bank.pain_points || []).slice(0, 5).map(p => p.title || p).join('; ')}
+Backbase Landing Zones: ${(ctx.bank.backbase_landing_zones || []).map(z => z.zone || z).join(', ')}
+Tech Stack: Core=${ctx.comp.core_banking || '?'}, Digital=${ctx.comp.digital_platform || '?'}, Risk=${ctx.comp.vendor_risk || '?'}
+Digital Maturity: ${ctx.cx.digital_maturity || '?'}
+
+KEY STAKEHOLDERS (${ctx.persons.length}):
+${personSummary || 'None identified yet'}
+
+RECENT SIGNALS:
+${signalSummary || 'No recent signals'}
+
+Produce JSON with these exact keys:
+{
+  "strategic_initiatives_summary": ["3-5 bullet points of what THIS BANK is strategically driving"],
+  "partner_plan": ["3-5 bullets describing OUR GTM approach for this account — sequencing, motion priority, accounts to reference"],
+  "responsive_measures": ["3-5 bullets of what Backbase does when the bank takes specific actions (e.g., 'If they RFP core banking, we position decoupling strategy')"],
+  "proactive_measures": ["3-5 bullets of what WE initiate to advance the deal (e.g., 'Executive briefing for CDO on open banking case studies')"],
+  "potential_risks": ["3-5 bullets of deal risks — incumbent vendor, budget cycle, political blockers, competitive threats"],
+  "backbase_position": ["3-5 bullets describing our competitive position — where we win, where we're weak, Backbase's unique angle"],
+  "next_steps": ["3-5 specific actions in priority order, each a concrete next move"]
+}
+
+Every bullet must be SPECIFIC to ${ctx.bank_name}, not generic advice.`;
+
+    try {
+      const response = await callClaude(systemPrompt, userPrompt, { maxTokens: 2500, timeout: 120000 });
+      const cleaned = response.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+      let parsed;
+      try { parsed = JSON.parse(cleaned); } catch (e) {
+        throw new Error(`AI output was not valid JSON: ${e.message}`);
+      }
+      const saved = upsertAccountPlanSection(bankKey, 'strategic_snapshot', parsed);
+      jsonResponse(res, 200, { bank_key: bankKey, strategic_snapshot: saved, _source: 'claude-ai' });
+    } catch (err) {
+      console.error('Strategic snapshot failed:', err);
+      jsonResponse(res, 500, { error: err.message || 'Snapshot generation failed' });
+    }
+    return true;
+  }
+
+  // ── POST /api/banks/:key/strategic-objectives — Derived objectives + initiatives ──
+  const objectivesMatch = path.match(/^\/api\/banks\/([^/]+)\/strategic-objectives$/);
+  if (objectivesMatch && req.method === 'POST') {
+    if (!aiRateCheck(res)) return true;
+    if (!isClaudeAvailable()) { jsonResponse(res, 503, { error: 'ANTHROPIC_API_KEY not configured.' }); return true; }
+    const bankKey = decodeURIComponent(objectivesMatch[1]);
+    const ctx = loadBankContext(bankKey);
+    if (!ctx) { jsonResponse(res, 404, { error: 'Bank not found' }); return true; }
+
+    const systemPrompt = `You are a senior banking strategy consultant. Given a bank's annual report content,
+strategic initiatives, and observable signals, you derive:
+1) Concrete strategic objectives (what outcomes they're driving toward)
+2) Key initiatives required to execute each objective (reverse-engineered from the objective)
+3) Backbase capability mapping (which Backbase products address each initiative)
+
+CRITICAL RULES:
+- Mark each initiative's confidence as "from_report" (explicitly stated) or "ai_inferred" (logical inference)
+- Cite evidence — the text snippet that supports each claim, or "Inferred" if pure reasoning
+- Backbase capabilities should be SPECIFIC (e.g., "Digital Banking Platform with API orchestration", not just "Backbase")
+- If data is thin, produce fewer high-quality objectives rather than padding
+
+Output ONLY valid JSON.`;
+
+    const userPrompt = `Analyze strategic objectives for ${ctx.bank_name} (${ctx.country}).
+
+ANNUAL REPORT / OVERVIEW:
+${(ctx.bank.overview || '').substring(0, 2000)}
+
+STATED STRATEGIC INITIATIVES:
+${typeof ctx.bank.strategic_initiatives === 'string' ? ctx.bank.strategic_initiatives.substring(0, 1500) : JSON.stringify(ctx.bank.strategic_initiatives || {}).substring(0, 1500)}
+
+PAIN POINTS (suggest unstated objectives):
+${(ctx.bank.pain_points || []).map(p => '- ' + (p.title || p) + (p.detail ? ': ' + p.detail.substring(0, 100) : '')).join('\n')}
+
+LANDING ZONES (where Backbase fits):
+${(ctx.bank.backbase_landing_zones || []).map(z => z.zone || z).join(', ')}
+
+CURRENT TECH STACK:
+Core: ${ctx.comp.core_banking || '?'} | Digital: ${ctx.comp.digital_platform || '?'} | Vendor Risk: ${ctx.comp.vendor_risk || 'normal'}
+
+Produce JSON in this exact shape:
+{
+  "objectives": [
+    {
+      "objective": "Concrete strategic objective (e.g., 'Become digital-first leader in retail banking')",
+      "summary": "1-2 sentences explaining why this matters for this bank",
+      "confidence": "from_report" | "ai_inferred" | "mixed",
+      "key_initiatives": [
+        {
+          "name": "Specific initiative name",
+          "how": "How the bank will execute this (from report or AI inference)",
+          "backbase_capability": "Specific Backbase product/capability that addresses this",
+          "evidence": "Supporting text snippet OR 'Inferred from [signal]'"
+        }
+      ]
+    }
+  ],
+  "methodology_note": "One sentence on how you derived these (what was explicit vs inferred)"
+}
+
+Aim for 3-5 objectives, each with 2-3 initiatives. Quality over quantity.`;
+
+    try {
+      const response = await callClaude(systemPrompt, userPrompt, { maxTokens: 3500, timeout: 120000 });
+      const cleaned = response.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+      let parsed;
+      try { parsed = JSON.parse(cleaned); } catch (e) {
+        throw new Error(`AI output was not valid JSON: ${e.message}`);
+      }
+      const saved = upsertAccountPlanSection(bankKey, 'strategic_objectives', parsed);
+      jsonResponse(res, 200, { bank_key: bankKey, strategic_objectives: saved, _source: 'claude-ai' });
+    } catch (err) {
+      console.error('Strategic objectives failed:', err);
+      jsonResponse(res, 500, { error: err.message || 'Objectives generation failed' });
+    }
     return true;
   }
 

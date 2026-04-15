@@ -119,13 +119,13 @@ export const BANK_DATA = {
     "live_stock": {
       "ticker": "AKTIA.HE",
       "currency": "EUR",
-      "price": 11.96,
+      "price": 12.06,
       "dayChange": null,
       "dayChangePercent": null,
       "fiftyTwoWeekHigh": 12.94,
-      "fiftyTwoWeekLow": 8.85,
+      "fiftyTwoWeekLow": 9.27,
       "exchange": "HEL",
-      "fetchedAt": "2026-04-08T23:38:25.385Z"
+      "fetchedAt": "2026-04-15T08:07:38.616Z"
     },
     "live_news": {
       "articles": [
@@ -170,38 +170,34 @@ export const BANK_DATA = {
           "relevanceScore": 1
         },
         {
-          "title": "Insider information: Carl Haglund appointed as Chief Executive Officer of Aktia Bank Plc - Cision News",
-          "link": "https://news.google.com/rss/articles/CBMizwFBVV95cUxPdWVXUkpkUlhxRUdfUUVJaDgwbjF3MmNiSXlkY0haelFReW5BZ201eEN5VlFwOE5zc21xdWRCRFFENnJ1MllBTEZSbG5fSkhrdTNES2JNTWtxWFQ2cmlpZm1BTmF1MGRnYkxzaEJFa0RCMWVpM2x3WHFnY25sOU1ZSXZlYXl0YndpbVhhZ04wNzZEbzhCZ0FSN3RfMHVtV3JnaEVCaXR0OGVVMXVQdzczVHRheHZhRm1vV21kVktzYVFwSlZheTNyYlpnVk85Snc?oc=5",
-          "publishedAt": "2025-06-12T07:00:00.000Z",
-          "source": "Cision News",
-          "signals": [
-            "leadership"
-          ],
-          "relevanceScore": 1
+          "title": "Aktia Bank Plc: IT-related one-off items burden the result in the fourth quarter 2024, but do not affect comparable result - NTB Kommunikasjon",
+          "link": "https://news.google.com/rss/articles/CBMipwJBVV95cUxNOFNRcnVBc29vMnp2WTljajNETS04bVNRUGhyNER0X01zMi0wOHBGTzFrWFZZeXlKTnE1Vl9KOVZOVGJHVFV6OEFlSXNDbWd1OGdDZzB0QThrRjROWGNEbVR2azVrT0ZlcHlhQ011ejY1eGdTTW5icjdqaHFvMjBKVlgtTE14cElVMnRva3d1WnZ3MWZZUW5nUS1HaG5YVjZDb3BwaVlKeTlDWlYxTGlvLVpLRUJhZDdvNktreWhKTEp2U2hYdFNRSjF3Z2xfNnp3RG1NbUx4V0xPZmVuSEtLeC1SemN6X0hjaHp6UFBXbVUzSHMwdl9FdnhKRXVLUm5JcURvYkFub0duZ045RzhWT203TjlTQmNLOUNhQ0t0QmpaMUdtbTY4?oc=5",
+          "publishedAt": "2026-04-09T11:07:59.000Z",
+          "source": "NTB Kommunikasjon",
+          "signals": [],
+          "relevanceScore": 0
         },
         {
-          "title": "Finland's former defense minister takes over at Aktia Bank – current CEO leaves today - AMWatch",
-          "link": "https://news.google.com/rss/articles/CBMiY0FVX3lxTE1MckZPSUhla2ptZEZGaXk1eTFrMzMzM01EeVJJemJEdTlfOWVBNXBSN2d5NEhkaXk2blcyMkxQM2diZnJwM2lBcHcwZ0t1R282Vjc0YV9tQmJvakRIZ3NfSk5Cdw?oc=5",
-          "publishedAt": "2025-06-12T07:00:00.000Z",
-          "source": "AMWatch",
-          "signals": [
-            "leadership"
-          ],
-          "relevanceScore": 1
+          "title": "Aktia Bank Plc publishes prospectus approved by the Finnish Financial Supervisory Authority and submits listing application in respect of its EUR 80,000,000 Additional Tier 1 Notes - marketscreener.com",
+          "link": "https://news.google.com/rss/articles/CBMi6AFBVV95cUxNMm1qdlhKWlNpWWhzd0hLQnlKSElkSmtaSXp5RDJUNlZ5a3R3dUxZUTBLQkhFbmZMU2FfWHBONDdfWmtvYV9DYktWSlotMmJlVy1QeXZkZE9RLVVVcmtpNG55VGJaODB3V2RhM2ZNdkl5NU0xV1VOc1BQM3ZocVB5Zm5IUVV5TGhlTUcxU2VsbVNNOU1BYmlYV2ZkN0pIRUY5anMzZU83TWFUby1GTHdkOEsySkJ3TlZCTkZVeVoyY1pZUGJxbUQzY3NxS3lxUmlRYkZCZWtXd3NsRld1MlFNVXRyTW1Dd19S?oc=5",
+          "publishedAt": "2026-04-01T07:00:00.000Z",
+          "source": "marketscreener.com",
+          "signals": [],
+          "relevanceScore": 0
+        },
+        {
+          "title": "Aktia navigates tight window with AT1 to restart euro FIG capital issuance - GlobalCapital",
+          "link": "https://news.google.com/rss/articles/CBMi7gFBVV95cUxQa2RsWkNzZ29RUVZaRFBlc3F2Y3ZuZ1BRS0QxMlBPdW8ydXZqTFd6NjBpWE5BWXB3TXpMZ1RfaEl1akRBa3NWc1ZiT2NYWEFQNy03VUtINkJtTnBoanBUaVBVTlRiTXdBSlNWaVBqTHBhaVJNNkx5TXpwVVB4NFRiQ3JQbXJaa3Vod0VpMEJWbmEtRzdEdXplOG9GaEpmbGRLUnBLdGdVWEM2VS1JaUhmNzhZWFdBTEduVHVKRWFFQWlORmNGeU1heXQxS0NfeUJZc3REaTRGbWJucjk0X25MeVBBRm4zOEV1SkdOQzNB?oc=5",
+          "publishedAt": "2026-03-25T18:22:12.000Z",
+          "source": "GlobalCapital",
+          "signals": [],
+          "relevanceScore": 0
         },
         {
           "title": "Aktia Bank Plc: Early repayment of Additional Tier 1 Notes, ISIN: FI4000507371, on 26 May 2026 - Bolsamania",
           "link": "https://news.google.com/rss/articles/CBMi9AFBVV95cUxNZjU4UTZrclVkb2lubFc0eGcyQUs2Q20zdkJ4a3c5eUg4aGVnSjNJdEZkeXpId3E4WndOck9DaWRtWXJ6aHhIWWZTSmtoSDN5eFQ3bGZBMW1aUG5qTjREcnpRYmI0ajVzemFIYXFPN2EtRXNaREJNeFhWMFQ2ZEdCN3BQZEJldVZoc3o5MzVBdXFlVkpKekcyTHNyRm5JcE9RdTNaV2ZlTVhoRkY4WGVvbndlQXk1alJxd1c4R01BS0FQeUZKM1Z6b0Y5bWpabXlWb1Bqckk3OGNnMzV3Wm4yY3FmWXQzcmlhVDJ4X2RsZzVuUkVx0gHyAUFVX3lxTE1IbTRZQUlrUGpoQi1iQ3JBVXZnZFp2d3c1TUhZdzYyMkJnZjhCLU5ySzJ3V3ZfSW1nejQ1RC1CWjhjbGNlX2JnLW1nNWR2b3cxdHhsM1hsWGZSWDM4SlBVMWpzTjdFWDNJVnhVTjY2WEs5RW9hQkg2akpWRWVDcU5WTjhpbTUxUWJZODRpbW8waUp4bzVYQm9DUFdMU1ozZ29PUk5XWFc2dUczamFCWkw3ZU10aFdMRGJ5MVlJWkU3aldtZm1XTTcyZWxPRXdGRGNwdkJ1MEhvZFM3YzdIeFA4VWRReFBVU0U0SHphdXQ0Xy13?oc=5",
           "publishedAt": "2026-04-08T19:39:48.000Z",
           "source": "Bolsamania",
-          "signals": [],
-          "relevanceScore": 0
-        },
-        {
-          "title": "Aktia Bank Finland - AD HOC NEWS",
-          "link": "https://news.google.com/rss/articles/CBMijgFBVV95cUxOQUlZb2tBV3otLXpYNmc0RHNuOXVKLW5vVXZQLVNnSHBiTTBfbG1PQkdqNGNvbUI2WDVZck1sazUyN0MxZm5ZSGY2Mk1aU2Y2NC1panFteGtnWEIzRDlJNGpPMUtqSTlSamZ2alVkSU9Wa2FqaVR4S195V01WMWVwR0ZYbVkwSlRkaGI0bXZB?oc=5",
-          "publishedAt": "2026-03-17T07:00:00.000Z",
-          "source": "AD HOC NEWS",
           "signals": [],
           "relevanceScore": 0
         }
@@ -211,7 +207,7 @@ export const BANK_DATA = {
       ],
       "signalCount": 1,
       "articleCount": 10,
-      "fetchedAt": "2026-04-08T23:39:25.126Z"
+      "fetchedAt": "2026-04-15T08:08:37.747Z"
     },
     "backbase_landing_zones": [
       {
@@ -389,27 +385,16 @@ export const BANK_DATA = {
     "live_stock": {
       "ticker": "ARION.IC",
       "currency": "ISK",
-      "price": 181,
+      "price": 182.5,
       "dayChange": null,
       "dayChangePercent": null,
       "fiftyTwoWeekHigh": 207,
-      "fiftyTwoWeekLow": 139,
+      "fiftyTwoWeekLow": 152,
       "exchange": "ICE",
-      "fetchedAt": "2026-04-08T23:38:32.369Z"
+      "fetchedAt": "2026-04-15T08:07:45.031Z"
     },
     "live_news": {
       "articles": [
-        {
-          "title": "Earnings call transcript: Arion Bank’s solid Q3 2025 performance amid economic challenges - Investing.com",
-          "link": "https://news.google.com/rss/articles/CBMi2wFBVV95cUxOUHZYQVp3NUhCSmVOSFhTUVZDZjkxdW15emR6c3ZqMUVmUjNseC01bEFIQjJENzFRZWdwSDRZcHNLZGE3WnltYjlFWnlTUE1IbHZNUDVkQnN4dGF1WjFObFVINzhEcmNiSTZIbVBoN2I1c0xNY05WY1JXclNTOF9pNUlvNFRZbVR0QjJPckQ3bmhmUUlHek9ETDcyRG8yU1dOSUNlOHB0SUdxUkd2WE1rZklROXh4VURMbXFYMEMxdlpSdV9LUU43NGE0Ym1vdnlQMHVuNi1rakJWekU?oc=5",
-          "publishedAt": "2025-10-30T07:00:00.000Z",
-          "source": "Investing.com",
-          "signals": [
-            "investment",
-            "financial"
-          ],
-          "relevanceScore": 2
-        },
         {
           "title": "Arion Bank Q4 2025 slides: ROE exceeds targets amid merger talks with Kvika - Investing.com",
           "link": "https://news.google.com/rss/articles/CBMiywFBVV95cUxQckhjV3RDMEI5OU9FSEZSNXAycnZpVEJxNlo0UGhXc0FVUXBjT01mU0I0LXJ3WE5CVWVJTmZ3SGRxUGZBbTZiOEgxbm54RHlkM1RDb1BfSUg2d2NzcVVwWHRGeGJIc1FMNlVNTFZLNWpGSnUxUmVOejNGaFg2UTFFd09zaEFzdm9TaEtoT1pKYVJrTGhXQjVzQml1TzM5cnhNQVdscWlNd2hsMngyTFV1YVpuampHd1NfbVliSDZRNW5EUnFRSU9HclJpYw?oc=5",
@@ -432,36 +417,44 @@ export const BANK_DATA = {
           "relevanceScore": 1
         },
         {
-          "title": "Arion Bank Resumes Share Buybacks in Dual Markets—What’s the Capital Allocation Signal? - Bitget",
-          "link": "https://news.google.com/rss/articles/CBMiXkFVX3lxTFBnTXBVbHJHeHJYMWNjY2xjYnpLWW14NERwandIY0laSDc4UjR0Z3gxMnExdWpfZlRlMUw4V0pXamVXTnBLcDdVeVNfSkJfNEYyWUkzeU44NzhoSG9xREHSAWNBVV95cUxOZ25KNHRZRnJ4WnhmZ2Y1UDIyQUY5eFhZRWc2b0V2Y25VYjVraEJYWmcxeVZ1SEkxRnBiVmJYX29HXzdFaE9OWmI0NzFpUDRhTHRrajN1aTVXVFQweGhZdDlhcGs?oc=5",
-          "publishedAt": "2026-03-23T07:00:00.000Z",
-          "source": "Bitget",
+          "title": "Arion Bank: Q4 2025 and the full-year 2025 results - TradingView — Track All Markets",
+          "link": "https://news.google.com/rss/articles/CBMitgFBVV95cUxQLWlPekZWU3d4WDdGSVhlc0FVYVRWOFlpMV9EVFRNX2xrMXc1TFdLLXF5VTBsczVsRTF2YXNWSV9ra21CbEdqblEtRjgzeVdXSUpULWhrU0xzajZSdDNDZ1hXdzZqRmpMX3pkMDhUSjVweWY5UlhFZWZFS1BKSGEyS2ZvTUVtMlN6V1Yybk5sMlVyYl9KTThrcDlVZ2RDTEt6dER4R08yNC02a20yR0ZIMGxad2FpQQ?oc=5",
+          "publishedAt": "2026-02-11T08:00:00.000Z",
+          "source": "TradingView — Track All Markets",
           "signals": [
-            "investment"
+            "financial"
           ],
           "relevanceScore": 1
+        },
+        {
+          "title": "Arion Bank to Cut Share Capital by Cancelling 40 Million Treasury Shares - The Globe and Mail",
+          "link": "https://news.google.com/rss/articles/CBMi6AFBVV95cUxNRGxxdGNjT1p5Qzl2ZFNUZzZScm12MXRiNHVPUl9iRkdqVWQ3LVYxclk3ZzJFbnFJaTRIak41ckFvQ2xzeXNhWTZUY1Y4OXdZSk4xaEdRYnk3WDM1Zm9LaHI0M2t5U1pQQkFIR2NnZzhPZGs3Sm5MaDF1LVpzOVU0WVk3ZkpNcXRfX3pRVkptbmFobkc4OFVpYXVQM0xVc2VleXNUT1Z0MEQ1ZWRSbTltajdQVk1YOFVoTVRQQmhwY1d1RG1EVjFwMmtQc1ZVYWIxR1FuT3N0TzRaekpTaWxfMHpFTUFkMlQ1?oc=5",
+          "publishedAt": "2026-04-11T17:10:00.000Z",
+          "source": "The Globe and Mail",
+          "signals": [],
+          "relevanceScore": 0
+        },
+        {
+          "title": "Arion Bank Buys Back ISK 580m in Covered Bond Exchange Offer - TipRanks",
+          "link": "https://news.google.com/rss/articles/CBMisgFBVV95cUxOSUZvaTJXQzRvN2hDWWRXUk1JS0pDT0pBOURiWjVmVi0wSHhOWVZHY00zSUNIOHVuZGhJdkVtWEhwTHotSVltQTdkd1NfNndXSVlyMTUtMm9zVHNpdzdrRzJ6N3d3T0NzYWVsUFpUNGtjSHQzWlZJSUVFZnM0LWdVOWJXNFE5R2FvWjB0WFNxamZIazVJd3JrU0RXWldMdHkzTHUwTjhTaUZnOUw3RjRaU0Z3?oc=5",
+          "publishedAt": "2026-04-09T16:06:47.000Z",
+          "source": "TipRanks",
+          "signals": [],
+          "relevanceScore": 0
+        },
+        {
+          "title": "Arion Bank: Transactions in relation to a share buyback programme - TradingView — Track All Markets",
+          "link": "https://news.google.com/rss/articles/CBMiygFBVV95cUxOcnJiTnE1Ymx0eV9zdWJJZ2FYYkg0ZEo5VlZLV3JfajJpVlViaWd2d1g2bnFuV3RVUlMyZWI3M1R5WUYtcld5dktCRTAtSzJtNUFUQ3U3VXVHWm45M3JWRmFodERwYWlrUXM1blNRYTJuLWtjWk1MZGxoNDUzXzhxM0tpRktudFp2ZFZhRnFMU2xDQ1FOTzFXUkkwd0o4b0VvcmQwU3NsR3l4SVN3OTRBSnNPQjV6c1FpZjJaVVNZSl9UZkRzOExMek9R?oc=5",
+          "publishedAt": "2026-03-30T10:20:00.000Z",
+          "source": "TradingView — Track All Markets",
+          "signals": [],
+          "relevanceScore": 0
         },
         {
           "title": "Arion Bank Expands ARION CBI 31 Covered Bond Series With ISK 2.94 Billion Issue - TipRanks",
           "link": "https://news.google.com/rss/articles/CBMiywFBVV95cUxNUkdIZnFXempQQlBRb2ZLV2NneVg5S1YydHJEM2hrSEtnRnlZZk9QbF95cFZPcnVydHlNMU9PdU9vYnMyc3ltbXJhOUpqVFUtclhpUHprLVNQX1EzTTM1QWtsVVZWU2czNGFPTmttY205UzdFaDB1X3dUblRoZkhNS3RubEJhWUl1Q0U0aUt6Q0NueDdRbFFjdVNxaDJuQkNLYXV5c09rdlZwNmM5T3I0MWsyM0x1OFlHU2xmT0xTNExESFh0ZUF0SFZ0QQ?oc=5",
           "publishedAt": "2026-04-08T17:36:37.000Z",
           "source": "TipRanks",
-          "signals": [],
-          "relevanceScore": 0
-        },
-        {
-          "title": "Arion Bank: Transactions in relation to a share buyback programme - TradingView",
-          "link": "https://news.google.com/rss/articles/CBMiygFBVV95cUxOcnJiTnE1Ymx0eV9zdWJJZ2FYYkg0ZEo5VlZLV3JfajJpVlViaWd2d1g2bnFuV3RVUlMyZWI3M1R5WUYtcld5dktCRTAtSzJtNUFUQ3U3VXVHWm45M3JWRmFodERwYWlrUXM1blNRYTJuLWtjWk1MZGxoNDUzXzhxM0tpRktudFp2ZFZhRnFMU2xDQ1FOTzFXUkkwd0o4b0VvcmQwU3NsR3l4SVN3OTRBSnNPQjV6c1FpZjJaVVNZSl9UZkRzOExMek9R?oc=5",
-          "publishedAt": "2026-03-30T10:20:00.000Z",
-          "source": "TradingView",
-          "signals": [],
-          "relevanceScore": 0
-        },
-        {
-          "title": "Arion Bank AGM Approves ISK 15.3 Billion Dividend and Share Capital Reduction - The Globe and Mail",
-          "link": "https://news.google.com/rss/articles/CBMi7gFBVV95cUxOaXJVWW5oTlBrR0hvcDdDVmM1MW9YLVh1TlRxRDBCck1oN1dZYjBRVEQzVDBqVXVDdUNGSnpNbWZNZkNQU3VHTDloYlNERHo5bjRqUzZ1aWMzenRVQ2Y1akdUbE9KaGk3VzdCOE05NDREQkVHdUN6REVXaTdLRl9XbjZEbmtRb3IzVjZOVkNWUkU4aEtWZkNsR0wtdDNSRGhxWm5RUXRBY29HNU1nYTc0WUlJN2RlRkFFWWVxdC1ydWMwVkY5b0VrdHd1TzdtZnR6VnR5RFVGUEVsNDc2UkZxbXhRWUNSSjFuOUZob2Vn?oc=5",
-          "publishedAt": "2026-03-12T07:00:00.000Z",
-          "source": "The Globe and Mail",
           "signals": [],
           "relevanceScore": 0
         },
@@ -476,12 +469,12 @@ export const BANK_DATA = {
       ],
       "topSignals": [
         "investment",
-        "financial",
-        "acquisition"
+        "acquisition",
+        "financial"
       ],
       "signalCount": 3,
       "articleCount": 10,
-      "fetchedAt": "2026-04-08T23:39:32.700Z"
+      "fetchedAt": "2026-04-15T08:08:45.530Z"
     },
     "backbase_landing_zones": [
       {
@@ -724,16 +717,26 @@ export const BANK_DATA = {
     "live_stock": {
       "ticker": "DNB.OL",
       "currency": "NOK",
-      "price": 304.3,
+      "price": 312.2,
       "dayChange": null,
       "dayChangePercent": null,
-      "fiftyTwoWeekHigh": 310.7,
-      "fiftyTwoWeekLow": 235.4,
+      "fiftyTwoWeekHigh": 313.6,
+      "fiftyTwoWeekLow": 254.4,
       "exchange": "OSL",
-      "fetchedAt": "2026-04-08T23:38:07.267Z"
+      "fetchedAt": "2026-04-15T08:07:20.757Z"
     },
     "live_news": {
       "articles": [
+        {
+          "title": "DNB Bank ASA stock (NO0010161896): Is Norway's banking stability strong enough for U.S. investors? - AD HOC NEWS",
+          "link": "https://news.google.com/rss/articles/CBMixgFBVV95cUxNbXYtM1JnZkhqVnJTb3pYNFQ2V19PbEV0Ri1fd1pZR1NiYTYtck1XbzBubzV2RDE1c2ptZ3VFVGNDNjRDcWY5TVdIS3VHcDU4aVhEcG9SaWpqMWlPZlVZZU5lWlp5alhXMnV1YVA1M1psamx3UUNaVE9qZTlVcFo1cUlTRkNMUWw3RnppVEZkeTFKdC04NWJqejc2UnJTRFlnOGRGTTdYLXJTZjdTZ3dRMUdlVXBSOF9hc2lVRkhHTWluTGNJVWc?oc=5",
+          "publishedAt": "2026-04-14T08:29:02.000Z",
+          "source": "AD HOC NEWS",
+          "signals": [
+            "investment"
+          ],
+          "relevanceScore": 1
+        },
         {
           "title": "Norway's DNB posts profit miss on soft interest income, loan losses - Reuters",
           "link": "https://news.google.com/rss/articles/CBMipwFBVV95cUxOakJCYmtJNU5oLTYwMWFyY0NwOWNKNDlhaVhWcDlXS3RjMGs4WHBBQnRhSVZrSUlQRFBTc19TdjlyWEU3eEU2UVZWR2VXdDkyT1FCNUZRQkRIaDRpRU12MXE1ZWxRVHVWN3AzTk5JeEVsbGoxUURsWFJkNUJSb0ZnWWJrdEZDcVlUM3V5MGNNQVFmWXNxQlNhdW01VWFRRHAtWWtqTS16cw?oc=5",
@@ -755,6 +758,16 @@ export const BANK_DATA = {
           "relevanceScore": 1
         },
         {
+          "title": "DNB Profit Declines as Lending Income Falls Short of Estimates - Bloomberg.com",
+          "link": "https://news.google.com/rss/articles/CBMiswFBVV95cUxQQzZKQ09JdVEtUm14dWx5dDVLSEYtSGdxcVpmeWhRcl9aQW5fMEV3VWNJUDJZOGlQWmRaN3F2eVlDUUU1OFVKQmJTMkdMTldEMmNOamFyZk5Hd3N0cXprSVhtVmVybzlXWWxsQU9MNUg2ZFRSTG5XTmJkV2lMMHlFcjhBLThOakpiMkxRY05ZVktVa2h1eXMtZkJxSGNtVVpPSkUyUGwzYmE2MGRFcFJ3YWVObw?oc=5",
+          "publishedAt": "2025-07-11T07:00:00.000Z",
+          "source": "Bloomberg.com",
+          "signals": [
+            "financial"
+          ],
+          "relevanceScore": 1
+        },
+        {
           "title": "DNB: More salmon deals coming as consolidation reshapes Norway’s seafood sector - intrafish.com",
           "link": "https://news.google.com/rss/articles/CBMiwgFBVV95cUxPdEc2andiN1d0UktDZXhVNURnWHVSckhScDFXQ0hNTjVkZHMyQzNyNDhJUHMyRHhIR1JQVXdoRERjVG5yR0hRV2JiVmtxQV9rUUx5dV9Qdmpmbng5MERIRDRBdjJCRF9yNzNfX2tmYlBTUmZmUXVvUGFxLUpRRlVDdTNxRzMyS21lNExSSG9rY0pRbUF0U3NIQlpTME15WTlUYWd3Q1ZVMWdjQjhNMnpocGNXNVRaSnBlWTM1cDhOdEV3dw?oc=5",
           "publishedAt": "2026-01-06T08:00:00.000Z",
@@ -765,30 +778,10 @@ export const BANK_DATA = {
           "relevanceScore": 1
         },
         {
-          "title": "DNB Profit Declines as Lending Income Falls Short of Estimates - Bloomberg",
-          "link": "https://news.google.com/rss/articles/CBMiswFBVV95cUxQQzZKQ09JdVEtUm14dWx5dDVLSEYtSGdxcVpmeWhRcl9aQW5fMEV3VWNJUDJZOGlQWmRaN3F2eVlDUUU1OFVKQmJTMkdMTldEMmNOamFyZk5Hd3N0cXprSVhtVmVybzlXWWxsQU9MNUg2ZFRSTG5XTmJkV2lMMHlFcjhBLThOakpiMkxRY05ZVktVa2h1eXMtZkJxSGNtVVpPSkUyUGwzYmE2MGRFcFJ3YWVObw?oc=5",
-          "publishedAt": "2025-07-11T07:00:00.000Z",
-          "source": "Bloomberg",
-          "signals": [
-            "financial"
-          ],
-          "relevanceScore": 1
-        },
-        {
-          "title": "DNB Bank Earnings Fall Short of Expectations Despite Surging Mortgage Demand - WSJ",
-          "link": "https://news.google.com/rss/articles/CBMivgFBVV95cUxPTWktbTJRZk95LVFfSm1WUDBNdU8yQ01BN2lNdWRvZUVpWWxuZER3TWxrUWptZDFJQ21FMmNnU21QSVVtdzB2NmtVQU9LcFZQN0VIdnotdVVBejZvdzBpbzZObXJiUnNvRkt5blZVSEdieWRCVW1mSDVrc0lRQ1dXcFA3NmZEQURONzM1S0NTYVhQdGhSVktEZXdZRTYxRU53c0VUSE82UnlfR1pxV25hYWxUbE5BVDZFWDFxbUJR?oc=5",
-          "publishedAt": "2025-07-11T07:00:00.000Z",
-          "source": "WSJ",
-          "signals": [
-            "financial"
-          ],
-          "relevanceScore": 1
-        },
-        {
-          "title": "Stock and press releases - DNB",
-          "link": "https://news.google.com/rss/articles/CBMicEFVX3lxTE1hWVg1TlpES1I2c0JiYnVzeWd3UzdrS0FKQk9IazBETTFLX0xUUDg2a09Oem00MmZlMkJBYWI4R0dzQ3ExRGljYjg4bE9kWnJWWFdNSWR5QjFUMTBodjhoS0FQNTNpUmd3U3RUcFd1ZVc?oc=5",
-          "publishedAt": "2013-02-07T08:00:00.000Z",
-          "description": "<a href=\"https://news.google.com/rss/articles/CBMicEFVX3lxTE1hWVg1TlpES1I2c0JiYnVzeWd3UzdrS0FKQk9IazBETTFLX0xUUDg2a09Oem00MmZlMkJBYWI4R0dzQ3ExRGljYjg4bE9kWnJWWFdNSWR5QjFUMTBodjhoS0FQNTNpUmd3U3RUcFd1ZV",
+          "title": "Invitation - conference call regarding the press release about Vipps, Monday 13 February. - DNB",
+          "link": "https://news.google.com/rss/articles/CBMiuAFBVV95cUxOQlN6TnRZUGQwZThtcnY0WXBuMjlpUVo2RUlpa2R3bmJ0dXJyd0NCeVVZVkE2NS1IYXVIQWpxRmxhZnc2SWtPVDdob0tWbVh6VERFTGZUTnBoZWtWZElhdmMxbWwzSjJUQ1dGVGpWdmhOWjRNSDV6dkNkS3ViZFJ5TU1wYzFsaUQ2MzRHYW9idXFfTjBhWlNHUEVlOUczV0dZV21VMFpLWkEwbnU4V0taR09aMlNuMWlk?oc=5",
+          "publishedAt": "2017-02-13T08:00:00.000Z",
+          "description": "<a href=\"https://news.google.com/rss/articles/CBMiuAFBVV95cUxOQlN6TnRZUGQwZThtcnY0WXBuMjlpUVo2RUlpa2R3bmJ0dXJyd0NCeVVZVkE2NS1IYXVIQWpxRmxhZnc2SWtPVDdob0tWbVh6VERFTGZUTnBoZWtWZElhdmMxbWwzSjJUQ1dGVGpWdm",
           "source": "Bank Press Release",
           "signals": [
             "product"
@@ -807,26 +800,26 @@ export const BANK_DATA = {
           "relevanceScore": 1
         },
         {
-          "title": "DNB's Annual Report for 2024 - DNB",
-          "link": "https://news.google.com/rss/articles/CBMiqwFBVV95cUxNejFXZWs1TlRuc0dwMVlYMzlyNWJJNVBiZUVCbDhnRlMxVnlkTklKZDZLMDVScEgxTEJjelQ5ZVVYV2pMSmVTcU1LbWNoR01FOGJBNHpSYWlLeFBTTmFsTTJxRWFScFZBcDFTYmdmQWUxamRNOG5rM0JyWHJ2NTFqRHc5cEkzRDFaSXlzSUpzYkR3LWVaWlRuVDg3aHpyTTNJQUVVVWdzN05mZUU?oc=5",
-          "publishedAt": "2025-03-19T07:00:00.000Z",
-          "description": "<a href=\"https://news.google.com/rss/articles/CBMiqwFBVV95cUxNejFXZWs1TlRuc0dwMVlYMzlyNWJJNVBiZUVCbDhnRlMxVnlkTklKZDZLMDVScEgxTEJjelQ5ZVVYV2pMSmVTcU1LbWNoR01FOGJBNHpSYWlLeFBTTmFsTTJxRWFScFZBcDFTYmdmQW",
+          "title": "Stock and press releases - DNB",
+          "link": "https://news.google.com/rss/articles/CBMicEFVX3lxTFBGUEV2bWRzV0lVMVVfa3JEbXpTNTVzM1diazVJdllpQzE0OUVlV0dCYlU4MnRHRlF1NTZDUUpQNkowSnRXN2p4WUFUbXdhMEVSNC1qSm8xZ1QtRm1mckdqaEFod28zdHg0YndXLVRPa1U?oc=5",
+          "publishedAt": "2023-08-26T00:31:02.000Z",
+          "description": "<a href=\"https://news.google.com/rss/articles/CBMicEFVX3lxTFBGUEV2bWRzV0lVMVVfa3JEbXpTNTVzM1diazVJdllpQzE0OUVlV0dCYlU4MnRHRlF1NTZDUUpQNkowSnRXN2p4WUFUbXdhMEVSNC1qSm8xZ1QtRm1mckdqaEFod28zdHg0YndXLVRPa1",
           "source": "Bank Press Release",
           "signals": [
-            "financial"
+            "product"
           ],
           "relevanceScore": 1
         }
       ],
       "topSignals": [
-        "financial",
         "investment",
+        "financial",
         "leadership",
         "product"
       ],
       "signalCount": 4,
       "articleCount": 15,
-      "fetchedAt": "2026-04-08T23:38:59.779Z"
+      "fetchedAt": "2026-04-15T08:08:12.253Z"
     },
     "operational_profile": {
       "total_assets": "$340B",
@@ -1247,27 +1240,16 @@ export const BANK_DATA = {
     "live_stock": {
       "ticker": "DANSKE.CO",
       "currency": "DKK",
-      "price": 317.5,
+      "price": 335.2,
       "dayChange": null,
       "dayChangePercent": null,
       "fiftyTwoWeekHigh": 347.5,
-      "fiftyTwoWeekLow": 192.25,
+      "fiftyTwoWeekLow": 211.7,
       "exchange": "CPH",
-      "fetchedAt": "2026-04-08T23:38:15.543Z"
+      "fetchedAt": "2026-04-15T08:07:28.893Z"
     },
     "live_news": {
       "articles": [
-        {
-          "title": "Danske Bank released from US probation - Global Investigations Review",
-          "link": "https://news.google.com/rss/articles/CBMihwFBVV95cUxQd1c0b1ZPbkxIWi1VVy1HQ2FfX1B5c3lwZ1h2X3R6ZjRHaE5jYkYzSFJaREM1eGx0YmNWT3hzQUgyVmFOaXBkSThyR2Q5Z3hydndiTE5JMVpTVGhndTllZXVPcjNCLWs2Ujh3akVMUG5xZHBmdnZib2xuWGNMVHMyNTFxQnFybFU?oc=5",
-          "publishedAt": "2025-12-15T08:00:00.000Z",
-          "source": "Global Investigations Review",
-          "signals": [
-            "investment",
-            "product"
-          ],
-          "relevanceScore": 2
-        },
         {
           "title": "Press release | Change of ownership in merger of mobile payment providers - Danske Bank",
           "link": "https://news.google.com/rss/articles/CBMijgFBVV95cUxPY1RYOGpHaW5GNGp6WlVBV3BQNG5kdFBZNUFSWXFDVEJOeWFvRW5DLVFwSGR3MWdVMThoOFcxTUxKSmtoYlFqLWdlZjlHOGl5T09xRDdrR3gyZU5DNXJrRG9ZdWJXT2E3b2R6N2syLXJGX1B1WW0tNnFaZnBacnJqcUQ5bENnRkNqeE9yMXBB?oc=5",
@@ -1293,16 +1275,14 @@ export const BANK_DATA = {
           "relevanceScore": 2
         },
         {
-          "title": "Danske Bank to appoint new Chief Compliance Officer and member of the Executive Leadership Team - Danske Bank",
-          "link": "https://news.google.com/rss/articles/CBMijAFBVV95cUxPcXZ5dDF3MFdzT250SjVxckctMVo0MzhlUGFHQXQ3RlVua1Aza3RETUpSdVhXZ0k0WUhZMEVaTUVGMjdFMXI5Q3AwRUNRX1dXcHFVSllzRWtVR2V5eGxVUGVNdXctdEJmYWZSUFhPamRhdk5PUHpGYTl0eVM2S0s1dUl5ZXQycEZHb0JvaQ?oc=5",
-          "publishedAt": "2023-03-20T07:00:00.000Z",
-          "description": "<a href=\"https://news.google.com/rss/articles/CBMijAFBVV95cUxPcXZ5dDF3MFdzT250SjVxckctMVo0MzhlUGFHQXQ3RlVua1Aza3RETUpSdVhXZ0k0WUhZMEVaTUVGMjdFMXI5Q3AwRUNRX1dXcHFVSllzRWtVR2V5eGxVUGVNdXctdEJmYWZSUFhPam",
-          "source": "Bank Press Release",
+          "title": "Denmark: Spending resilience with higher energy costs – Danske Bank - FXStreet",
+          "link": "https://news.google.com/rss/articles/CBMiqwFBVV95cUxQenhselYteWJaTDB5ZGN4T1BRWXlCM011YjhqTDZMVUhCSXdSck5vWGppeE1ud19wQm02YzNSbnlrY0J0Nk9PNjVxQ2xEUFZESUlMbkI3RWR2ZmFuNFg5WHJqdktPaTRKUmQ2RFJhdTVraFBGYWZleFVfY0dtejcxNFNUcjVYRUVub3ZuLW9sWWJFTmczaWpRNDF5NW5INXo4TW5mdTdOTlJZQ1U?oc=5",
+          "publishedAt": "2026-04-13T17:42:00.000Z",
+          "source": "FXStreet",
           "signals": [
-            "leadership",
-            "regulation"
+            "investment"
           ],
-          "relevanceScore": 2
+          "relevanceScore": 1
         },
         {
           "title": "Danske Bank and Danish Industry expand successful cooperation on alternative investments - Danske Bank",
@@ -1315,12 +1295,12 @@ export const BANK_DATA = {
           "relevanceScore": 1
         },
         {
-          "title": "Danske Bank Earnings a Slight Beat With Guidance Improved - Bloomberg",
-          "link": "https://news.google.com/rss/articles/CBMirAFBVV95cUxQdFd1Vkl5ZVBJbGFkQk5QdFJxRUtmMW0yOExJdHFMWFhqNmNPLXUtQjZ0eFZOOFV6b0tGMHNVQVJ3SmRPdTRFNGV5U0JTVjMyUHMyMHpkNngtSjVLNzZ0R3hXMTU4M0dydkJjallPbmpQazhydS1QN0F1SGY0SEdkTjVRam1TeEg0MEFaR3ZEbDRTTC1vckNpemN1dU0wTV9JSVM4YVp2Uk11bi1v?oc=5",
-          "publishedAt": "2025-10-31T07:00:00.000Z",
-          "source": "Bloomberg",
+          "title": "Denmark: Strong consumer spending despite increased energy expenses – Danske Bank - Bitget",
+          "link": "https://news.google.com/rss/articles/CBMiXkFVX3lxTE1PeUFSS05NbEctdjdvYWtfYm9CNlNZa2pmRHlPMHY4YlNSU3ZjNXVTVHhQZmdPX2daWlFsSGZiaXlZTmtUYkZwbW9tTU81WVhOa084UUlFTkxkVGRVcHfSAWNBVV95cUxOYUZxcU5lel9xY09LanBGR2tqci1mNk55M3hrQXEwbEQtNDI5dDAxUjZWUUo1NUx0YWFhazNTa3FiR1RUSW1xVU9JSzlCX2t1QzVodTY2VWNZSnhfSjlfb05OcEk?oc=5",
+          "publishedAt": "2026-04-13T03:06:26.000Z",
+          "source": "Bitget",
           "signals": [
-            "financial"
+            "investment"
           ],
           "relevanceScore": 1
         },
@@ -1335,10 +1315,20 @@ export const BANK_DATA = {
           "relevanceScore": 1
         },
         {
-          "title": "Danske Bank Offers Bitcoin, Ethereum ETPs to Investors, Ending Eight-Year Crypto 'Ban' - Decrypt",
-          "link": "https://news.google.com/rss/articles/CBMirAFBVV95cUxObXFDdkRlNTVoYUdpYmh0UExEbmlHR3R3cGhrSHV2S25JbmgxazRDSlh3UDMwNHlCSHdXNGtRTnV2Uzg2ZFJLeTVIYVZ3VzBqUFU5V2tMXzVRZmpxN3JqZkpxUjMzLW50M2FJOXllYUhoM3FJbHZ2Skdsb0VIOFZ1OGVaWTlDMElnb3Bib2txcUR3N1ltMVhvMHdyYkJjbFB1SGtNRXhfQl9ReHpF0gG0AUFVX3lxTE8xQlI0UjhJeHMwMDk4RVJYdmdJQWtiTEdOYUtVS3NFRlhPUkJCV2hwd1dFSkVHY21vZjZxZkZHUGhRczVGcjNBX0hYbzBvWVFvZlJwVGIzcDBEZTBIRjF2eHRWZFc0aG5vekh1bDBhamNXTld6VFo5Y0xwUlMwQkxiZ1BXQTBraVVUSWF5ZmhIdHN1X2M1VDJVQUNYdWdCWm9faXlYeXJlRUllZXBtY3dmUmRoeA?oc=5",
+          "title": "Danske Bank Earnings a Slight Beat With Guidance Improved - Bloomberg.com",
+          "link": "https://news.google.com/rss/articles/CBMirAFBVV95cUxQdFd1Vkl5ZVBJbGFkQk5QdFJxRUtmMW0yOExJdHFMWFhqNmNPLXUtQjZ0eFZOOFV6b0tGMHNVQVJ3SmRPdTRFNGV5U0JTVjMyUHMyMHpkNngtSjVLNzZ0R3hXMTU4M0dydkJjallPbmpQazhydS1QN0F1SGY0SEdkTjVRam1TeEg0MEFaR3ZEbDRTTC1vckNpemN1dU0wTV9JSVM4YVp2Uk11bi1v?oc=5",
+          "publishedAt": "2025-10-31T07:00:00.000Z",
+          "source": "Bloomberg.com",
+          "signals": [
+            "financial"
+          ],
+          "relevanceScore": 1
+        },
+        {
+          "title": "Danske Bank’s customers now have access to cryptocurrency-related investments - Danske Bank",
+          "link": "https://news.google.com/rss/articles/CBMijAFBVV95cUxPd2VIYV9jd0xFR3RnNk14dnFydElWa2Q4Vmx4MFF5RlAzWnJKQ21BUGF0dUcxU29NV2haQjhoeEpET0huM0FzYXB0VzBkbk96QXpIZk13MGwxeGFKb1NPMFFKMlZuc1NLeWpmOXpnUW5OeENRMlhiTWVTMVF4bDZXaFRWb05SVi02a09RNw?oc=5",
           "publishedAt": "2026-02-11T08:00:00.000Z",
-          "source": "Decrypt",
+          "source": "Danske Bank",
           "signals": [
             "investment"
           ],
@@ -1346,17 +1336,15 @@ export const BANK_DATA = {
         }
       ],
       "topSignals": [
-        "investment",
-        "product",
         "acquisition",
+        "product",
+        "investment",
         "cloud",
-        "leadership",
-        "regulation",
         "financial"
       ],
-      "signalCount": 7,
+      "signalCount": 5,
       "articleCount": 15,
-      "fetchedAt": "2026-04-08T23:39:09.353Z"
+      "fetchedAt": "2026-04-15T08:08:22.260Z"
     },
     "operational_profile": {
       "total_assets": "~€530B",
@@ -1686,31 +1674,31 @@ export const BANK_DATA = {
     "live_stock": {
       "ticker": "SHB-A.ST",
       "currency": "SEK",
-      "price": 127.7,
+      "price": 131.8,
       "dayChange": null,
       "dayChangePercent": null,
       "fiftyTwoWeekHigh": 149.7,
-      "fiftyTwoWeekLow": 100.75,
+      "fiftyTwoWeekLow": 111.95,
       "exchange": "STO",
-      "fetchedAt": "2026-04-08T23:37:57.337Z"
+      "fetchedAt": "2026-04-15T08:07:11.035Z"
     },
     "live_news": {
       "articles": [
         {
-          "title": "Sweden’s ‘Most Tight-Lipped’ Bank Draws Shareholder Grumbles - Bloomberg",
+          "title": "Sweden’s ‘Most Tight-Lipped’ Bank Draws Shareholder Grumbles - Bloomberg.com",
           "link": "https://news.google.com/rss/articles/CBMiwAFBVV95cUxNZkVCLUEtQkx2LTZnNUhMV2ZXdmJDZi1nMVQ3MUdNZkptek9GOHkzWjNJMzFPZjI2XzdxT043QkpaTW9BZDYzcm5NODc3RVM3Q3k0QnR6VV9WbUZkdldLT1p0Z0k0T2tSVXkzSnF4REttTkk4cENSQlU1WHhwSTRMMk04S0FRcDNUN3VRNjNwSHRJSEpwOW1SMW1RUzVRZktRWmxMeHdxRkl4YVotRU5ybkV5UzVNcU9fNUJWb1F3N3o?oc=5",
           "publishedAt": "2025-10-19T07:00:00.000Z",
-          "source": "Bloomberg",
+          "source": "Bloomberg.com",
           "signals": [
             "cloud"
           ],
           "relevanceScore": 1
         },
         {
-          "title": "Handelsbanken Earnings: Credit Loss Reversals and Cost Improvements - Morningstar Canada",
+          "title": "Handelsbanken Earnings: Credit Loss Reversals and Cost Improvements - Morningstar",
           "link": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxOWnpOWGcyNzJ5Tm50NXpVQ1hGdjE1YU45VzVUclNqNEoxRG5fWkg1QVdJUEFJbXB3TDNZdWptQUlJS2FkcTVzWE5UWm4xWUVvR0hmdXBQNmg0azRxV3lJNHRmUFNZbVdzSl9Pb0xZLXo0NXItMXpMUklXMGNodndOaDhBMEZaV0laXy1FalNydmpONWJldnoyUFl4M0piaW00RE1ZM1lQVlhLQQ?oc=5",
           "publishedAt": "2025-10-27T07:00:00.000Z",
-          "source": "Morningstar Canada",
+          "source": "Morningstar",
           "signals": [
             "financial"
           ],
@@ -1727,6 +1715,16 @@ export const BANK_DATA = {
           "relevanceScore": 1
         },
         {
+          "title": "Swedish FSA probes Handelsbanken over anti-money laundering compliance - marketscreener.com",
+          "link": "https://news.google.com/rss/articles/CBMiwAFBVV95cUxOTk13V1NMWFYxZnJjeTFzZXg1aU5na21aeHMtZkRma3JHZWpfb21HTTgxU3VZMlRQbmV4eVp6MkhaNmU2T25rU3A1RURITkJzemRvU2ozUlUxVFNpd2tSMmlmWHlUYUY4UHhfOGpWUVYzcHFQU2VPTU40Z3pKWFpWLVBDdURkSktCcU9sWDJZQjRxMk1LR2NaZ1FmVFNxampIb0JGT1c3RkRTcWgyRFQ3c0gzSlltSUpXWmV6YXB4T18?oc=5",
+          "publishedAt": "2026-03-12T07:00:00.000Z",
+          "source": "marketscreener.com",
+          "signals": [
+            "regulation"
+          ],
+          "relevanceScore": 1
+        },
+        {
           "title": "Handelsbanken Net Profit Misses Forecasts After Income Falls - WSJ",
           "link": "https://news.google.com/rss/articles/CBMiqwFBVV95cUxPX29VZHVQMEtSWkdzRDJ0bEFKaWFRMi1Ha1BiLVNKWFJQYVFyc1FsOXRsSnV3T25VcXgxNHNJMjA3eFZldGtiLWtpdl9MSi1OWlM1cGdlZ2NtRFhldDdGWmpiQ2VfZVhKcmlxa1Jfc0tQRUhkOHRhTmZya1k5bDBocWhLMmZHNFpFbGVETkxjSnlITXMxQU1PMkZDcGR6cWNZNG5ZdGdWeHc3eWM?oc=5",
           "publishedAt": "2025-07-16T07:00:00.000Z",
@@ -1737,25 +1735,15 @@ export const BANK_DATA = {
           "relevanceScore": 1
         },
         {
-          "title": "Svenska Handelsbanken stock faces pressure amid Swedish banking sector slowdown and rising economic - AD HOC NEWS",
-          "link": "https://news.google.com/rss/articles/CBMiyAFBVV95cUxQX2hUN1ZrS3pQYXZHSGpNUmt1Qkh4b0o4WmJvR21KZHJ2Nmo0MU1UZ2ptdTRmUUFlSjFOY3lRU0hreGdDbHpRYmNyZHdzVU55dDBBVGdVMXVCLU90TjVMa2c3UmlhM0ptTThUdWc0NlNtRE50UW1SRkhGNXdwYm0yaUI3Q1Z0X2dtVU5lX211VFZBdGFyTzFEcTU5WFVKdXgzdWhVY0pNdl9IUDNYaFNDM3ItclNsLUFKRHE3QjJmQS1GRGZKS2JXMg?oc=5",
-          "publishedAt": "2026-03-24T07:00:00.000Z",
+          "title": "Svenska Handelsbanken stock (SE0007100599): Is its decentralized model strong enough to unlock new u - AD HOC NEWS",
+          "link": "https://news.google.com/rss/articles/CBMivgFBVV95cUxPSXhOYXVMOE9EbnlGN3Q0UFlYYmFUMVlWUHAtQWZ4eTdxNUg5WHBZSHY1U0M1dTdDenJkQlNUVm5nT00tTnprOEhsMWFTRnQxOG9LYjFkSkM2Y3RiZ0hxbTBEWnc1QnNodHFCcnZZSThfR2JnRElreW90cWc4TTdZLXBaNjZ0ZE9QaTU4TGwycG9oNjBBclFqQWE4WW8zTjFJTWdYYlRVZkNKamhNQ0RPWk1aaUlfOVI3UWx4b3dB?oc=5",
+          "publishedAt": "2026-04-14T23:30:56.000Z",
           "source": "AD HOC NEWS",
-          "signals": [
-            "leadership"
-          ],
-          "relevanceScore": 1
-        },
-        {
-          "title": "Total assets of Handelsbanken from 2009 to 2024 - Statista",
-          "link": "https://news.google.com/rss/articles/CBMif0FVX3lxTE9BUDhTTHhpUkFkaU03bEN5RWVPWXFtR24wZTBTclpIam42a1p4ekZXd2t1NnBwN1o0WjdjbXJLUWF3MjBvMS1CRWx5cjU2NVk4TzRiMndnZHpxWE1YY053d0ZOdTZpeEJSdnQ3QWNEUVU4Q21UUTZpMkgwbnVwdjA?oc=5",
-          "publishedAt": "2026-03-03T08:00:00.000Z",
-          "source": "Statista",
           "signals": [],
           "relevanceScore": 0
         },
         {
-          "title": "Svenska Handelsbanken: Even Cost Control Cannot Save This Valuation - Seeking Alpha",
+          "title": "Handelsbanken Stock: Even Cost Control Cannot Save This Valuation (OTCMKTS:SVNLF) - Seeking Alpha",
           "link": "https://news.google.com/rss/articles/CBMisAFBVV95cUxPYS16aS1PVHVoR2cxc2dzSC1EUlhGejN6Q05XclV6MnBIYk5EeUpRVkhWcVVPMld0T1ZpNDhWT2tsWloxVkhOaE5HWjB6Y29tSnNuZjFGVU9ZbGRSLW14Njh2SjdEUFh6d1RwOFpaRWxQeFJCUHNTMVJ5c1dSTWtnenROR2luMkU1LVdCZ09sVmxOTFkybWxvNU43dmxuS29IYi1qSUVwcktQaVdSM1hmVw?oc=5",
           "publishedAt": "2026-01-07T08:00:00.000Z",
           "source": "Seeking Alpha",
@@ -1763,10 +1751,10 @@ export const BANK_DATA = {
           "relevanceScore": 0
         },
         {
-          "title": "Handelsbanken outperforms main Swedish rivals in Q4 flow battle - AMWatch",
-          "link": "https://news.google.com/rss/articles/CBMib0FVX3lxTE1yeHhGYlVIRHhhcmRheE1QMGFzRUlHODBXSFhVT2pOZ1dWRGNBUFRKbVFwNHJTd0hsLUpuSnlmZkVadmxZZWZ2RVpNSWFwSmNhdlRsTDZ5UFJoTnJWTnA5WGRPek4tMzZ1OGVHVGR0dw?oc=5",
-          "publishedAt": "2026-02-04T08:00:00.000Z",
-          "source": "AMWatch",
+          "title": "Handelsbanken CET1 ratio 2015-2024 - Statista",
+          "link": "https://news.google.com/rss/articles/CBMifEFVX3lxTE1RaWRpbnU2SXJkRW1lVEhqMHJfcUdGaHJiSDVlZ0xoQWZlMDd4MjNkcWZnbldqS3htUHV0MnVVcUxDc3hqTTVHakJiRnJfYUlTTlZsbEVnQjZZWmpfRzVfaWFkZUtEUnNMeXVMUWtqYndBcFotTVc0cTBfc2Y?oc=5",
+          "publishedAt": "2026-03-03T08:00:00.000Z",
+          "source": "Statista",
           "signals": [],
           "relevanceScore": 0
         }
@@ -1774,11 +1762,11 @@ export const BANK_DATA = {
       "topSignals": [
         "cloud",
         "financial",
-        "leadership"
+        "regulation"
       ],
       "signalCount": 3,
       "articleCount": 10,
-      "fetchedAt": "2026-04-08T23:38:46.308Z"
+      "fetchedAt": "2026-04-15T08:07:58.526Z"
     },
     "operational_profile": {
       "total_assets": "€350B",
@@ -1905,52 +1893,62 @@ export const BANK_DATA = {
     "live_stock": {
       "ticker": "JYSK.CO",
       "currency": "DKK",
-      "price": 914.5,
+      "price": 931.5,
       "dayChange": null,
       "dayChangePercent": null,
       "fiftyTwoWeekHigh": 981,
-      "fiftyTwoWeekLow": 463.4,
+      "fiftyTwoWeekLow": 508,
       "exchange": "CPH",
-      "fetchedAt": "2026-04-08T23:38:18.842Z"
+      "fetchedAt": "2026-04-15T08:07:32.130Z"
     },
     "live_news": {
       "articles": [
         {
-          "title": "Setbacks for popular equities may teach investors to spread risks, Jyske Capital CEO says - AMWatch",
-          "link": "https://news.google.com/rss/articles/CBMib0FVX3lxTFBURF9PV2xvQjhrc1RFWkdUdTdHalo3TEI5T0tvR3pEak1Id0h5QjhSVUdjdDBnZEtRQ2czVU5fVEFrcVMwdkdFZlhTRmdVX2tPYXRwSmhJWDFlYWVtMVhLVjhaQVFxQUVqQkxyTG5KTQ?oc=5",
-          "publishedAt": "2025-08-27T07:00:00.000Z",
-          "source": "AMWatch",
+          "title": "Jyske Bank expects 25% pretax profit growth with Handelsbanken Denmark purchase - S&P Global",
+          "link": "https://news.google.com/rss/articles/CBMi-gFBVV95cUxQRTNFWVY3UXA0cDVfYWRnUHVjLXhWSVRyRDhfNEpQWmtMNFBDVWt5eUozNzJKVUt1bmZJLXV6RFJ4ZXFwX0Rtbnd1NkIycWpLcUdPTm8walBGUkFfbkNLNlQ5Vi10Z0dBMEs0Rl9fbWtQWnR3cFBaSmhpUEV0U0hBTF9vR1lHaU5ERTBLQWNRd0I5NE9mSDdVRVRKU3hLbU5kNjRFT0lXUkY3VjNoRUVmX215eUh2TUJ2c19Kd1NEODl1X2J6TzhLZFJ1MmVfVmgzdWo1bXNwZ1hieEFDTHBYd25uYUxMdW5xdVdBXzNkRWRJX1BldUUtOUxR?oc=5",
+          "publishedAt": "2022-06-20T07:00:00.000Z",
+          "source": "S&P Global",
           "signals": [
-            "leadership",
-            "investment"
+            "acquisition",
+            "financial"
           ],
           "relevanceScore": 2
         },
         {
-          "title": "Jyske Bank approves 2025 accounts, dividend and board reappointments at AGM - The Globe and Mail",
-          "link": "https://news.google.com/rss/articles/CBMi6gFBVV95cUxPaWlIY1NiZk5WaGZIWGlsY1NTa0ZkbTA3Xy1DTHo2aThOZWRZQUxQZTgtZ3owMG5YN0dCNndPQUJmbF9KdnN3dW1oRXZhQWtRRktOelB5QXVoLU5STFVkLTFKMGxndXM5c2p1SWtaMlRpbFNLZ0swV3FxaGZEbUtZX0tkTWNqRFlmS3owb05pRGJ4QWJ5dEpUYklGVWJOaU1CZk5wVE1jUUotVi1DcGhCcERMX21kNkNUU3h6bDNaZXg4YkpfVnpzQ1AzaDFVSUtmc0cta3p2em41blVTOHBUOW5HeG9fQlNLbHc?oc=5",
-          "publishedAt": "2026-03-18T07:00:00.000Z",
-          "source": "The Globe and Mail",
+          "title": "Jyske Bank A/S stock (DK0010307958): Why its Nordic stability matter more for U.S. investors now? - AD HOC NEWS",
+          "link": "https://news.google.com/rss/articles/CBMiyAFBVV95cUxNcjFDVk9XQzFrTk9VeHNnSTNvZUFHaEs1NDV4TlZtdUV6VGl4cGRYNTRkS2ZSdzgxRnQtV1JscTNiSzREVnp4RDZSc2ZSV0gtTUJfT2hILWljT0dBWlA1dDJhaHVoYU1OMm95ZDZaRmRuVnIzb3I4REU0Y1hIX09KYjA1LXdUTmQ4aVhUcFQwenNYaWJIQ0RvYW5JaV96OHc4UjJlNmRXZ1Y5V1hfZkVKbGsycTU5Ymk3dGlKWGRKUElnd3FySHlaRg?oc=5",
+          "publishedAt": "2026-04-14T05:28:31.000Z",
+          "source": "AD HOC NEWS",
           "signals": [
-            "leadership"
+            "investment"
           ],
           "relevanceScore": 1
         },
         {
-          "title": "Danish Growth to Cool as Companies Hold Back, Jyske CEO Says - Bloomberg",
-          "link": "https://news.google.com/rss/articles/CBMirwFBVV95cUxORnI0S0FqUnpqYjN1NHZRY1RmVHlvMG54Y1VNMGFjQkxmLUx2Q2Y3NHVuYkhXS1BCUVdmdzByT3NNblBDdTAwd1FrSUxMOUlzNGUxa1I2ekNibTZtbGhXZExOcXo5clBDdGNDYWlWU09CZFY5aTZ5cmw3WFNIOU5XSGhBOENEdG9zb0N5cGdYalhPY216TzRPSUZWYklHTVRJU0VXUHBnRGdYMjBBczl3?oc=5",
-          "publishedAt": "2025-08-19T07:00:00.000Z",
-          "source": "Bloomberg",
+          "title": "Jyske Bank buys back 67,663 shares in week 8 of program - Investing.com",
+          "link": "https://news.google.com/rss/articles/CBMisAFBVV95cUxQbGVfdTZSdUFOOVdXTndCWmo3eWJpb1BtTjFMZUwxZ0RJYWRsSk1GaWdGUGVpeVlaNnBZLURvWEp2cVp1YVZjRXJfY2RpRl9HU1VNSjAxby11ekhFQTJvZndFcWNDejBfVkdRcmF0NWt1dHBHc2ttWjlsVjBjZDQtS1RQMHBBSno3M0U0MktSZDR6TEpnbVl0S2ZydkMwWDlqbjlwZVVmRDBUNHFnOFNNMQ?oc=5",
+          "publishedAt": "2026-02-23T08:00:00.000Z",
+          "source": "Investing.com",
           "signals": [
-            "leadership"
+            "investment"
           ],
           "relevanceScore": 1
         },
         {
-          "title": "Jyske Bank Wins Negative-Rates Case, Easing Danish Industry Risk - Bloomberg",
+          "title": "Jyske Bank Accused of AML Violations by Danish Regulators - PYMNTS.com",
+          "link": "https://news.google.com/rss/articles/CBMilAFBVV95cUxPR0cwUmhMYTNQYVNSaGhRLTdzZzdjaHZ6OG9oeGFuR2R0eWlHMFpCaVVEUU1DM0xBSy1xYjM2eE9DYk9DNGNyY1dFU2UtV2tLNGRWdk5sQ05YZ0FGNVNNdHNYVGE2cWN1V0dkSkF6bXlfa0ZnaFBpbE5LYmhMQXJ3RnF4bi1QTjMwY2YzZzhQS1B0cXEz?oc=5",
+          "publishedAt": "2022-11-28T08:00:00.000Z",
+          "source": "PYMNTS.com",
+          "signals": [
+            "regulation"
+          ],
+          "relevanceScore": 1
+        },
+        {
+          "title": "Jyske Bank Wins Negative-Rates Case, Easing Danish Industry Risk - Bloomberg.com",
           "link": "https://news.google.com/rss/articles/CBMitAFBVV95cUxPLTREZWMtNVFyYktxQ2JBUnAyOGFxbkxmUnUwNkpaV0NKeHR6OUd2NF9rZXh0UEJfa3hXUEI5aEpfR3FTSHZYSnBkRzVrSHlsekxHZkYtY1Y1UTJjTTRCd2c5Ymp4bnhfRnlYNDEycjhwM1UtMWF2MEFvUks1bjJSaHpMb2phbnBiSk1tVENHYjFWc0hza1AxR1N5T1ZBeGJ4dkhHd1BGZzB6Ym9jRkpZVkQzSlE?oc=5",
           "publishedAt": "2025-09-01T07:00:00.000Z",
-          "source": "Bloomberg",
+          "source": "Bloomberg.com",
           "signals": [],
           "relevanceScore": 0
         },
@@ -1971,29 +1969,23 @@ export const BANK_DATA = {
           "relevanceScore": 0
         },
         {
-          "title": "Notice of Extraordinary General Meeting of Jyske Bank A/S - Finansavisen",
-          "link": "https://news.google.com/rss/articles/CBMi4AFBVV95cUxOZ2xWN2V0OHpkOHJqMEdxRTBXUk5iaS1oYjlKeGRGRV85endpY2haaEdrTTBJQlVlNmJ2UXVoLUVnUWYtTEpmLVBPS2Z6cFBINUh0UWJCYzdMMGVMU3Z6anhDMVFDR2E4MTZsN240d0lnRk92X0RRWUQza05XdmtqNG1DdGJtV3YyekRhcDRXMUk3LWRHMXZJV3B4M1pHekZIUHZQV3AyZVFnaDZ1dmliZFJ2NFBRYjV1UjRSenlmQ3VkRDktanFacDFlbVFRbF81TEdWNl96NXBxOGZRbVBNYg?oc=5",
-          "publishedAt": "2026-03-23T07:00:00.000Z",
-          "source": "Finansavisen",
-          "signals": [],
-          "relevanceScore": 0
-        },
-        {
-          "title": "Jyske Bank Lifts Treasury Stake to 5.64% Under DKK 3 Billion Buyback - The Globe and Mail",
-          "link": "https://news.google.com/rss/articles/CBMi4AFBVV95cUxNLWpfd0V2UGxKSzdiby1JUno2UDVMd2stSGlzRURNVkViZHlzeFl2LTBSYVVpZkJoc0R4NFBzLWU0TkVMaUpDZVlIMFB5Z2hGM3U1clhubnlJNk5vMTRBYWpqU2FzMldVdGZmdE5zSWhQdWNnb0xoc3h5OVN3OE9nR1cwTnlOSEFucDRzVldDN3JOeEhkY1BsQXpPc1pieF9ESE1MN245ZVd2aFhLVzNQM0lRTDBQSkNGSUIxNTI4UTlrMkhvN2twVHpiYkZ0b2hieGVmSk1LTGFLZGJWaVNzaw?oc=5",
-          "publishedAt": "2026-02-24T08:00:00.000Z",
-          "source": "The Globe and Mail",
+          "title": "This Danish bank is offering mortgages with a negative interest rate - The World Economic Forum",
+          "link": "https://news.google.com/rss/articles/CBMiekFVX3lxTE9QNnBuYVFuN0dsZDJWVkVIVDh0QjFuTjhZLTgwX2lvUXE0dmRJVE5KbTNXUnU3RnNWRkZsV3J4RmdDVjZEOVBPU0pUbGdLOUtNQi1OM0V3UHJTTTVVcS1USjNST0FOWnlJUXZSRFMxVXNrZVBGZ19WWE5B?oc=5",
+          "publishedAt": "2019-08-15T07:00:00.000Z",
+          "source": "The World Economic Forum",
           "signals": [],
           "relevanceScore": 0
         }
       ],
       "topSignals": [
-        "leadership",
-        "investment"
+        "acquisition",
+        "financial",
+        "investment",
+        "regulation"
       ],
-      "signalCount": 2,
+      "signalCount": 4,
       "articleCount": 10,
-      "fetchedAt": "2026-04-08T23:39:13.276Z"
+      "fetchedAt": "2026-04-15T08:08:26.074Z"
     },
     "backbase_landing_zones": [
       {
@@ -2312,15 +2304,14 @@ export const BANK_DATA = {
     "live_news": {
       "articles": [
         {
-          "title": "Landsbankinn partners Meniga to launch open banking-powered PIS and AIS services - FinTech Futures",
-          "link": "https://news.google.com/rss/articles/CBMiwgFBVV95cUxQRVk2V2ZObm16T213N01hbEZFN2xoSzN3SXoyOWI1U3VjekpMcEZROHg4emt2SUY4QUtqTjFtV2NLdU9VbllSanNvNTdQbkN5Ymk1YW4zd1lBcDlFTFBqTGpsZWsySWRnemlaQmpCelkyNjRIeGRyT2s3SHBDVXh6VEhLRTVUVVVUQUpaUkhVaURxenhWdDB5VC01eVQwNFFYa3JWcWtYeUdOQXFYck1ZM1liWDdna3RkTF8wMnR6WkFJdw?oc=5",
-          "publishedAt": "2025-03-26T19:12:16.000Z",
-          "source": "FinTech Futures",
+          "title": "RS2 and Landsbankinn Bring Merchant Acquiring Services to Iceland - Business Wire",
+          "link": "https://news.google.com/rss/articles/CBMivwFBVV95cUxOWTFEUnBLMDctczZUdTRhOTI1QUlKbEVQRUdPVnV1MklIUXU0cGVwNTNFSDNQU0g5c2ZUcmlvU0NMVHVpSmRiQmJDcU5vcEM2azhlOXZzOG0zVEczREhValVldzdKbXBkVkNzY0RxQmxuMThzc25FdElULXlGMkI3NXJBRTBpTWw4TkNVTmx3bThlVm5kSWdsSHlPYWw3UUdkSFloZnNuMUxQVzBYMHhwR1VlTS05RVp4Wm03NThqUQ?oc=5",
+          "publishedAt": "2023-04-13T07:00:00.000Z",
+          "source": "Business Wire",
           "signals": [
-            "partnership",
-            "product"
+            "acquisition"
           ],
-          "relevanceScore": 2
+          "relevanceScore": 1
         },
         {
           "title": "Landsbankinn hf.: Landsbankinn’s acquisition offer for TM approved - The Digital Banker",
@@ -2343,18 +2334,20 @@ export const BANK_DATA = {
           "relevanceScore": 1
         },
         {
+          "title": "Landsbankinn prepares for PSD2 with Salt Edge - FinTech Futures",
+          "link": "https://news.google.com/rss/articles/CBMikgFBVV95cUxQNDB3RjUzX2M1NFg3cWZqelN3aGsxX3BfOGV0VzVtU0ZIdVBuajdiOUJEWTVDa3hTWVcxV0NTYllfdFlxVjJaUlJSdm5FVzhNYlBtbklRYUlFeXpLV2V4SHEtX1RvQVU2WTNDcmg4VkwxanNSamhxNDRJNDJBVXJCcUZQZXA0bmRod082SzZRa1Zkdw?oc=5",
+          "publishedAt": "2021-11-30T08:00:00.000Z",
+          "source": "FinTech Futures",
+          "signals": [
+            "regulation"
+          ],
+          "relevanceScore": 1
+        },
+        {
           "title": "Landsbankinn prices 'longest dated Icelandic FIG bond in recent history' - GlobalCapital",
           "link": "https://news.google.com/rss/articles/CBMi3wFBVV95cUxPOFpLamNQYm1yUzlVaUZWekd5eUE2eDItOVFxVzMtaXROUjNBcXpoMFBzMWkydi1CNG1hVTB6RGtZV0FUdGVqaUZ5RXBPdkRuUzVRa1BxclJjdEhaUklFNUQ2cVoxbHNUekZ1b09SNncteTgwODBHdnlRYmc4NUJpT1EtUVNFaWI0djl6TmpMMmJ2R1BZamRwZHlJOEpFWHpDYXVVMUxyeFl1UnhjTWMxemRuYlVWLVNyeXBMZS0zNWtEX3oyNGJoY2pXSERHeXcyR0E3RS1tMWhOT3lHbEcw?oc=5",
           "publishedAt": "2025-10-27T07:00:00.000Z",
           "source": "GlobalCapital",
-          "signals": [],
-          "relevanceScore": 0
-        },
-        {
-          "title": "Interest rate cases against Landsbankinn to Be concluded today - Iceland Monitor",
-          "link": "https://news.google.com/rss/articles/CBMipgFBVV95cUxNNjV4SU92SVY1bVBsS3dKR0I1bFpqNHNVcjdVRE5lYTM3LXVfXzZwWHh1UmpuQnMyWU9ZUmVOYTgxd0VqZVZnYjUtejBzSUlxR3lSTlZxN0ttMDZfeXJQOTgwazl6NkVtMDM4Ym8yUFdLVzk1enZfRG5leGh4ZkdIQzdTTDVoMDM1cGFNY1BPMjcxMmw2TzlWZjFIY0JYdFRnMm9Wa19n?oc=5",
-          "publishedAt": "2025-12-22T08:00:00.000Z",
-          "source": "Iceland Monitor",
           "signals": [],
           "relevanceScore": 0
         },
@@ -2367,31 +2360,29 @@ export const BANK_DATA = {
           "relevanceScore": 0
         },
         {
+          "title": "Interest rate cases against Landsbankinn to Be concluded today - Iceland Monitor",
+          "link": "https://news.google.com/rss/articles/CBMipgFBVV95cUxNNjV4SU92SVY1bVBsS3dKR0I1bFpqNHNVcjdVRE5lYTM3LXVfXzZwWHh1UmpuQnMyWU9ZUmVOYTgxd0VqZVZnYjUtejBzSUlxR3lSTlZxN0ttMDZfeXJQOTgwazl6NkVtMDM4Ym8yUFdLVzk1enZfRG5leGh4ZkdIQzdTTDVoMDM1cGFNY1BPMjcxMmw2TzlWZjFIY0JYdFRnMm9Wa19n?oc=5",
+          "publishedAt": "2025-12-22T08:00:00.000Z",
+          "source": "Iceland Monitor",
+          "signals": [],
+          "relevanceScore": 0
+        },
+        {
           "title": "Landsbankinn Selects Meniga to Bring Open Banking Capabilities to Iceland - Finovate",
           "link": "https://news.google.com/rss/articles/CBMimwFBVV95cUxNdXZmeFh2T0J6Q0F0Q1hZYkNSdTlPVy1yVGRGWkRuTThvRGlENlF0cTJGZGc4S2RsY1BfUXJOY1lOdXUybnFudHRiZUpvc21DZERlS3IwTjBCcHV3QW8zMjFRaHVEQkRKeUE0TkJnNWp2aUxJSXRnQWVQT0g5SVVOU2Z0eHhXUi1rM3F6N3o3Q2duSFJMM2lRWlFJZw?oc=5",
           "publishedAt": "2023-11-13T08:00:00.000Z",
           "source": "Finovate",
           "signals": [],
           "relevanceScore": 0
-        },
-        {
-          "title": "How did Iceland clean up its banks? - BBC",
-          "link": "https://news.google.com/rss/articles/CBMiVEFVX3lxTE5rMDFVa1NYaFo5RTFEOTdHZmNOTzhWTVRZZHgzN2J2bF9BSS01NllhdG04WGVwcFkxY3FubE9TZ3RWdGhOV2ZqRmdkOVdQN1dISWs2eQ?oc=5",
-          "publishedAt": "2016-02-10T08:00:00.000Z",
-          "source": "BBC",
-          "signals": [],
-          "relevanceScore": 0
         }
       ],
       "topSignals": [
-        "partnership",
-        "product",
         "acquisition",
         "regulation"
       ],
-      "signalCount": 4,
+      "signalCount": 2,
       "articleCount": 10,
-      "fetchedAt": "2026-04-08T23:39:28.855Z"
+      "fetchedAt": "2026-04-15T08:08:41.653Z"
     },
     "backbase_landing_zones": [
       {
@@ -2544,32 +2535,22 @@ export const BANK_DATA = {
           "relevanceScore": 2
         },
         {
-          "title": "Lunar bags €46m to fund Norwegian and Finnish expansion - FinTech Futures",
-          "link": "https://news.google.com/rss/articles/CBMikgFBVV95cUxPNTdMSUdsVkFMZFNOUE42QXVtSkZhbExfSmwwbS1la204ZEdHMTJ2NHpVU0V0SXR4UmZ2OVFsUnJmVGFKSks2WGF0Rk42S1B6ZFczRlhSS21rTzcwcjI3RDVMc1lGa29hSU1zbXdiLTBTWGxIMWl4M0htSUYyLXpKZ00xTEtadktkZmY0dlZ1aWsyUQ?oc=5",
-          "publishedAt": "2026-01-28T08:00:00.000Z",
-          "source": "FinTech Futures",
-          "signals": [
-            "investment"
-          ],
-          "relevanceScore": 1
-        },
-        {
-          "title": "Nordic challenger bank Lunar raises €46M, as looks to grow business users - Tech.eu",
-          "link": "https://news.google.com/rss/articles/CBMioAFBVV95cUxOSVV5Y0NPUEN0LXFOd09EVnpzaDhnQkZjWEZ1MXlqWFZUQk52THNRQ09qakhONEFEckd6OGtiYnJjRG1BNHpEbzVSenZzS0VVLW9TNXQzTGV0TzJTTmkzZkVhYy1PcVJuZlEySWtpaVI4VmpUSHVSZkZ5anRVMjg0VmN5U21BVW1nTU5vMmV6bjRHVzFnV1lfVzE4MVMtQWRT?oc=5",
-          "publishedAt": "2026-01-27T08:00:00.000Z",
-          "source": "Tech.eu",
-          "signals": [
-            "investment"
-          ],
-          "relevanceScore": 1
-        },
-        {
           "title": "Wise Platform partners with Lunar, marking expansion into the Nordics - Wise Newsroom",
           "link": "https://news.google.com/rss/articles/CBMirgFBVV95cUxQb0IyV3BiY29ZNm4xbGNCQ2dSb01yZjRzTGxiRTZrQXRRNmFNckFORlc2WFVGT1RtMHdfejdLYzV6dXliU3lCWWtWYWVDMEFFVFc3blJKZ2ltVVMzc3lCYTRHSWFYRTdxMmZOY0RhcHpueVR3SWRnaWdwQ3JyRFY4WHRJNjR2Q2pOYUp4WVR1SDVuMVBDMXltbzFnVlBaUnQtRUVkeUREQ3lEbmlpc0E?oc=5",
           "publishedAt": "2025-06-18T07:00:00.000Z",
           "source": "Wise Newsroom",
           "signals": [
             "partnership"
+          ],
+          "relevanceScore": 1
+        },
+        {
+          "title": "Lunar bags €46m to fund Norwegian and Finnish expansion - FinTech Futures",
+          "link": "https://news.google.com/rss/articles/CBMikgFBVV95cUxPNTdMSUdsVkFMZFNOUE42QXVtSkZhbExfSmwwbS1la204ZEdHMTJ2NHpVU0V0SXR4UmZ2OVFsUnJmVGFKSks2WGF0Rk42S1B6ZFczRlhSS21rTzcwcjI3RDVMc1lGa29hSU1zbXdiLTBTWGxIMWl4M0htSUYyLXpKZ00xTEtadktkZmY0dlZ1aWsyUQ?oc=5",
+          "publishedAt": "2026-01-28T08:00:00.000Z",
+          "source": "FinTech Futures",
+          "signals": [
+            "investment"
           ],
           "relevanceScore": 1
         },
@@ -2584,12 +2565,32 @@ export const BANK_DATA = {
           "relevanceScore": 1
         },
         {
-          "title": "Lunar, the Danish neobank last year valued at $2.2B, raises $38M to shoot for the profitability moon - TechCrunch",
-          "link": "https://news.google.com/rss/articles/CBMiywFBVV95cUxPbjNNY01mNzJJenBxTEpXWnNYdmxHLWRLQzNXRHN3RGtxMFVmWG5EeXF6OHZMbms2anhNTWpsbVR2RGRiYUlZWUtETmxRU2ozVDJPU2ppdHZYcm1kNXh6Wk1GN2ZXcDdrdDB4RUVqVFVnOTR1NXhEbzFaNjZCR29SdWxYc3EyZkdhclR6TUc4ZmhQcFJhQnJnREJ3ZW10ek50UG1OUzRYZEJyTXZVSTh1eVBneE1ZbkhWNUdJc3N0ZFBRbnI2TExfOFhtMA?oc=5",
-          "publishedAt": "2023-02-09T08:00:00.000Z",
-          "source": "TechCrunch",
+          "title": "Nordic challenger bank Lunar raises €46M, as looks to grow business users - Tech.eu",
+          "link": "https://news.google.com/rss/articles/CBMioAFBVV95cUxOSVV5Y0NPUEN0LXFOd09EVnpzaDhnQkZjWEZ1MXlqWFZUQk52THNRQ09qakhONEFEckd6OGtiYnJjRG1BNHpEbzVSenZzS0VVLW9TNXQzTGV0TzJTTmkzZkVhYy1PcVJuZlEySWtpaVI4VmpUSHVSZkZ5anRVMjg0VmN5U21BVW1nTU5vMmV6bjRHVzFnV1lfVzE4MVMtQWRT?oc=5",
+          "publishedAt": "2026-01-27T08:00:00.000Z",
+          "source": "Tech.eu",
           "signals": [
-            "financial"
+            "investment"
+          ],
+          "relevanceScore": 1
+        },
+        {
+          "title": "Four executives depart Nordic neobank Lunar amid C-suite shake-up - FinTech Futures",
+          "link": "https://news.google.com/rss/articles/CBMisgFBVV95cUxPbWlDR1NNdnhCcDdBSmRVYnNRRGlMaWd1ZXNHVWRic3FOZWNlT05NU2VheW5fakVHX0RDYkdEdHBnazhVSlNtLW5DY1ppZE0yQkZXMVhHZnJhTFo3bHN3RTV0WU9DeS1CVG9wSW9ZV2lwRGo5Vk1RWURFQ2JpSE93VTloNVdkMUZnUHM5ZGNGTHBMWUJUVEtlMnZLNUw1MVl3U1BnM253U1ZKUTFNb1psUWF3?oc=5",
+          "publishedAt": "2025-07-01T07:00:00.000Z",
+          "source": "FinTech Futures",
+          "signals": [
+            "leadership"
+          ],
+          "relevanceScore": 1
+        },
+        {
+          "title": "Challenger Bank Lunar Raises $25.7 Million - Finovate",
+          "link": "https://news.google.com/rss/articles/CBMicEFVX3lxTFBCSktoZ2ZKeXZXNFFWY1dUSjFuR3lKcTBwVnhTWkRZOXREQTktVzU2YXJNaWo0Y0FzUUpnTWFvaFlPbUlfTzNVTlZfdms4LW5JZHBoYkVNWFd1MTI3ZnhPVkpuX1FybjlYM2ZBTVI3WFc?oc=5",
+          "publishedAt": "2024-05-01T07:00:00.000Z",
+          "source": "Finovate",
+          "signals": [
+            "investment"
           ],
           "relevanceScore": 1
         },
@@ -2600,26 +2601,18 @@ export const BANK_DATA = {
           "source": "Finance Magnates",
           "signals": [],
           "relevanceScore": 0
-        },
-        {
-          "title": "Lunar Teams Up with Wolt on Subscription Benefit Expansion - The Fintech Times",
-          "link": "https://news.google.com/rss/articles/CBMikAFBVV95cUxNRkktNXdCU1ZRSHZ2WDNJaUM1U2RZREduQjlOUHphTXlvODZpSUY4T19nZzI0YTRkdWVWM1lzUzFYSjltN0NJMEloLXZBczNYZnYzdUt4VTUwTVBFaDYyakFrb2xSQmY0Z05TXzRvOV8yNkRPczhETVJNUWw1MkYyUGw3UWo1S3JHYWJhSFBoaHc?oc=5",
-          "publishedAt": "2026-02-20T08:00:00.000Z",
-          "source": "The Fintech Times",
-          "signals": [],
-          "relevanceScore": 0
         }
       ],
       "topSignals": [
         "regulation",
         "cloud",
-        "investment",
         "partnership",
-        "financial"
+        "investment",
+        "leadership"
       ],
       "signalCount": 5,
       "articleCount": 10,
-      "fetchedAt": "2026-04-08T23:39:15.243Z"
+      "fetchedAt": "2026-04-15T08:08:28.126Z"
     },
     "backbase_landing_zones": [
       {
@@ -2779,7 +2772,7 @@ export const BANK_DATA = {
         {
           "title": "Sweden's Länsförsäkringar Bank acquires Savr to enhance digital investment offerings - FinTech Futures",
           "link": "https://news.google.com/rss/articles/CBMipwFBVV95cUxNNUplTWdDTDI2ZWJmZkVKeHFkM3F4bWI3NXZqR2VWQ1I3eVA5UlZTaE1LRW9MR29WR1prOVlQOFZnRWRscEFTZUFVY0JjcWc4d2ZnN1ljOXdOMW9sZkVzOEhNQ3VUSHZ4YlBmS0U2YjFrZDVuLTdVTkptQmxtcU9DTi1aczNRY01vSjcxanY5MklLVUZtR1o5MVNYRmlLMnRHTVgzeUxvcw?oc=5",
-          "publishedAt": "2025-07-01T10:38:12.000Z",
+          "publishedAt": "2025-07-01T07:00:00.000Z",
           "source": "FinTech Futures",
           "signals": [
             "investment",
@@ -2808,10 +2801,10 @@ export const BANK_DATA = {
           "relevanceScore": 1
         },
         {
-          "title": "Länsförsäkringar Bank Announces Agreement to Acquire SAVR in Landmark Fintech Deal - FF News | Fintech Finance",
+          "title": "Länsförsäkringar Bank Announces Agreement to Acquire SAVR in Landmark Fintech Deal - Fintech Finance",
           "link": "https://news.google.com/rss/articles/CBMiekFVX3lxTE5QLUoxdFVReEVFUzFtTGk2SUV4S0lnYTdtaHdJZ2dZZVJRZGhNendsSGlSRS0yOGhsdnBlYzNNeEJrSVp3RmZwMWo3WkZhckVDTU51ZkgwMnZwYmNHcC1WWEFpdUlhQk1iRl9JN1lqMnhfY2t4OENKQ1NR?oc=5",
           "publishedAt": "2025-06-30T07:00:00.000Z",
-          "source": "FF News | Fintech Finance",
+          "source": "Fintech Finance",
           "signals": [
             "acquisition"
           ],
@@ -2828,14 +2821,6 @@ export const BANK_DATA = {
           "relevanceScore": 1
         },
         {
-          "title": "Large Swedish banks show resilience in the EBA’s stress test - Finansinspektionen",
-          "link": "https://news.google.com/rss/articles/CBMiowFBVV95cUxPX3o0Z1pxbW5tTHAzT2hBRTZyNXI1V1Y5V21mWGhBWGxBOHVhTDQxejlfam5kMnNEZ1FxUEx4bzFaRlgwbnVaaGVZdXZDWVl6RC12SlpER2pPZVpXR012cjBra01SMjN4ZUd5ZkJTRnNhbV9wUWJ5YVVqaWx5c1R3S0ZMa3RQdkxqYmZjRXFNcm5RckYzTnM2QkpFYk5PZTQ2dE9V?oc=5",
-          "publishedAt": "2025-08-04T07:00:00.000Z",
-          "source": "Finansinspektionen",
-          "signals": [],
-          "relevanceScore": 0
-        },
-        {
           "title": "Länsförsäkringar Bank Adopts TCS BaNCS as its New Digital Core - Tata Consultancy Services",
           "link": "https://news.google.com/rss/articles/CBMirgFBVV95cUxPM05XeWhDdjhLUGtHeTh4Wi1Ca0pneGVHSWZDSUU0NS1Dd1VZdzk3WUR2c1ZIRW9qS2QyN3BPVGR0ZDNLbFNReTc1bC1VRzRhNDVERTdUZHF0eXdMbTMydDhpejZVX1VCODI2RHhvRmZid0tMd2JLQ2lxTG1uWGJXVU53UmhZZlRCbVVEV2VRVHctMmpJQk1oY18wd1FBVFh4b1VaLTRMVUh1ZjFWSnc?oc=5",
           "publishedAt": "2023-01-17T14:32:02.000Z",
@@ -2850,6 +2835,14 @@ export const BANK_DATA = {
           "source": "IBM",
           "signals": [],
           "relevanceScore": 0
+        },
+        {
+          "title": "Large Swedish banks show resilience in the EBA’s stress test - Finansinspektionen",
+          "link": "https://news.google.com/rss/articles/CBMiowFBVV95cUxPX3o0Z1pxbW5tTHAzT2hBRTZyNXI1V1Y5V21mWGhBWGxBOHVhTDQxejlfam5kMnNEZ1FxUEx4bzFaRlgwbnVaaGVZdXZDWVl6RC12SlpER2pPZVpXR012cjBra01SMjN4ZUd5ZkJTRnNhbV9wUWJ5YVVqaWx5c1R3S0ZMa3RQdkxqYmZjRXFNcm5RckYzTnM2QkpFYk5PZTQ2dE9V?oc=5",
+          "publishedAt": "2025-08-04T07:00:00.000Z",
+          "source": "Finansinspektionen",
+          "signals": [],
+          "relevanceScore": 0
         }
       ],
       "topSignals": [
@@ -2859,7 +2852,7 @@ export const BANK_DATA = {
       ],
       "signalCount": 3,
       "articleCount": 10,
-      "fetchedAt": "2026-04-08T23:38:50.309Z"
+      "fetchedAt": "2026-04-15T08:08:02.505Z"
     },
     "backbase_landing_zones": [
       {
@@ -3666,27 +3659,16 @@ export const BANK_DATA = {
     "live_stock": {
       "ticker": "NDA-FI.HE",
       "currency": "EUR",
-      "price": 15.725,
+      "price": 16.115,
       "dayChange": null,
       "dayChangePercent": null,
       "fiftyTwoWeekHigh": 17.11,
-      "fiftyTwoWeekLow": 9.992,
+      "fiftyTwoWeekLow": 11.105,
       "exchange": "HEL",
-      "fetchedAt": "2026-04-08T23:37:50.607Z"
+      "fetchedAt": "2026-04-15T08:07:04.525Z"
     },
     "live_news": {
       "articles": [
-        {
-          "title": "Earnings call transcript: Nordea Q4 2025 sees steady growth and innovation - Investing.com",
-          "link": "https://news.google.com/rss/articles/CBMiyAFBVV95cUxQVFIxN0tVdnJkMWMySlJ2TXBmSFJpU0Q0b2tnVkZrWTZZNTZPS0VBNUw0SkdsbUZQS19LOU81VEpiOGFqSWY3c0JMR1ZoOXhJekgteVlJVmxGMTcxQzZPQ0l3bmxxczk1UERfemtGR2pGMlhMd3k1TGx2QXN3NjRKTmlCc2FqSWNOTDdsR1gxWlhUclpBMXVKcWRDaEJhVzdnZkxKcy1PdF81Wmc1Zkd3bDNKRzNXUy1uaWdzSEhYc29sRV9PWVoyZA?oc=5",
-          "publishedAt": "2026-01-29T08:00:00.000Z",
-          "source": "Investing.com",
-          "signals": [
-            "investment",
-            "financial"
-          ],
-          "relevanceScore": 2
-        },
         {
           "title": "Nordea taps Mynt to launch new business credit card and spend management solution in the Nordics - FinTech Futures",
           "link": "https://news.google.com/rss/articles/CBMid0FVX3lxTFBQMkFNUUVoWXhJMVYwZFRoWS1tZFNxaTJOd0hHRFNmbEhlZmpmbk1OeXZXS0RiNFBVVUZ4NXlGcWNiaVJXenpaM243T1QwYmVuaU53U0c3Z1VUbEdGcW11QnM1cVp5RWJyV1ItZXl6eU84M0VvUVhj?oc=5",
@@ -3741,6 +3723,14 @@ export const BANK_DATA = {
           "relevanceScore": 0
         },
         {
+          "title": "Number of household customers of Nordea Bank Abp in 2019, by country - Statista",
+          "link": "https://news.google.com/rss/articles/CBMipwFBVV95cUxQYUdmYmVidFlfa0QtclJWbC1xSGFOS0VSRTYwQXhqVU1rTDVDNG1kR016Ti1kUFF6elJZUVMtanpaQ3RBendSR01DZzZEMWJ0c1lWS2JtM2NjNmYtbEtXaXNzdkpCMUM4TmcwakZKNUFMMjJ3cExLZks4Vl96OXp4bFRVT2EwTXctTWdGQWc1SEF0ckNHT3ZjeGp6OVBiWWlkYVhiWERKMA?oc=5",
+          "publishedAt": "2026-03-03T08:00:00.000Z",
+          "source": "Statista",
+          "signals": [],
+          "relevanceScore": 0
+        },
+        {
           "title": "Nordea prices tightest euro tier two trade for four years - GlobalCapital",
           "link": "https://news.google.com/rss/articles/CBMi4AFBVV95cUxNMWhELWs5LU8tdXlLbmtVM2M4RXhQc3lEemlQY1ZrQjlEYmVPS09lZHl0T1ppMjNPamdBd21PekMtMEV6TTEwMm43LUJGb0NuSjZNZ21JSko0M0ZYNGM0dkFjTzhzMU14U0JJNEd4RHVkRDBTX1pNOFVzSl9oTF83VHRFbGwtTTUwMFJEZ1RFUko2QUQwM1JhR3M2a042aGRUaEdlSEFDQ01lVW9YSlVLX1RnbG5FT291a0pFcFhaQU5VS2I4emhLWTRDN1VJYmZFU3BZMFd0LU5leVFWMHZMZg?oc=5",
           "publishedAt": "2025-11-13T08:00:00.000Z",
@@ -3751,12 +3741,11 @@ export const BANK_DATA = {
       ],
       "topSignals": [
         "investment",
-        "financial",
         "product"
       ],
-      "signalCount": 3,
+      "signalCount": 2,
       "articleCount": 10,
-      "fetchedAt": "2026-04-08T23:38:39.888Z"
+      "fetchedAt": "2026-04-15T08:07:52.299Z"
     },
     "operational_profile": {
       "total_assets": "€570B",
@@ -3886,6 +3875,16 @@ export const BANK_DATA = {
           "relevanceScore": 1
         },
         {
+          "title": "Nykredit Cuts Danish Growth Forecast After Novo Profit Warning - Bloomberg.com",
+          "link": "https://news.google.com/rss/articles/CBMiswFBVV95cUxNLVVrODRmOGtJUXZQb0otalE2aWFQZ1ZzMk9uc0U0b2Z2ZmJaMVlMS3dzcW9nQklSLVdtSVd1VlJmanYya3pkV1hIM3lNNlB1dk1QOGtlMUxoU1FXQWFlZE1MT3JxaWNXU1cwcjJRX1NfM1VTMHByLXIzNjJ5ekRiMWdYazlfeUkyUVVBbElwX3lYYlBJYnNYRW8yRV9GVDNQWlB3akNSR09sWVJxR0NUTEgtbw?oc=5",
+          "publishedAt": "2025-08-05T07:00:00.000Z",
+          "source": "Bloomberg.com",
+          "signals": [
+            "financial"
+          ],
+          "relevanceScore": 1
+        },
+        {
           "title": "Denmark’s Nykredit in $3.5bn deal for Spar Nord Bank; AllianceBernstein files suit over $17bn Credit Suisse debt wipeout - TheBanker.com",
           "link": "https://news.google.com/rss/articles/CBMiekFVX3lxTE9kTnV5Ync5bGhMNkdLTldRSlBMUFU3MWZuX2V1SVEyOG13d2s5UEdtcW5pYjhjcnVMR3hKREs1cHNCbHNyMFhzUUotX01QenQwMEVzUzh4WmxkXzdTem5INTVmWmJFa3VfLWdBU1RLdDYtNWZScnFmNEZn?oc=5",
           "publishedAt": "2024-12-10T08:00:00.000Z",
@@ -3896,36 +3895,26 @@ export const BANK_DATA = {
           "relevanceScore": 1
         },
         {
-          "title": "Nykredit Realkredit to acquire Spar Nord Bank for $3.5bn - Retail Banker International",
-          "link": "https://news.google.com/rss/articles/CBMiigFBVV95cUxPMk1LTUFPRjRmaU5jWXRMY3ZiTzBoZ0NOdXhEdEpBZlN0N0JTcWFzZlNnVmFHb3JmZTlQTk1Gb081VGt0T0lrUERwUlBabnY0Yl9heXl6eE51TEJtT2UxRnpOLVJtTi1TZHUxYnUtQ1c5aEVkX3gzR2pFeGRuUWNuejVIVW1fSmpzWEE?oc=5",
-          "publishedAt": "2024-12-11T08:00:00.000Z",
-          "source": "Retail Banker International",
-          "signals": [
-            "acquisition"
-          ],
-          "relevanceScore": 1
-        },
-        {
-          "title": "Hot AT1 Market Hits New Frontier With Tightest-Ever Euro Spread - Bloomberg",
+          "title": "Hot AT1 Market Hits New Frontier With Tightest-Ever Euro Spread - Bloomberg.com",
           "link": "https://news.google.com/rss/articles/CBMitAFBVV95cUxQU2lWRXE0T2lHSnA2WWRYSHdycUNjVm1XSXJSazBLNDd4MUN0YnhRdktKSlcwekxDTDEyM0F3VExuOXNBNmJwcW4wbUxXN3kzeFBJME11dE9TWTlWX0hjVXpGcU9RTS1faWY4NHBOQ2Z1VEx0VVBldTBxOHIyOVZJRFRKSDFOdGxpYzJrQ0J6Sk1WM0NLaGJRTGpRRDV1Rno1TWd3SmdUQ2lSM1VIRzZfLS1yVXU?oc=5",
           "publishedAt": "2026-02-18T08:00:00.000Z",
-          "source": "Bloomberg",
+          "source": "Bloomberg.com",
           "signals": [],
           "relevanceScore": 0
         },
         {
-          "title": "Nykredit breaks all-time euro AT1 record - GlobalCapital",
-          "link": "https://news.google.com/rss/articles/CBMiwAFBVV95cUxQQU1jVFk0ak15MFJPWWxiMHNJS2VSZVFfbUFEQW5tYTVVdlp0R0NVd21YLWFfQ0dablZ2c3JuVzR3Z1hib3NLeVgzR0pQcVNKbmtSNDctRFZFOEZmSU9wMHF1RnU0dHZVMTRCVlJ1d2JuVnpVUWdaaWpwQkJFWG5xSDFxSEdTUUJITVhodTZPU0U0SkRwalhIaUVuTElROURtNDRQOGx3VTFnVnFMQkVmaEJPbFpaU0kxWFNNcTRYbW4?oc=5",
-          "publishedAt": "2026-02-17T08:00:00.000Z",
+          "title": "Nykredit increases lending for energy supply: \"There are plenty of good projects in Denmark\" - Energy Watch",
+          "link": "https://news.google.com/rss/articles/CBMiVkFVX3lxTFAxTUYwWm5vd3pEM3dHYkJHc3NldTZ1amIxeE9pQTZHUGFyTmlrQVBCRGI2LWJVeHJPT3Z6WXlWRUZxQWZ0VXUwTjNyY3FoZzFidG5jRUR3?oc=5",
+          "publishedAt": "2025-09-25T07:00:00.000Z",
+          "source": "Energy Watch",
+          "signals": [],
+          "relevanceScore": 0
+        },
+        {
+          "title": "Nykredit joins capital deals fray with euro market's sixth tier two of the week - GlobalCapital",
+          "link": "https://news.google.com/rss/articles/CBMi8wFBVV95cUxNQ2JSNXpwemg1RFdrS2NYVnVzSk1kQmdyTGZpMmJPLXd3a0FPV1YzdVhIYWxrNGdGbDR5LVc1dE92VkhFZHI5RmlpdDRzZldIc1dTamUxZW9VOTgtc3N3YUhkdlExQkNXcks1cmtGb09oalBvbTQ4VjVobVA1RWotWDh3RTBCd1Z4OUh3ZHlWTFdyQVFLdC05RGhSMnJnSkZBOVNXRUdTZmZDQ0ZjREpNRm5DdEZ6MlZyd1hPU0tKOC1VTWhvemV4Y3BFM0U2aEhvRzNyUm9QMFdGc2hRQ3R5OEwtOXZ3TVliZ2Q2Tmt0ajhSVUE?oc=5",
+          "publishedAt": "2026-01-15T08:00:00.000Z",
           "source": "GlobalCapital",
-          "signals": [],
-          "relevanceScore": 0
-        },
-        {
-          "title": "Convening of extraordinary general meeting of Nykredit Bank A/S - The Manila Times",
-          "link": "https://news.google.com/rss/articles/CBMi0gFBVV95cUxOcnJTb2NJOUx5ZHFWZUMwMm5pS2F4OGFyWTRGNU93bGkxZ1BRVFV4SFF0Q3J2ZnF1Zjh6QjA2VzgxSVdXZDk3aHNqb2p5LTh6MzVtSjhMenlKdndrTHgxamxfZDBIbVdPVFN0ZlFrYTBGeXF3UDFmMnlSVzRtWnB3eTdTUE42U0VvdW5Ya3hjY0lnWEdZYUpSSnhfYk42Q05JSnR2ZURqU004d283QUx2UVJBVGVpS011WkZ3YmtXcGhXdTQ0MHJ3NWUzVGU5Rk1UZ0HSAdcBQVVfeXFMTWVOOWdnd2MyRWpCYklvVkhaeEdjSGZyUmwyaHBrU3cyWURhSzJMRVBkU3VHZUM3cEo5U01SdWFFN216OWlzQWY2NFJGTmY4Z1lERU84SGVIUGFNWG5PVXo5OXBlTWVncW5XZUhTQTdkZlg3bHpfYk10S3E5MmJyYmUyTzJoR2VhM3ZZWmxLV3d4eVJ1UmhfMVhVTENLLWJlaGh6SENPdWZKUHVsRURVSEoxWmhWWVQ5NXdocUtoenFwWXZ6YVdwbS1kNGlQR2pETXZNYWJzWWc?oc=5",
-          "publishedAt": "2026-03-17T07:00:00.000Z",
-          "source": "The Manila Times",
           "signals": [],
           "relevanceScore": 0
         }
@@ -3933,11 +3922,12 @@ export const BANK_DATA = {
       "topSignals": [
         "acquisition",
         "investment",
+        "financial",
         "partnership"
       ],
-      "signalCount": 3,
+      "signalCount": 4,
       "articleCount": 10,
-      "fetchedAt": "2026-04-08T23:39:11.314Z"
+      "fetchedAt": "2026-04-15T08:08:24.137Z"
     },
     "backbase_landing_zones": [
       {
@@ -4236,6 +4226,16 @@ export const BANK_DATA = {
           "relevanceScore": 1
         },
         {
+          "title": "OP Financial Group makes upward revision of its earnings outlook for 2025 - GlobeNewswire",
+          "link": "https://news.google.com/rss/articles/CBMi3gFBVV95cUxQOW82OUlTQlhmbUlSREU2OThHWFRXNVhtTFZrcExVbkhrUDNFVlFvRXZ4MjVLc3I2QV9ubkpablpVUUVBVXR6a25hMGlwbWxZZHhyVDZPaVE0c0ZGRk9Eb0pnVXZ4dHl5cWpSdXJKWE5IdEp6eHhhRS1QQTVhdnhWa3Ixc2tBSmY5RnVtbTNNQWY2NUc3V2F1akhBNHU4SFZlU3lxSVd4MEItbW1sYnZGQ2VsT29DeU1vWGNLX2V3UlI0ZEhNT1k3eGRSNXBjS2U0cVhnRXBSQ1FJN1pCMnc?oc=5",
+          "publishedAt": "2025-10-13T07:00:00.000Z",
+          "source": "GlobeNewswire",
+          "signals": [
+            "financial"
+          ],
+          "relevanceScore": 1
+        },
+        {
           "title": "Worldline and OP Financial Group strengthen partnership with a new 12-year agreement - Worldline",
           "link": "https://news.google.com/rss/articles/CBMi8AFBVV95cUxOZTRkTzFmRW5oU2ZYLVlMTkNJR1lMUWNldjdlV3F4Y1B4MlBDZHpPWG5ueWE2ODdkR09ma1VHckh0dXdDRUZDcFZ6SDRYZEo2ZFV1ZmpGaDJkQndoQjUxU200LTFPMVVnNXdodWdkdUFjZTFUWF93Tm5EdE5QNE5hNWRxZUJwbjZXX2NJQ2VibkZfMVhJalg0elZGU2xiV2FqQVp3eHJ1VGx6Q2dfcjlaVXk2M0pSOVU5VVZoYWVrd3o1VTg1eXFRSlI1NGdOSU5zbm40dVlfZWpjOUw2OEh0d1F3c00tUlUyYTdxZVRhUjI?oc=5",
           "publishedAt": "2025-02-18T08:00:00.000Z",
@@ -4254,6 +4254,14 @@ export const BANK_DATA = {
           "relevanceScore": 0
         },
         {
+          "title": "OP Pohjola’s, OP Corporate Bank plc’s and OP Mortgage Bank’s financial calendar for 2026 - Yahoo Finance",
+          "link": "https://news.google.com/rss/articles/CBMif0FVX3lxTE5RVkdrS3ZfTHp5X09yeG13ZUJHT2ctRVY4SGYxWWtuVDc0Y1VZNE5JdVVTamd6Ry04ZjBOUXpGTGlfT25PQjdMMkN1ajJXRFBiVzlEeG9oLUVEZjczWGxWelVXa2UzUl9VOGpvM0lqQzVyNE9VVmxHTlV2RDBseVU?oc=5",
+          "publishedAt": "2025-10-27T07:00:00.000Z",
+          "source": "Yahoo Finance",
+          "signals": [],
+          "relevanceScore": 0
+        },
+        {
           "title": "OP Financial Group’s Half-year Financial Report 1 January–30 June 2025: Strong result despite uncertain business environment - Yahoo Finance",
           "link": "https://news.google.com/rss/articles/CBMihgFBVV95cUxPcm9Balhud3QwY05UbmhiWkxYR0hHWk5ENmFZclAyakU0QWh3YV9sTHptQUo0M2dpUy1pZ1ZnTUFlakViQ2ZFOUx5aVp1TWxSVVFSYnJZR0x4d3BTaHF3dC00NEdnbU1pN2lDbnlVdmhNMjM2TzY1T0ZSaFJ4XzBJY3N3V2syUQ?oc=5",
           "publishedAt": "2025-07-29T07:00:00.000Z",
@@ -4262,26 +4270,10 @@ export const BANK_DATA = {
           "relevanceScore": 0
         },
         {
-          "title": "Finland’s OP changes name and passes 100bn AUM mark - AMWatch",
-          "link": "https://news.google.com/rss/articles/CBMib0FVX3lxTE9pTDNTQ2hZdzY2NktxOGNkUjNfWmQ5cmYwMlBMWEVjV2JyWFFsVndhMjV2Z2EzeGxOVVVqZXpuOXNtWURZRUJIVk1POXFXTGpNUlFlNzdBX1JWNFIyWWczRk1WdV84OWltMm5ad1VYYw?oc=5",
-          "publishedAt": "2025-10-29T07:00:00.000Z",
-          "source": "AMWatch",
-          "signals": [],
-          "relevanceScore": 0
-        },
-        {
           "title": "OP Financial expands tie-up with Accenture to insurance business - Life Insurance International",
           "link": "https://news.google.com/rss/articles/CBMilAFBVV95cUxQUGNWQ0JqVU9SLS1jREU3VVF2NWg1Z184bGlCajQxeTRKaVdLcTh5ZnNSblFtS2VZd0NmeHNJUGJBWks5S0NnRTNxSmFRZ1RTQ1A0MmY0ZFNCY2djdTgySW53d2tFS2F5VVNEUVdQY3FNY2Rfbk54M3dJWTAwLTVVNHlJejNjelpoRUhDMXdZMkVKaWJa?oc=5",
           "publishedAt": "2025-05-22T07:00:00.000Z",
           "source": "Life Insurance International",
-          "signals": [],
-          "relevanceScore": 0
-        },
-        {
-          "title": "OP Financial Group is now OP Pohjola - OP",
-          "link": "https://news.google.com/rss/articles/CBMiggFBVV95cUxNbWxZOFNXeHJWaVRSOTNMbWpOWVhHQ0I4UVFqaHk1cTJoYU8zQ0VQQ2lMbGEwQjBKSTNZbVNQdFZwQTBycFZ3NkdWbVBBc2tHN1FjN1B4U1ppWkxibGNzczdWcGJhZEhHZWp0b1A1cWdOdU82US1tOTZxM3Vyd1cydGd3?oc=5",
-          "publishedAt": "2025-10-28T07:00:00.000Z",
-          "source": "OP",
           "signals": [],
           "relevanceScore": 0
         },
@@ -4295,11 +4287,12 @@ export const BANK_DATA = {
         }
       ],
       "topSignals": [
-        "partnership"
+        "partnership",
+        "financial"
       ],
-      "signalCount": 1,
+      "signalCount": 2,
       "articleCount": 10,
-      "fetchedAt": "2026-04-08T23:39:22.986Z"
+      "fetchedAt": "2026-04-15T08:08:35.876Z"
     }
   },
   "POP Bank Group_Finland": {
@@ -4544,40 +4537,36 @@ export const BANK_DATA = {
           "relevanceScore": 2
         },
         {
-          "title": "Finland’s S-Pankki consolidates SP offering through acquisition - SRP Structured Products",
-          "link": "https://news.google.com/rss/articles/CBMiugFBVV95cUxPb0tvSW9vV3ZZdTQ0MWRqRlctRkpXM2g2T1BBWVlkQ0k2a0RHQzNscGNjbkwxRkdjR3ktSUJTeW1mdmVBcU5obzg4c2xpdHI4MmlxNnlzY1BkYzBlRXRRNjZOZG1OSUh2dFVxLWI2R0NlaW1jV0RTeEcydkJ6bzdYaWZJVVZIdWgyaXdGUmVZX0FtUGpiY0ZuUVVuVC05dUVMYmpKYVh5TFJQYTdpVXlxZzh1c29lZ2NGQkE?oc=5",
-          "publishedAt": "2026-03-27T06:54:29.000Z",
-          "source": "SRP Structured Products",
-          "signals": [
-            "acquisition"
-          ],
-          "relevanceScore": 1
-        },
-        {
-          "title": "Finland's S-Bank reports steady growth of AUM and fund investors - AMWatch",
-          "link": "https://news.google.com/rss/articles/CBMib0FVX3lxTE9oaXVmWEpYNTAxaW5lb1dVdHFTSGp6N0FYMXE5cEZRZ1hhMWRlRDlaZm9sTUFwMUxrR1RNVEUwanZUNFZZeFptNmtaT1ZRdW9fOVlfMzZIWS1OaHJNdVJlcFNHc0dGUndmTmNlcXVfSQ?oc=5",
-          "publishedAt": "2026-03-25T10:30:00.000Z",
-          "source": "AMWatch",
-          "signals": [
-            "investment"
-          ],
-          "relevanceScore": 1
-        },
-        {
-          "title": "Inside information: Reprimand and administrative fine of EUR 1.8 million to S-Bank from the Data Protection Authority - STT Info",
-          "link": "https://news.google.com/rss/articles/CBMifEFVX3lxTFBScWhlV3VfVlZXd2lSVW5sSl9ZbnVRREpUZDhLYkNpVlBHdlBhM0l6UnIyMEZyQ3JoRjgyYTJULWx2VElLSDB1amN5d3dsU3RSQWNKY2FORnU1NG5TeWxacF9YUjhhYkg1aVU5ZFU5Wll1RXVhaVhicTdzbDQ?oc=5",
+          "title": "S-Bank fined for S-mobiili data security vulnerability - Valtioneuvosto",
+          "link": "https://news.google.com/rss/articles/CBMimAFBVV95cUxQbU11M182WEJkajVnNnVBQ0s0MmRmYlNMVXhVZzhncG1PWlBBQzgwZmpjV29LbVo2eWdGNjF3X1FBMG5MOC1YTjVvY25VelBQb1VfNnZxRkhHeUdFZVltd29NeUZvM0ZvU2NHcEM0QmdCaTR2Uzk0b3ZyZzJhLUNIMlctN3J1TWFsdUVlZldPdE1yQXpfbTZibA?oc=5",
           "publishedAt": "2025-09-10T07:00:00.000Z",
-          "source": "STT Info",
+          "source": "Valtioneuvosto",
           "signals": [
             "regulation"
           ],
           "relevanceScore": 1
         },
         {
-          "title": "S-Bank takes over Handelsbanken's Finnish small cap fund and its portfolio managers - AMWatch",
-          "link": "https://news.google.com/rss/articles/CBMib0FVX3lxTE5ka01zbGZvWXBUVlFmV3QyY3lWcUZSc2dZbXdGZ2s0eEI1SlZYYVVXamdvZC00RjJwem5nTGZjTG9FSHloejJFVF8zVWhlYjk3R29sOEVaQktuekd6YU1odXlPdGFLS0dpU3VDNFdLNA?oc=5",
-          "publishedAt": "2025-08-05T07:00:00.000Z",
+          "title": "Finland’s S-Bank taps Worldline for card fraud management solution - FinTech Futures",
+          "link": "https://news.google.com/rss/articles/CBMirgFBVV95cUxQV0JXUDdxYTlxc0xOa0doZDJUNzB4Z2dtTVM4Xy1xZFBwWkJHNGZrWjlTa0JRMUs1ZWk1S2x0dm5kaXhJcUZwMHZKYjJObjMySEtNaXM5WlJsdmV2eGtKWWU5RTNJcDlQR05HR0ZkRFU0S2VGZkVyaVdETUNNc1Ryd3YtOEFYM2N2RVprSld5Y3hVa2JzNXJyVEpXWkh3bjNCeE81eF9OaUpaYV9oa0E?oc=5",
+          "publishedAt": "2025-06-21T23:36:24.000Z",
+          "source": "FinTech Futures",
+          "signals": [],
+          "relevanceScore": 0
+        },
+        {
+          "title": "S-Bank poaches portfolio managers from competitor and revamps equity team - AMWatch",
+          "link": "https://news.google.com/rss/articles/CBMiY0FVX3lxTE1xd19FYzJGTzdnbWRuZFExTU5lUXN2WnNtR0tNOXB3cTFtYW9naHl4dTJocFRtZ1F2dkxfREZMbmdzaXN0VE9iZjU3WTczMDZsVHA2bGxMemRSSHlYVWpLeHE5QQ?oc=5",
+          "publishedAt": "2025-05-15T07:00:00.000Z",
           "source": "AMWatch",
+          "signals": [],
+          "relevanceScore": 0
+        },
+        {
+          "title": "S-Bank Plc’s Financial Statements Bulletin 1 January–31 December 2025 - STT Info",
+          "link": "https://news.google.com/rss/articles/CBMifEFVX3lxTE5vLU5LbU5wQ3ZpLVMwMVZxRzd4TzZyaHR2WV9VcGlIMTRtNG9hT0pfTTl0OERTd1A5VWdwbDJkQmdKeXhTOUtmUEkyT1JXeldIeWhwaDBqSjE5Um55RHVPNWtzQlhONlFRem9NenRBVk14bjBUR0J2b0EzR1A?oc=5",
+          "publishedAt": "2026-02-05T08:00:00.000Z",
+          "source": "STT Info",
           "signals": [],
           "relevanceScore": 0
         },
@@ -4592,12 +4581,11 @@ export const BANK_DATA = {
       ],
       "topSignals": [
         "investment",
-        "regulation",
-        "acquisition"
+        "regulation"
       ],
-      "signalCount": 3,
+      "signalCount": 2,
       "articleCount": 10,
-      "fetchedAt": "2026-04-08T23:39:27.001Z"
+      "fetchedAt": "2026-04-15T08:08:39.696Z"
     },
     "backbase_landing_zones": [
       {
@@ -4743,15 +4731,25 @@ export const BANK_DATA = {
     "live_news": {
       "articles": [
         {
-          "title": "Cloud adoption builds essential agility into SBAB's banking model - diginomica",
+          "title": "Cloud adoption builds essential agility into SBAB's banking model - Diginomica",
           "link": "https://news.google.com/rss/articles/CBMidEFVX3lxTE9iWWF1cThVQzBFRE15NlBHdmJ4aldoMThWOGlWRG14R2pESHRUOHJvMEJZYlZwcTBiRlBWX05CX1NZNUJHZDlaaFpORWYwR2o1SW05M0ZWOFR6ZWJTbk14bmVfZldnYm9reGhJQVRPMGtGNUNv0gF6QVVfeXFMTlNoVTFkbC1adnF2OXEwNzBmXzVHdGlwWkRkbG9YeUFLWG5NdE04MHB4SmZnOVNrcWVfV3lGMTloWC1rNUFNTVV5ZXRNT244M1lGX1NXZ2V3bXVTZHBlUFpqNnk2NG8zZnNjR3hxTy1ZVVBpbExNOHZRQUE?oc=5",
           "publishedAt": "2018-11-27T08:00:00.000Z",
-          "source": "diginomica",
+          "source": "Diginomica",
           "signals": [
             "regulation",
             "cloud"
           ],
           "relevanceScore": 2
+        },
+        {
+          "title": "Swedish state-owned bank SBAB planning inaugural real estate-linked green bond - Responsible Investor",
+          "link": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxOTFJkVnVLSF82VkMtRnZGeUo4cmszQkxEZlVfNGQxUEo3MHJwdzIzUGFmMFEtWFpFbFVxS2VtMG5wTUs5MEpnZEgtaFlPX0NldnVOVGJVZkxLNTJPOWtYOTlscWdKZGQ0d1pyUHkxYUk5NzQ5bVRTTmNENENoUGtDcUdWa2tNdDllU25vNU94TlladWhiYjdJb2NtQU1sdXVpRGE4R01mcC0tZw?oc=5",
+          "publishedAt": "2016-06-03T07:00:00.000Z",
+          "source": "Responsible Investor",
+          "signals": [
+            "investment"
+          ],
+          "relevanceScore": 1
         },
         {
           "title": "Carl-Viggo Östlund, CEO SBAB Bank - Cision News",
@@ -4772,18 +4770,18 @@ export const BANK_DATA = {
           "relevanceScore": 0
         },
         {
-          "title": "Swedish housing market rout persists, with prices down 17 percent from peak - Taipei Times",
-          "link": "https://news.google.com/rss/articles/CBMidkFVX3lxTE93X0V5ZWhUclNxOGdZa05PVzNVMGpjcVVRVHRvNVg1dnRiVTI0ek5wVGRLb0ZfYXc0TW1xM0hiNEJjNHp1WEFSWnB1Zlh0S2VRRzhia2g2TzVfTWFKSWM5MUl6Rm5vRVRtUWs2RFBtZnlTS1VRN2c?oc=5",
-          "publishedAt": "2023-01-03T08:00:00.000Z",
-          "source": "Taipei Times",
+          "title": "Nordic duo ride thawing market sentiment to land senior bullets - GlobalCapital",
+          "link": "https://news.google.com/rss/articles/CBMi1gFBVV95cUxQRGloX01BR1BVcEhCQ3NUdV8xdm43UFVkUHNMSWhHcmc1VmFnUHZ0SUhYSjViTlp1cjVqc3pfSmFaV29hcHpVeEhGczhuVFlKMUp4b2FLWmczWjVfci1MWEJVaFBvOFdJSnB2Rl9ael95MFpSWXlfMDc3aWFLYmJjQ21ubE95STZNbjdLMVJRV184aTdjbjI5R0JjOEdhVkdWZXUxeTkwQXZNNnM4ZmRkRHFxOXBiMnRsR3FMU0pWYl90cUh2cUxwUWhlSTRUUWdNNGoxTmtR?oc=5",
+          "publishedAt": "2025-10-16T07:00:00.000Z",
+          "source": "GlobalCapital",
           "signals": [],
           "relevanceScore": 0
         },
         {
-          "title": "Hemnet hits back at Booli’s marketing claims - AIM Group",
-          "link": "https://news.google.com/rss/articles/CBMiggFBVV95cUxPd0lSUWV2Y0trUkxvd1NRaGIwM0kzTXo1aW9TTHFVSjQ0RE1ZZ1Z5bGJDOTBta3NUTUwyMHViMEJXNjlQVWdUc0xkUk8zUTZxZjhjSjlycTJ2SWw4Nm5OdmNEYWQ4SjdqOWFBeGRsS0pBZ09QMEFRZW1BUGp1MDdlb1FB?oc=5",
-          "publishedAt": "2024-01-29T08:00:00.000Z",
-          "source": "AIM Group",
+          "title": "Swedish housing market rout persists, with prices down 17 percent from peak - Taipei Times",
+          "link": "https://news.google.com/rss/articles/CBMidkFVX3lxTE93X0V5ZWhUclNxOGdZa05PVzNVMGpjcVVRVHRvNVg1dnRiVTI0ek5wVGRLb0ZfYXc0TW1xM0hiNEJjNHp1WEFSWnB1Zlh0S2VRRzhia2g2TzVfTWFKSWM5MUl6Rm5vRVRtUWs2RFBtZnlTS1VRN2c?oc=5",
+          "publishedAt": "2023-01-03T08:00:00.000Z",
+          "source": "Taipei Times",
           "signals": [],
           "relevanceScore": 0
         },
@@ -4796,10 +4794,10 @@ export const BANK_DATA = {
           "relevanceScore": 0
         },
         {
-          "title": "Large Swedish banks show resilience in the EBA’s stress test - Finansinspektionen",
-          "link": "https://news.google.com/rss/articles/CBMiowFBVV95cUxPX3o0Z1pxbW5tTHAzT2hBRTZyNXI1V1Y5V21mWGhBWGxBOHVhTDQxejlfam5kMnNEZ1FxUEx4bzFaRlgwbnVaaGVZdXZDWVl6RC12SlpER2pPZVpXR012cjBra01SMjN4ZUd5ZkJTRnNhbV9wUWJ5YVVqaWx5c1R3S0ZMa3RQdkxqYmZjRXFNcm5RckYzTnM2QkpFYk5PZTQ2dE9V?oc=5",
-          "publishedAt": "2025-08-04T07:00:00.000Z",
-          "source": "Finansinspektionen",
+          "title": "Sweden's mortgage war heats up as banks race to cut rates - The Local Sweden",
+          "link": "https://news.google.com/rss/articles/CBMimANBVV95cUxPM0FzeHV0YlZFWmJQbWRDZkE0U1B1dEtwQTEwRFU3RXp4LWVZTjdrVnh2dGViUnZKQ0VNMlgtejcxaGtxTDZxR2tJZUhLWk9ZUnVLa1Q0WGFiUTVaOFAyV2RhZUJoNjB4eGxZM3Y0aW95M214Q1BBeUh3THdDOTN2RVRuUU9vWk5teUpVczdwc21pYnVQbGRLbHhQYURORkhvTlYxQ1VrZzd1dTRXVjg1OWZJTHhLcHd3YmU1NTFjN1FTc2lNX2Y3eHNob2xiN1BHNUVLQzBLVXZMQWhfWDVWTXZFRHlZMGhZaDNaX0VNTnh2azdUdW9MQkd3ZWdCR01xQUplXzRhVVhNODgtVGMxajZuRkcyRGJuei05dm5xNkNwNmNld3RjcmJnZEpuRmViRnBkZ05pM21SbWFKNE83ME5nZnVIWmJ1Uk9qT0RtcC1EUXU4cXlUUW5paHo2RHhNeThLTjVTb0M4YTRMOXJmS29NcEp0N01XVWRtdVVPcHI5bDZJUlczUmpPRFN1SC1JNEFyX3NXZzk?oc=5",
+          "publishedAt": "2024-08-21T07:00:00.000Z",
+          "source": "The Local Sweden",
           "signals": [],
           "relevanceScore": 0
         }
@@ -4807,11 +4805,12 @@ export const BANK_DATA = {
       "topSignals": [
         "regulation",
         "cloud",
+        "investment",
         "leadership"
       ],
-      "signalCount": 3,
-      "articleCount": 7,
-      "fetchedAt": "2026-04-08T23:38:52.135Z"
+      "signalCount": 4,
+      "articleCount": 9,
+      "fetchedAt": "2026-04-15T08:08:04.387Z"
     },
     "backbase_landing_zones": [
       {
@@ -5140,48 +5139,16 @@ export const BANK_DATA = {
     "live_stock": {
       "ticker": "SEB-A.ST",
       "currency": "SEK",
-      "price": 182.1,
+      "price": 185.05,
       "dayChange": null,
       "dayChangePercent": null,
       "fiftyTwoWeekHigh": 204.5,
-      "fiftyTwoWeekLow": 126.85,
+      "fiftyTwoWeekLow": 143.15,
       "exchange": "STO",
-      "fetchedAt": "2026-04-08T23:37:54.045Z"
+      "fetchedAt": "2026-04-15T08:07:07.771Z"
     },
     "live_news": {
       "articles": [
-        {
-          "title": "SEB’s Lending Profit Beats Estimates on Lower Funding Costs - Bloomberg",
-          "link": "https://news.google.com/rss/articles/CBMitgFBVV95cUxNMW4zNmdhaExLa3FJcVl5MlhpZEMwUURLNklYU1VHZHV2WU85OF9od2xxWF8teEEwbVkwTFhXNnBRN2M5enlCSUh2Nk1vQW5pem8zZjJIOUpZZTJfWnVocWFnM1FRek1ONFMyVzZfdDVVd2o3c1djdWs5TTJHd1R5VklDVU1OaTVnb2FPelFIX09Fd2M5Tk9qRFB0LTF1MlhnQ3VPRjRlWHkwYkNud3pTQUFpTFdvQQ?oc=5",
-          "publishedAt": "2025-10-23T07:00:00.000Z",
-          "source": "Bloomberg",
-          "signals": [
-            "investment",
-            "financial"
-          ],
-          "relevanceScore": 2
-        },
-        {
-          "title": "Finansinspektionen Launches Investigation into SEB over Block Transactions - marketscreener.com",
-          "link": "https://news.google.com/rss/articles/CBMixgFBVV95cUxNN2FEUnFpaXQyUVVQNVJLR1g0bHVubC16QzZ4Qjd6Q2FSMlF5eEVwMTc5ZHNfOXpiNGhQcS1UZjFzSGRwaDVBZk41dHhjNWxmbnhDWnhVUkQybkVIWE81NjJ1TVZTakpkbGg0YmpxQks1UUNPRF82aUh5cmlEZzl6REtPSTQtekpzRDhVVUo5X1U4bnBMemZELVM4RkNhSDZzNTB6RGtKRWxvbHBHaE9hSG8zZl9Pazk4bmtVaF9UVFZXNHZvYmc?oc=5",
-          "publishedAt": "2025-10-14T07:00:00.000Z",
-          "source": "marketscreener.com",
-          "signals": [
-            "investment",
-            "product"
-          ],
-          "relevanceScore": 2
-        },
-        {
-          "title": "Swedish bank SEB's quarterly profit tops estimates as lending, deposits grow - Reuters",
-          "link": "https://news.google.com/rss/articles/CBMiqgFBVV95cUxPZWh3NWFSaFVSczZTVVhLOGtlZ1VYbFV0d3dsZjkxM0RSamdjTDZXMGJxV1R5dS1idmxscEpkVG4zSXZiMEMtcVhfeG1TNDZZby0tZmMyT1RMQWY4Vy1JaDhXWUJqNXBXVmtoUV93QW5jNHVBeE1ZZGVRLVlianplbmx4dVhvamFBYkdub3JhZWVITlFSMENYV0VzakhqSzB1MjVrZE5pM2hKZw?oc=5",
-          "publishedAt": "2025-07-15T07:00:00.000Z",
-          "source": "Reuters",
-          "signals": [
-            "financial"
-          ],
-          "relevanceScore": 1
-        },
         {
           "title": "SEB’s 2025 Profit Slipped, But Dividends Stayed Generous - Finimize",
           "link": "https://news.google.com/rss/articles/CBMiiwFBVV95cUxOUl9ZbWNycnQ0eGFYcG5mb0VRQldBSnV1NWVNbV9PNFVKXzM3dmNfdVROQloxVkxuYjZQbk9VcW83VEhxd3ZlWGFEb0doNTBfSXVsSnZ5ZGdkbWRxVmN5LVY0UmRFbzZJVVRfTmt0VVZwWlM3el94NTlOVnVkUG9RbE1QWUxVLTZZcUdZ?oc=5",
@@ -5193,20 +5160,20 @@ export const BANK_DATA = {
           "relevanceScore": 1
         },
         {
-          "title": "SEB’s Special Dividend And Buyback Might Change The Case For Investing In Skandinaviska Enskilda Banken (OM:SEB A) - simplywall.st",
-          "link": "https://news.google.com/rss/articles/CBMi4wFBVV95cUxPR3k4TjNHaWw3SGVxZnBFdldwMEo4NmxuVEhnU0hCQm1VTkl6TFd0RWFKT0hoYzZhZDlNUTJQamg1aG54bVI0UFJaMlA0YUdpR3VSWUFtY1dRLU1KdVdGV2tJa3JTZFRYcnVtS3F4LUQyczNwUGl0cVRqWldYaGktY0U0UEJiOEZ6NFlIOHl1LXRhUEVYb0xvWE92TTQySkFOUC16N20zdVF6aU0wR1Fkb1AyamNhVzd4TGEwNFg2c0lnTXJWREpyODhmdG9kMUdFcGdMM0NRR19DbnhHcDBXZFVHMNIB6AFBVV95cUxPNk52NXlTdUZKYjF5VlBzcmNmY3dvR3Q2MndFOUNma2xkNXhzbHlYb1A3djNUaXNrb3hDYnlrT0JvV0dIczZpbG9lOWlGZldCMTZSV1N4THk5enZtdTE1NzlIdDQ5dEZvYTVGQVlxaURrNDA4THVGYzV0NkxiaWVQdFR4TkdtYnN3aWMtM3JXWnA0Ml9GQzJtUEM0OHN3cm0zOUhsR25tNTVTLWlCZFVIS0pyWFYtUGgzdXROM2lHbnFMdjg4R3BYVEV4ZUlGRElDTS15WWhxZ0pPcGZIOTFBZEhEVmJRcmtn?oc=5",
-          "publishedAt": "2026-02-02T08:00:00.000Z",
-          "source": "simplywall.st",
+          "title": "SEB Lending Profit Meets Estimates as Fees Offset Low Rates - Bloomberg.com",
+          "link": "https://news.google.com/rss/articles/CBMitAFBVV95cUxQSUpfQXVnYXBDYTZDaWlQWXNZZTlQak1ZN2pHM3cwRFpXOGI2eHVqWDQzX3dFb3Y1QmluUTVZaklQREFMaU10TmlDRU9lQTdNQXd4ZjluajVxZFlDOVZYT2E5ZzNIcThPcUd0WEtWVW9TUTVJMzFDV1prOHc5VllBdlA4S2Q5dzBtOWpFSExLc3FKQXBnOVBxMTFMcHZmalIwV3pIS3JJNzk3djBGU3l1QUpCUHM?oc=5",
+          "publishedAt": "2026-01-29T08:00:00.000Z",
+          "source": "Bloomberg.com",
           "signals": [
-            "investment"
+            "financial"
           ],
           "relevanceScore": 1
         },
         {
-          "title": "SEB head: “There is an underlying trend of reallocation from the US” - AMWatch",
-          "link": "https://news.google.com/rss/articles/CBMib0FVX3lxTE15TE8ya2RDZGVBQzNOdW9nblBkOXpxcUtVZElSSU43aE1vSHdZSXg2TUdEUURVc21xRHk5YVBqMm5GYjQwMjZxZDlxVzJUR3NBVzIzLXAydlhzb0w4dHpLR2xkN1JaT2xMVjZ2M3pKYw?oc=5",
-          "publishedAt": "2026-02-11T08:00:00.000Z",
-          "source": "AMWatch",
+          "title": "SEB’s Special Dividend And Buyback Might Change The Case For Investing In Skandinaviska Enskilda Banken (OM:SEB A) - simplywall.st",
+          "link": "https://news.google.com/rss/articles/CBMi4wFBVV95cUxPR3k4TjNHaWw3SGVxZnBFdldwMEo4NmxuVEhnU0hCQm1VTkl6TFd0RWFKT0hoYzZhZDlNUTJQamg1aG54bVI0UFJaMlA0YUdpR3VSWUFtY1dRLU1KdVdGV2tJa3JTZFRYcnVtS3F4LUQyczNwUGl0cVRqWldYaGktY0U0UEJiOEZ6NFlIOHl1LXRhUEVYb0xvWE92TTQySkFOUC16N20zdVF6aU0wR1Fkb1AyamNhVzd4TGEwNFg2c0lnTXJWREpyODhmdG9kMUdFcGdMM0NRR19DbnhHcDBXZFVHMNIB6AFBVV95cUxPNk52NXlTdUZKYjF5VlBzcmNmY3dvR3Q2MndFOUNma2xkNXhzbHlYb1A3djNUaXNrb3hDYnlrT0JvV0dIczZpbG9lOWlGZldCMTZSV1N4THk5enZtdTE1NzlIdDQ5dEZvYTVGQVlxaURrNDA4THVGYzV0NkxiaWVQdFR4TkdtYnN3aWMtM3JXWnA0Ml9GQzJtUEM0OHN3cm0zOUhsR25tNTVTLWlCZFVIS0pyWFYtUGgzdXROM2lHbnFMdjg4R3BYVEV4ZUlGRElDTS15WWhxZ0pPcGZIOTFBZEhEVmJRcmtn?oc=5",
+          "publishedAt": "2026-02-02T08:00:00.000Z",
+          "source": "simplywall.st",
           "signals": [
             "investment"
           ],
@@ -5233,16 +5200,46 @@ export const BANK_DATA = {
             "financial"
           ],
           "relevanceScore": 1
+        },
+        {
+          "title": "Stockholm, 28 January 2008 - PRESS RELEASE – REMINDER - Change of e-mail subscription service - SEB Group",
+          "link": "https://news.google.com/rss/articles/CBMi1wFBVV95cUxOcXJsc0VWSzd2WEcxTUU0MXRWWlgzb0lzNHktV2pZdWFKcWJ3ZHR2ZWVETHBSZVc4dVVtMVRKNU9MOHdOSWNTV2pIMTQxeWFYYi0zTmlHVHdUYXVyYTJjN19GcHpIenNHeHNYN1p0dnpCcWRGUlhhNTRDUVU1NWcwVTZ0OXhVcFVvZ0RlTUxEMWoyZncwTjFBN2V1TlZkSWVMRXlXaUFBYnlGbGFoc0MtanRRNldhOVZnWENwcHNycENEQldkMVEzVGVOWjI2d195Mzk4T2dNYw?oc=5",
+          "publishedAt": "2008-01-28T08:00:00.000Z",
+          "description": "<a href=\"https://news.google.com/rss/articles/CBMi1wFBVV95cUxOcXJsc0VWSzd2WEcxTUU0MXRWWlgzb0lzNHktV2pZdWFKcWJ3ZHR2ZWVETHBSZVc4dVVtMVRKNU9MOHdOSWNTV2pIMTQxeWFYYi0zTmlHVHdUYXVyYTJjN19GcHpIenNHeHNYN1p0dn",
+          "source": "Bank Press Release",
+          "signals": [
+            "product"
+          ],
+          "relevanceScore": 1
+        },
+        {
+          "title": "Press release - SEB Group",
+          "link": "https://news.google.com/rss/articles/CBMixgFBVV95cUxQWnZqNUxtb29IT0ZJV182cjNnQVVVYy15WFJQRUY4aXozQy1wc0lSanZLSFdKd1NJWWFxTFdtOE1XZGxqYVJxamNveUZrLVd3dEVmOEp1OXl1c1ZqdVY2N2hBX3hzY2dzZUo3S2MzU0wtWjRhWGxVTmVwM0p5NmRnbno5bi1oemx4UDhHU19BUmxCc0xDV1ZEX1FBUzVtWWFPM0NZYjVkQ213Ym1LSmlDQlFDbE9sMWR2RGhnRmVpcTI1NDB5aEE?oc=5",
+          "publishedAt": "2012-05-07T07:00:00.000Z",
+          "description": "<a href=\"https://news.google.com/rss/articles/CBMixgFBVV95cUxQWnZqNUxtb29IT0ZJV182cjNnQVVVYy15WFJQRUY4aXozQy1wc0lSanZLSFdKd1NJWWFxTFdtOE1XZGxqYVJxamNveUZrLVd3dEVmOEp1OXl1c1ZqdVY2N2hBX3hzY2dzZUo3S2MzU0",
+          "source": "Bank Press Release",
+          "signals": [
+            "product"
+          ],
+          "relevanceScore": 1
+        },
+        {
+          "title": "This Swedish Value Fund is Up 25% in 2025 - Morningstar",
+          "link": "https://news.google.com/rss/articles/CBMihwFBVV95cUxPaFI1NUY3VUlQWXR0cUlfdGRkckdrOXJMblNwNnhfdWJCQlNkenlSMmFoV0traHY0dG9EOU92Y2N6YXhwU294dVNRbFBGTHJ1bWtXT2VYclNubnRwcHktd2tXaHlWY3Z4enlqQjVCM0RaN1ZTZ01mazBKSldZOFVmNGRIMHpMN1U?oc=5",
+          "publishedAt": "2025-12-19T08:00:00.000Z",
+          "source": "Morningstar",
+          "signals": [],
+          "relevanceScore": 0
         }
       ],
       "topSignals": [
-        "investment",
         "financial",
+        "investment",
         "product"
       ],
       "signalCount": 3,
       "articleCount": 15,
-      "fetchedAt": "2026-04-08T23:38:44.191Z"
+      "fetchedAt": "2026-04-15T08:07:56.376Z"
     },
     "operational_profile": {
       "total_assets": "€380B",
@@ -5497,6 +5494,17 @@ export const BANK_DATA = {
           "relevanceScore": 2
         },
         {
+          "title": "What does Apple's acquisition of Mobeewave mean for banks? - Finextra Research",
+          "link": "https://news.google.com/rss/articles/CBMioAFBVV95cUxPbEk0Tzdvakdsal9XcEN6NWt1Vmt3TnlUa0xaMWFUYVIyaUQ5czE0XzNGa0Q4STRYODRoQ0E1NS0tTkNQQ1czNWhaZWxWWlh5b1dOLWxibXJuOEhFRmNfY2ZlMmhiS2RNeUpHOFhGaUNBVWZzTWpuSUcxRmkyRW1Qa0VNd19nWDI1VllhNTAxX0l1Ynd0b0Q3c2VSY3JySmFi?oc=5",
+          "publishedAt": "2020-08-06T07:00:00.000Z",
+          "source": "Finextra Research",
+          "signals": [
+            "acquisition",
+            "regulation"
+          ],
+          "relevanceScore": 2
+        },
+        {
           "title": "Norwegian lender DNB launches $1.3 bln bid for Sbanken - Reuters",
           "link": "https://news.google.com/rss/articles/CBMiowFBVV95cUxQcDBRcnIwMFZ6Mng4amFQM0pGZjRXbWNFMlpZQ2JxTUdCQXFlMDZsN3ZvUzZfaWh2dzBzWGstY1UwQVRZNTJyby1FOEVVWVd0Wk9zWDNkM2xhZElRdHR3NUxDNUQwUUJNMU5rbnNtSkU0aFRUa3VpajJYX2tLWkJ2YVFtVTJNb200cXBIdHM5dWpSeGVWS1NSNmxVNDFNSkUxT1pJ?oc=5",
           "publishedAt": "2021-04-15T07:00:00.000Z",
@@ -5507,10 +5515,20 @@ export const BANK_DATA = {
           "relevanceScore": 1
         },
         {
-          "title": "DNB struggling with Sbanken acquisition – losing fund savers to Nordnet - AMWatch",
-          "link": "https://news.google.com/rss/articles/CBMib0FVX3lxTE9Ub0NIV1RvN09QekpNX3VLbXdneHpCMHlyckpLdWRxR3JPcTJkX2IwTGhxS3FaNUs5N3JVOXZoLUs3N2N2a0JaX2ZibUVrMndMYmRmX0p3b1RVQ0thaWtnZVhad1JCMDA4V3RfbzJWdw?oc=5",
-          "publishedAt": "2024-04-08T07:00:00.000Z",
-          "source": "AMWatch",
+          "title": "Norway’s DNB Bank to acquire 90.9% stake in Sbanken - Retail Banker International",
+          "link": "https://news.google.com/rss/articles/CBMingFBVV95cUxOUnhPNDBDemFsa2pGa245ZldETEJiM05VZnlHVzBpeDNUek5RMmxVZjhKTzRTNXM2aHlzM1BFcTlWS3JGVW11RXpQMFVUa1VIWHU5bW9WR2Z3ZzNITHU4c3A4dXRNZmVrVmNyTU5QdTA5OERHcmFCcXNkS2RpY1lQSnlpZlpFOFFsR0JwTnA3SHowMHBFUHIxTXJscGE1UQ?oc=5",
+          "publishedAt": "2021-06-15T07:00:00.000Z",
+          "source": "Retail Banker International",
+          "signals": [
+            "acquisition"
+          ],
+          "relevanceScore": 1
+        },
+        {
+          "title": "DNB seeks to overturn Sbanken takeover ban - Reuters",
+          "link": "https://news.google.com/rss/articles/CBMikwFBVV95cUxPNVZCTzFOWVlCc1Mzc2dLVzZzYVAzN1paNUIwM0t6VXBibWhKNXpzQUExZEt3dmVuZWloM3l5UFVyV3hST0dPeTgzdmJpbFplV0VjSU9wcmE0d0tJMEFqaTRpeDZTcHdlVzdBR3NLaVhrZEduNktYQXh4MGk5elhsUllLWmR0a2lobHFZVFBMMEpmYUk?oc=5",
+          "publishedAt": "2021-12-03T08:00:00.000Z",
+          "source": "Reuters",
           "signals": [
             "acquisition"
           ],
@@ -5527,36 +5545,18 @@ export const BANK_DATA = {
           "relevanceScore": 1
         },
         {
-          "title": "DNB seeks to overturn Sbanken takeover ban - Reuters",
-          "link": "https://news.google.com/rss/articles/CBMikwFBVV95cUxPNVZCTzFOWVlCc1Mzc2dLVzZzYVAzN1paNUIwM0t6VXBibWhKNXpzQUExZEt3dmVuZWloM3l5UFVyV3hST0dPeTgzdmJpbFplV0VjSU9wcmE0d0tJMEFqaTRpeDZTcHdlVzdBR3NLaVhrZEduNktYQXh4MGk5elhsUllLWmR0a2lobHFZVFBMMEpmYUk?oc=5",
-          "publishedAt": "2021-12-03T08:00:00.000Z",
-          "source": "Reuters",
-          "signals": [
-            "acquisition"
-          ],
-          "relevanceScore": 1
-        },
-        {
-          "title": "Norway’s DNB Bank to Cut About 5% of Staff Over Coming 6 Months - Bloomberg",
+          "title": "Norway’s DNB Bank to Cut About 5% of Staff Over Coming 6 Months - Bloomberg.com",
           "link": "https://news.google.com/rss/articles/CBMiswFBVV95cUxPV2RfZnZIeGdyTDQ1dzFvMDJ5Z1ZRSWt4WDRpME5GQ1JXTm91WW01V1VFYXFEaFRjM2JaN1h2T1E0dnkxTFdqMEh2Q000ajZCeFlqQmViTm5YQkpabm1TTWlMMnhnYlNCSFZqckhxaGhsSzZFaF9OUS1KSEcxTFNjaWY0UkpxX1dmZmZnZ2xOa284b2d3ZkpDMExKZnRpelF5bFoySkNqcmxhb2F6ZlJwUlpMYw?oc=5",
           "publishedAt": "2024-09-10T07:00:00.000Z",
-          "source": "Bloomberg",
+          "source": "Bloomberg.com",
           "signals": [],
           "relevanceScore": 0
         },
         {
-          "title": "Norway: New Wave Of Bank Consolidation - Global Finance Magazine",
-          "link": "https://news.google.com/rss/articles/CBMib0FVX3lxTE5ocGlaTEY1eUZrYnY1Wks0RUlWamFnSnp3WTNVS0dERnk1MVhrUXhnM08yVmZPYXBTd1JXVDBfcWM2NmRIcXJ1LXRkZk9zc0xXQnFpbDhWVUdObDN2c2REZ1ZsRFMyTXdjWHNibXd6QQ?oc=5",
-          "publishedAt": "2023-03-02T08:00:00.000Z",
-          "source": "Global Finance Magazine",
-          "signals": [],
-          "relevanceScore": 0
-        },
-        {
-          "title": "Norway's DNB raises bid for rival Sbanken, has 75% stake - Reuters",
-          "link": "https://news.google.com/rss/articles/CBMirgFBVV95cUxNZ25wSDhFWUFwNjhjd0ZrY0lqQ0JjZXpoeElvblFIYnFkMHlqTTlXNTFIRUxfUTE4bm5ydVZuMFprZXh6R1hpZExHOVQwR2dCdkZ5Nmh5WkJuaVBENFBpZGc2RVRTaUhTY2JTam9ZekZWaVdma091VXZ3dnR3YjN4YWVybzN3RHczT2xlUUNrOWpobVo5Q1RibFktLWU3T0R4SGo0U2RUMTZNeXdfLXc?oc=5",
-          "publishedAt": "2021-06-07T07:00:00.000Z",
-          "source": "Reuters",
+          "title": "Norway’s Competition Appeal Tribunal Allows Big Bank Buy - PYMNTS.com",
+          "link": "https://news.google.com/rss/articles/CBMinwFBVV95cUxQd2Rzd0NFNTF6b2p0RVRMaVFNeGJ4UjRuWnVGOHVkMk9Jb2xDa1VEd0o0aEVvNGVKTnNSZlZMRC1pdEdXelU5WjREakpraXF4SUNMZnRvbVRHX1ZDV3ZlVzFaclB1elVSU0JaNEJoaEwzRk5oZjlVT2ZHeWtRYjlGTGVoQWdzUDg3MWZhMmJ1Z3d4OG1kcy1MaEV1TTNxNnc?oc=5",
+          "publishedAt": "2022-03-17T07:00:00.000Z",
+          "source": "PYMNTS.com",
           "signals": [],
           "relevanceScore": 0
         }
@@ -5567,8 +5567,8 @@ export const BANK_DATA = {
         "product"
       ],
       "signalCount": 3,
-      "articleCount": 10,
-      "fetchedAt": "2026-04-08T23:39:01.604Z"
+      "articleCount": 9,
+      "fetchedAt": "2026-04-15T08:08:14.195Z"
     },
     "backbase_landing_zones": [
       {
@@ -5730,16 +5730,6 @@ export const BANK_DATA = {
           "relevanceScore": 1
         },
         {
-          "title": "Discover Sweden's Top Banks for Investments - Complete Guide! - Global Banking & Finance Review®",
-          "link": "https://news.google.com/rss/articles/CBMickFVX3lxTE1jYnlzN1J0RFNrNzhFWFhXNFJkOWE3RXBoUVhZN2FkOFZSbFg5WWtOZ1h2d3dOM0tQMDkyUnVsZVZpWFhZSENWSkZIYWJHSEdfbHpNbDM1RUJvb2lUNVJlZFYtbHJUWVFiZXlQVUNWaTR6Zw?oc=5",
-          "publishedAt": "2012-06-14T07:00:00.000Z",
-          "source": "Global Banking & Finance Review®",
-          "signals": [
-            "investment"
-          ],
-          "relevanceScore": 1
-        },
-        {
           "title": "Brite Payments appoints Robin Paulsson as CFO as Fredrik Strömqvist departs - FinTech Futures",
           "link": "https://news.google.com/rss/articles/CBMikwFBVV95cUxPWE11MzRUeEdXVHpRY0dGTFp6OHIyQmllNjdDOEw1VmE4NVJUVnU4b0xsTjY4Z2dVZ3d5azBNQkExOUpmVTdiSFZ3WmVvWkFFUWdKOUNtLUs1am82RmJITVhNLUdNektDTGxnQlQ2V282WTJhZl9kNDJta3BobGRMMmxzdjBvdll3TWQ0R3c3R2ROWVU?oc=5",
           "publishedAt": "2026-02-16T08:00:00.000Z",
@@ -5750,12 +5740,12 @@ export const BANK_DATA = {
           "relevanceScore": 1
         },
         {
-          "title": "After Poland, Apple Pay launches in Norway, with three banks for now - 9to5Mac",
-          "link": "https://news.google.com/rss/articles/CBMiXEFVX3lxTE82d3hDX1ZmTm9veGRzMGxVTXVxR3NPMFJiZmhQQlBkU0JkM3Q5ck5Ydk9nOWxtbzk1QnlrNDBLZDV4Y0JxWmhtZ2hhZHd1WEdLWVVDWkNMcVltTzRU?oc=5",
-          "publishedAt": "2018-06-20T07:00:00.000Z",
-          "source": "9to5Mac",
+          "title": "Discover Sweden's Top Banks for Investments - Complete Guide! - Global Banking & Finance Review®",
+          "link": "https://news.google.com/rss/articles/CBMickFVX3lxTE1jYnlzN1J0RFNrNzhFWFhXNFJkOWE3RXBoUVhZN2FkOFZSbFg5WWtOZ1h2d3dOM0tQMDkyUnVsZVZpWFhZSENWSkZIYWJHSEdfbHpNbDM1RUJvb2lUNVJlZFYtbHJUWVFiZXlQVUNWaTR6Zw?oc=5",
+          "publishedAt": "2012-06-14T07:00:00.000Z",
+          "source": "Global Banking & Finance Review®",
           "signals": [
-            "product"
+            "investment"
           ],
           "relevanceScore": 1
         },
@@ -5782,16 +5772,24 @@ export const BANK_DATA = {
           "source": "Financial News London",
           "signals": [],
           "relevanceScore": 0
+        },
+        {
+          "title": "Top Nordic Banks: Ranking the Best Banks in Scandinavia - Global Banking & Finance Review®",
+          "link": "https://news.google.com/rss/articles/CBMigAFBVV95cUxQVGRUV185MXRNcGFORlpSNFFUUE1FUUJobkJWZTRtOXNJRDhQOFItRjlGRmZOMS1hcjlCT2JYMFZ1UkNFa296MFZQNnN0M1hWNTNiRVA0bEMtanhWRDJvdExPeG1NY0ZCTDB6aU83aGpVZE5ONnRHTjRMcnk3UzU5WQ?oc=5",
+          "publishedAt": "2012-11-19T08:00:00.000Z",
+          "source": "Global Banking & Finance Review®",
+          "signals": [],
+          "relevanceScore": 0
         }
       ],
       "topSignals": [
         "product",
-        "investment",
-        "leadership"
+        "leadership",
+        "investment"
       ],
       "signalCount": 3,
       "articleCount": 9,
-      "fetchedAt": "2026-04-08T23:38:53.910Z"
+      "fetchedAt": "2026-04-15T08:08:06.216Z"
     },
     "backbase_landing_zones": [
       {
@@ -5953,10 +5951,20 @@ export const BANK_DATA = {
     },
     "live_stock": {
       "ticker": "SPNO.CO",
-      "fetchedAt": "2026-04-08T23:38:23.688Z"
+      "fetchedAt": "2026-04-15T08:07:36.966Z"
     },
     "live_news": {
       "articles": [
+        {
+          "title": "Nykredit AUM jumps in Q2 on Spar Nord acquisition and return to net inflows - AMWatch",
+          "link": "https://news.google.com/rss/articles/CBMib0FVX3lxTE9RSldCd2VkNmp6Sml0NE91SHFzX2dEajhRWHFMbXpnUHpuTEEwSUxPREdVOHU5Uno2akJzUzU0NEV4NVNtQ0QxaTVUeTJrQ2F6UnltR0ViR2ZNMmxHQ1JuWE5CY3diaU11SjRyeEptaw?oc=5",
+          "publishedAt": "2025-08-13T07:00:00.000Z",
+          "source": "AMWatch",
+          "signals": [
+            "acquisition"
+          ],
+          "relevanceScore": 1
+        },
         {
           "title": "Danish Lender Nykredit To Takeover Spar Nord Bank - Banking Exchange",
           "link": "https://news.google.com/rss/articles/CBMipAFBVV95cUxPSHRjM002VGdLdzJrbHl6QlByYTJiOFU3ckY0TWV3bVBJV3NGNFRWWGtZWnZkdTVKbENhenB5a0pMSzduRDZBc0FhRld4VDRmZ0V6ajRIYnExclA4WjIxN2pHQWN4U1VhclpvcGhiVFdGR052QVA2ZVBUd1c0T2x2VUhiZmk2X0R2Z2pZaFg0U0d4a3BENTA1dTNPZG1MZzEtYjg3aA?oc=5",
@@ -5978,10 +5986,10 @@ export const BANK_DATA = {
           "relevanceScore": 1
         },
         {
-          "title": "Denmark’s Nykredit to Buy Spar Nord Bank for $3.5 Billion - Bloomberg",
+          "title": "Denmark’s Nykredit to Buy Spar Nord Bank for $3.5 Billion - Bloomberg.com",
           "link": "https://news.google.com/rss/articles/CBMisAFBVV95cUxOS2ljMXR5aHNYRWxnaGthSllMQ3RtNExOdC01M2pWc0JDUHNfZ2E4Y1prbzZDOWt2NThIbG1UUmZuRjV2eVdzeU5xZWJNM0JSM1kzd3NiYmVuUERscTJzal9rMWNYellCaWx0OWVoTlpqbUZlVk1PdGdqaTFGZURLRGFTWHNMWVYwbkpFd1FhT0NpaDh1OGNMV2pyeG5BT0ZFUlpfWXNGYkxLTjVfOG8tRg?oc=5",
           "publishedAt": "2024-12-10T08:00:00.000Z",
-          "source": "Bloomberg",
+          "source": "Bloomberg.com",
           "signals": [
             "investment"
           ],
@@ -5998,20 +6006,20 @@ export const BANK_DATA = {
           "relevanceScore": 1
         },
         {
-          "title": "Nykredit secures 80% stake in Spar Nord Bank, plans takeover and delisting - Reuters",
-          "link": "https://news.google.com/rss/articles/CBMipwFBVV95cUxPRU5YbXR6V0w2dGo4Uks3dUJocFhiTjRncXFLOW14andJR0FZSHVQeGN5MV9rQnVCd2I4U0dkSUJidUhScjlza05wNExNY0hqd3FUbzREZzVVX2FXYzJfZTBtclVTa3hWZ2Y1YTJ1bUtWTHk2ZDhTM0lXZk8tSU5KM0ZFbGNOOEJEWU1Gbk5laE5Qa1kyaWdBVS12T0cxMmU5QVRUalpCOA?oc=5",
-          "publishedAt": "2025-03-19T07:00:00.000Z",
-          "source": "Reuters",
+          "title": "Nykredit Realkredit to acquire Spar Nord Bank for $3.5bn - Retail Banker International",
+          "link": "https://news.google.com/rss/articles/CBMiigFBVV95cUxPMk1LTUFPRjRmaU5jWXRMY3ZiTzBoZ0NOdXhEdEpBZlN0N0JTcWFzZlNnVmFHb3JmZTlQTk1Gb081VGt0T0lrUERwUlBabnY0Yl9heXl6eE51TEJtT2UxRnpOLVJtTi1TZHUxYnUtQ1c5aEVkX3gzR2pFeGRuUWNuejVIVW1fSmpzWEE?oc=5",
+          "publishedAt": "2024-12-11T08:00:00.000Z",
+          "source": "Retail Banker International",
           "signals": [
             "acquisition"
           ],
           "relevanceScore": 1
         },
         {
-          "title": "Nykredit Realkredit to acquire Spar Nord Bank for $3.5bn - Retail Banker International",
-          "link": "https://news.google.com/rss/articles/CBMiigFBVV95cUxPMk1LTUFPRjRmaU5jWXRMY3ZiTzBoZ0NOdXhEdEpBZlN0N0JTcWFzZlNnVmFHb3JmZTlQTk1Gb081VGt0T0lrUERwUlBabnY0Yl9heXl6eE51TEJtT2UxRnpOLVJtTi1TZHUxYnUtQ1c5aEVkX3gzR2pFeGRuUWNuejVIVW1fSmpzWEE?oc=5",
-          "publishedAt": "2024-12-11T08:00:00.000Z",
-          "source": "Retail Banker International",
+          "title": "Nykredit secures 80% stake in Spar Nord Bank, plans takeover and delisting - Reuters",
+          "link": "https://news.google.com/rss/articles/CBMipwFBVV95cUxPRU5YbXR6V0w2dGo4Uks3dUJocFhiTjRncXFLOW14andJR0FZSHVQeGN5MV9rQnVCd2I4U0dkSUJidUhScjlza05wNExNY0hqd3FUbzREZzVVX2FXYzJfZTBtclVTa3hWZ2Y1YTJ1bUtWTHk2ZDhTM0lXZk8tSU5KM0ZFbGNOOEJEWU1Gbk5laE5Qa1kyaWdBVS12T0cxMmU5QVRUalpCOA?oc=5",
+          "publishedAt": "2025-03-19T07:00:00.000Z",
+          "source": "Reuters",
           "signals": [
             "acquisition"
           ],
@@ -6026,28 +6034,17 @@ export const BANK_DATA = {
             "regulation"
           ],
           "relevanceScore": 1
-        },
-        {
-          "title": "Asset manager brings in new CIO after two tough years and a lengthy search - AMWatch",
-          "link": "https://news.google.com/rss/articles/CBMiUEFVX3lxTFBOa1h4TkhOWG1kWXJzaEE5OUJyb1Fyd1lvMVRxalFKTmxOd2w2ZHkzMlItRGpHSnZ4Mkl2TFRwWV9XTnp1TllEaEVmWmZpTXdR?oc=5",
-          "publishedAt": "2024-05-08T07:00:00.000Z",
-          "source": "AMWatch",
-          "signals": [
-            "leadership"
-          ],
-          "relevanceScore": 1
         }
       ],
       "topSignals": [
         "acquisition",
         "investment",
         "partnership",
-        "regulation",
-        "leadership"
+        "regulation"
       ],
-      "signalCount": 5,
+      "signalCount": 4,
       "articleCount": 10,
-      "fetchedAt": "2026-04-08T23:39:18.877Z"
+      "fetchedAt": "2026-04-15T08:08:31.945Z"
     },
     "backbase_landing_zones": [
       {
@@ -6313,7 +6310,7 @@ export const BANK_DATA = {
     },
     "live_stock": {
       "ticker": "SRBNK.OL",
-      "fetchedAt": "2026-04-08T23:38:10.527Z"
+      "fetchedAt": "2026-04-15T08:07:23.966Z"
     },
     "live_news": {
       "articles": [
@@ -6328,27 +6325,19 @@ export const BANK_DATA = {
           "relevanceScore": 1
         },
         {
-          "title": "SpareBank 1 Forvaltning to launch new funds based in Stavanger - AMWatch",
-          "link": "https://news.google.com/rss/articles/CBMiUEFVX3lxTE9pTTAtUHhrZ2UteHBhRmk2OExlWUtzOUlHXzRTRzNrTl93VG5SUkl6VHVHRkFCeG1VZk9CNTI1U2VBQ3ItTGVSb1pvaHBPOEVC?oc=5",
-          "publishedAt": "2021-09-17T07:00:00.000Z",
-          "source": "AMWatch",
+          "title": "SpareBank 1 SR-Bank ASA (OB:SRBNK) insiders recover some losses but still kr303k away from matching original investment - simplywall.st",
+          "link": "https://news.google.com/rss/articles/CBMi2wFBVV95cUxQcXo2Nmk5ZXNVQXhtclVHeUJFZ1BIRnRNSU1qYWF5SUZtQ00yYm5ETW5xTDd6MDh3NG1JZVA1djlsSTJYRHdwc0FDaUlEbEhFd3l4VnlGRGFyMzFJMTBfTkZNR3g3SGtET256SUpWcHVjb2ZWOWZLdFdvOFlsQzdYRE9PUmFhMnB6b24xQ3N2QzlDWE1nOFZFb0UyWlY4cy00YlRpdUhBYktlNG1ZcXQwTG4yM2NZQTQxMU5sa0J1T3JZZ3QtTzhSZi1MQ0pOTkFuWWtSclpSemlOVlHSAdsBQVVfeXFMUHF6NjZpOWVzVUF4bXJVR3lCRWdQSEZ0TUlNamFheUlGbUNNMmJuRE1ucUw3ejA4dzRtSWVQNXY5bEkyWER3cHNBQ2lJRGxIRXd5eFZ5RkRhcjMxSTEwX05GTUd4N0hrRE9ueklKVnB1Y29mVjlmS3RXbzhZbEM3WERPT1JhYTJwem9uMUNzdkM5Q1hNZzhWRW9FMlpWOHMtNGJUaXVIQWJLZTRtWXF0MExuMjNjWUE0MTFObGtCdU9yWWd0LU84UmYtTENKTk5BbllrUnJaUnppTlZR?oc=5",
+          "publishedAt": "2022-10-19T07:00:00.000Z",
+          "source": "simplywall.st",
           "signals": [
-            "product"
+            "investment"
           ],
           "relevanceScore": 1
         },
         {
           "title": "SpareBank 1 SR-Bank Sets New Coupon Rate on Bond NO0013190975 - TipRanks",
           "link": "https://news.google.com/rss/articles/CBMiswFBVV95cUxQWUNaN1FYazV5UnJHUEJQQTBJanJ5V1hJSFFXUzNfZzF6UEVuTG95bzJTQW9rY0tTQ1lyeHliRlVIb1ZGV0RLS2pCTVp5Z2NkTFBOV0dqMlNhNXA1a19NdnFXcG5xNzBxRGx2aWlVQ0dUeFdzTHl2aDRJWjA1bzJXaVAxd1VoSXRYX3FkM3VlemNyaDBCRUM1MUkxT05OX25CMmVoTTdrcXdNVVE1WGtuR0Qwaw?oc=5",
-          "publishedAt": "2026-03-31T16:07:51.000Z",
-          "source": "TipRanks",
-          "signals": [],
-          "relevanceScore": 0
-        },
-        {
-          "title": "SpareBank 1 SR-Bank Sets New Coupon on Bond NO0013188649 - TipRanks",
-          "link": "https://news.google.com/rss/articles/CBMirAFBVV95cUxQeXBKUWpLdlFLZS1JcGJGWXExTnY5OWwtNk5HUGYxdWYzeGlfTUROUExsNGhZcy1lQUhvN2RYRUJvbDNIOFVHa1VzOXB0cnNxOFhOa1VoQ2ppNlpLQ1ppS0FRNU9ydkdUSTFzUUxQVlpiM1FsSjZmTlpqU1RJTmxPcklsNGhtOFF2SU5Lbm1RUi1DT0diYjJNTENUNk01bHVuaHEwcjdDZjUyUHBz?oc=5",
-          "publishedAt": "2026-03-24T07:00:00.000Z",
+          "publishedAt": "2026-03-31T07:00:00.000Z",
           "source": "TipRanks",
           "signals": [],
           "relevanceScore": 0
@@ -6384,15 +6373,23 @@ export const BANK_DATA = {
           "source": "TheBanker.com",
           "signals": [],
           "relevanceScore": 0
+        },
+        {
+          "title": "Sparebank 1 SR-Bank Resets Coupon on ESG-Linked Bond to 5.3% - TipRanks",
+          "link": "https://news.google.com/rss/articles/CBMisAFBVV95cUxOZDhUemJTNXlYdFhZS0w4Sk41NWZWYi1uYlBUblVEMHpWdnloanVwdzBseFd2Uzd2NC16WnRBQTlHVVV4djl3MVpvWDZYMDF1dGZsdHNZNkZwY3VFNW9kUmFGZVdJQzFGMDhCdklNT05mdnpKVUxLY1VlWDFIV21Hc1Ixb1FoVkgxckFKV0Q0a3c2el9sZ1pSX0ZXenFybVNjcWVWZTFpTlVycnZJbFR5eg?oc=5",
+          "publishedAt": "2026-03-16T07:00:00.000Z",
+          "source": "TipRanks",
+          "signals": [],
+          "relevanceScore": 0
         }
       ],
       "topSignals": [
         "leadership",
-        "product"
+        "investment"
       ],
       "signalCount": 2,
       "articleCount": 10,
-      "fetchedAt": "2026-04-08T23:39:03.486Z"
+      "fetchedAt": "2026-04-15T08:08:16.246Z"
     },
     "backbase_landing_zones": [
       {
@@ -6661,34 +6658,23 @@ export const BANK_DATA = {
     "live_stock": {
       "ticker": "STB.OL",
       "currency": "NOK",
-      "price": 178.9,
+      "price": 175.5,
       "dayChange": null,
       "dayChangePercent": null,
       "fiftyTwoWeekHigh": 183.3,
-      "fiftyTwoWeekLow": 115.7,
+      "fiftyTwoWeekLow": 118.6,
       "exchange": "OSL",
-      "fetchedAt": "2026-04-08T23:38:12.164Z"
+      "fetchedAt": "2026-04-15T08:07:25.618Z"
     },
     "live_news": {
       "articles": [
         {
-          "title": "Storebrand aims to develop new services after investing in fintech firm - AMWatch",
-          "link": "https://news.google.com/rss/articles/CBMiUEFVX3lxTE1EU3B3YnlVbmMxbWNyaUoxV09sVmtLbmtqdVZQYzdEWEZObWhVNGJta2ZWQlpQMmpzdHNTRXZ0WGRYWG81V3JSeUNrY0dqVUVs?oc=5",
-          "publishedAt": "2022-01-11T08:00:00.000Z",
+          "title": "Storebrand to open Kron app for pension savings - AMWatch",
+          "link": "https://news.google.com/rss/articles/CBMib0FVX3lxTE5mZ0p5Qkk4SWZtVXBXX3Q1V2FMdG93OGxvMEhGUl9LbXozYzlVZzIySjBnMl9zNlVqT0NpOUFSOFNrcWlBMm0xOTNRZmVYbjNxa1ZNOVR2NjdEbWNkWXdXNFBuZjdSUWJfeTY4ZTIxMA?oc=5",
+          "publishedAt": "2024-12-16T08:00:00.000Z",
           "source": "AMWatch",
           "signals": [
-            "investment",
             "product"
-          ],
-          "relevanceScore": 2
-        },
-        {
-          "title": "Dakota Access pipeline: ING sells stake in major victory for divestment push - The Guardian",
-          "link": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxOVXcxVEYtMnpJUWxyN1hMVm1MVWI3amVoMlYzN2NKeWNCeG80NTlpTjBfb3dYekc3UGFRWUFScFBJUVlGUTFqeWFCUGp0RG5Qd3oxemI2ejRvOHNHTXlBdlFaVXJIOFpaLUw2YWRrdTRYOWktR3dMeWRYSmxqNzZPTlRtZ3FvSmwzNGFvUXJMOXNJSnR2bWY2OUtEZXVhWG1MRXZLTGhnNlg?oc=5",
-          "publishedAt": "2017-03-21T07:00:00.000Z",
-          "source": "The Guardian",
-          "signals": [
-            "leadership"
           ],
           "relevanceScore": 1
         },
@@ -6703,6 +6689,16 @@ export const BANK_DATA = {
           "relevanceScore": 1
         },
         {
+          "title": "Dakota Access pipeline: ING sells stake in major victory for divestment push - The Guardian",
+          "link": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxOVXcxVEYtMnpJUWxyN1hMVm1MVWI3amVoMlYzN2NKeWNCeG80NTlpTjBfb3dYekc3UGFRWUFScFBJUVlGUTFqeWFCUGp0RG5Qd3oxemI2ejRvOHNHTXlBdlFaVXJIOFpaLUw2YWRrdTRYOWktR3dMeWRYSmxqNzZPTlRtZ3FvSmwzNGFvUXJMOXNJSnR2bWY2OUtEZXVhWG1MRXZLTGhnNlg?oc=5",
+          "publishedAt": "2017-03-21T07:00:00.000Z",
+          "source": "The Guardian",
+          "signals": [
+            "leadership"
+          ],
+          "relevanceScore": 1
+        },
+        {
           "title": "Storebrand’s Treasury Reserve Empowers Confident Buyback Strategy Targeting 2028 Expansion - Bitget",
           "link": "https://news.google.com/rss/articles/CBMiXkFVX3lxTE5kcE9HU1c3SHBrZTZEVVUxTjhlNUsxS0lreHdmVjFoRUFZMVVxVzlkZEpVVkZ0RDd3X3oxMzNaa1I5S1VBZmpuM0dhMkNqZjFQRmhUM2dyUHlrYXZRcWfSAWNBVV95cUxPM2Q0S0h6cmFTMk1jaklRRjVyVFEwd2hRX2JHa1J0MFFwQ216bVNnWGt0bzR4UXdMb01VNjFzWWVMeF9ScG5VeVYzcm15cHFrZzlybHpMN2JFYXd4cWtlWG5TU2M?oc=5",
           "publishedAt": "2026-04-06T17:33:59.000Z",
@@ -6713,20 +6709,10 @@ export const BANK_DATA = {
           "relevanceScore": 1
         },
         {
-          "title": "Storebrand to open Kron app for pension savings - AMWatch",
-          "link": "https://news.google.com/rss/articles/CBMib0FVX3lxTE5mZ0p5Qkk4SWZtVXBXX3Q1V2FMdG93OGxvMEhGUl9LbXozYzlVZzIySjBnMl9zNlVqT0NpOUFSOFNrcWlBMm0xOTNRZmVYbjNxa1ZNOVR2NjdEbWNkWXdXNFBuZjdSUWJfeTY4ZTIxMA?oc=5",
-          "publishedAt": "2024-12-16T08:00:00.000Z",
-          "source": "AMWatch",
-          "signals": [
-            "product"
-          ],
-          "relevanceScore": 1
-        },
-        {
-          "title": "These are the 36 banks, pension funds and insurers taking a stand against nuclear weapons - ICAN - International Campaign to Abolish Nuclear Weapons",
+          "title": "These are the 36 banks, pension funds and insurers taking a stand against nuclear weapons - International Campaign to Abolish Nuclear Weapons",
           "link": "https://news.google.com/rss/articles/CBMiSkFVX3lxTE96SzZmSDVjczRXZ3dvS2VGU1BVTGZ4dWJqdnl0SEpUUXdJWnNhN2FWR1JiZllNSjk3Y1J1TEFYTFo4b0duYVdYcml3?oc=5",
           "publishedAt": "2019-10-17T07:00:00.000Z",
-          "source": "ICAN - International Campaign to Abolish Nuclear Weapons",
+          "source": "International Campaign to Abolish Nuclear Weapons",
           "signals": [],
           "relevanceScore": 0
         },
@@ -6735,6 +6721,14 @@ export const BANK_DATA = {
           "link": "https://news.google.com/rss/articles/CBMiU0FVX3lxTFBfc0J3YkpOcTdYcHo3LUp2S2J3b3NobHRxNXl4cTZuRzk4ekl0b2JqbmpITjgtUjM4NlpqLTF0Zm1ma1hFMTgwZDl2dGJPbDJIMFNn?oc=5",
           "publishedAt": "2020-09-13T12:17:36.000Z",
           "source": "Nasdaq",
+          "signals": [],
+          "relevanceScore": 0
+        },
+        {
+          "title": "What are the rules for obtaining BankID at different Norwegian banks? - The Local Norway",
+          "link": "https://news.google.com/rss/articles/CBMiowFBVV95cUxNUEdYNll3NVFZSmVLX3dvZUJucWFxRHltSjQ3cjF6ekgxTzFBdlN2b1o3LTNrYVQ4SU91U2J3ZzdOV2xyeURKV2RWejd4eENQVkNIQ3BHaWRMbDg4ckdadkZEY1RYM2p1SXhEaUdsbDV3eGhyYmdVSU12Yk9YTnF6WFZEWVkyUmZIbHhEeWFJWG9MNWF3SlNNVFk1T1JmVzdqUnd3?oc=5",
+          "publishedAt": "2024-05-30T07:00:00.000Z",
+          "source": "The Local Norway",
           "signals": [],
           "relevanceScore": 0
         },
@@ -6748,13 +6742,12 @@ export const BANK_DATA = {
         }
       ],
       "topSignals": [
-        "investment",
         "product",
         "leadership"
       ],
-      "signalCount": 3,
+      "signalCount": 2,
       "articleCount": 8,
-      "fetchedAt": "2026-04-08T23:39:05.364Z"
+      "fetchedAt": "2026-04-15T08:08:18.146Z"
     },
     "backbase_landing_zones": [
       {
@@ -7007,13 +7000,13 @@ export const BANK_DATA = {
     "live_stock": {
       "ticker": "SWED-A.ST",
       "currency": "SEK",
-      "price": 325.6,
+      "price": 336,
       "dayChange": null,
       "dayChangePercent": null,
       "fiftyTwoWeekHigh": 363.9,
-      "fiftyTwoWeekLow": 193.95,
+      "fiftyTwoWeekLow": 217.8,
       "exchange": "STO",
-      "fetchedAt": "2026-04-08T23:38:00.634Z"
+      "fetchedAt": "2026-04-15T08:07:14.278Z"
     },
     "live_news": {
       "articles": [
@@ -7029,13 +7022,24 @@ export const BANK_DATA = {
           "relevanceScore": 2
         },
         {
-          "title": "Sweden launches new AML investigation into Swedbank - TradingView",
+          "title": "Sweden launches new AML investigation into Swedbank - TradingView — Track All Markets",
           "link": "https://news.google.com/rss/articles/CBMirAFBVV95cUxOQmI4aG1ydEVDUVNXUXZXbFRqemtSVjVFUno3UVZZT2dDZUU2U3dZUEJfSVNZRzF2MkJMOFphcElBQlpQQW05Xy1mVXI3SzZHRkRVdG9IYndvejJOZG1GODZwempXa1FYUUN4RzdkU2Y1ZnJNbTdyeGhsaTJPSmZOaHZob3hPbERDTnRWMGpGd0kzU1gxRG1CNl9LMExPYTJVb2ZmbTV5WG9YM284?oc=5",
           "publishedAt": "2026-02-20T08:00:00.000Z",
-          "source": "TradingView",
+          "source": "TradingView — Track All Markets",
           "signals": [
             "investment",
             "product"
+          ],
+          "relevanceScore": 2
+        },
+        {
+          "title": "Swedbank CEO still awaiting clarity on outcome of US investigations - TheBanker.com",
+          "link": "https://news.google.com/rss/articles/CBMiekFVX3lxTE0tcndsQ19QSlFJWUpDZXI0ZUFqdDdxRzRDMEZ6R1dkQ2c0QWxNU083T3RVcEJ2anJZTkh2MmVQcEtEekhvenk4YWFrVy13OFRzNS00UlF2RDhLMFBBMERyeGNEYzljVzlmV0dVeVhXM1MyOG1fejdkUnhR?oc=5",
+          "publishedAt": "2025-10-24T07:00:00.000Z",
+          "source": "TheBanker.com",
+          "signals": [
+            "leadership",
+            "investment"
           ],
           "relevanceScore": 2
         },
@@ -7080,16 +7084,6 @@ export const BANK_DATA = {
           "relevanceScore": 1
         },
         {
-          "title": "Swedbank Shares Climb After U.S. Justice Department Closes Probe - WSJ",
-          "link": "https://news.google.com/rss/articles/CBMiogFBVV95cUxQNUZGdzV6bElabGtDTmVBYUZRNTdSbnpuNG5ibG9YTWw1Y2xXUHJFTzJsVXcxS0ZpTVNhZTVXY3NwdEdIc3lRUERGc2VxUkZyMV9Ld21sZnRjMVRFSmNldHVfNWhVY2VxWGFScGQxc1JVU2xUb0R1c0hDRC1VSDA5a2tQMlVEb0NhMUZEMTNLanJiMjBGQTdBQ0tpNlVDUTRGU1E?oc=5",
-          "publishedAt": "2026-01-15T08:00:00.000Z",
-          "source": "WSJ",
-          "signals": [
-            "leadership"
-          ],
-          "relevanceScore": 1
-        },
-        {
           "title": "World 2024: Swedbank and MicroStrategy's 26-Year Journey and Beyond - Strategy",
           "link": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxQV3FlcXgydjVMcHF1VGZhWUVyMC1RelVqaWFScVl2RVlEZE0wREROYXBPZFdyWFE5MDREX3o0YXRyc2ZRLV9wVG5VRlVrM3VEWFNCSjZmVDRBX2o2TnJ2X1JZa3VUSmE2eTRlYjI0ZmY0di1oX0cxaVNrX01qbFB6VDJVVnYzQldWSU1NWDRNMmROcHNGbnA1eUxKV29mU0wtZXVLVkFHLXY?oc=5",
           "publishedAt": "2026-02-12T06:15:53.000Z",
@@ -7106,7 +7100,7 @@ export const BANK_DATA = {
       ],
       "signalCount": 4,
       "articleCount": 10,
-      "fetchedAt": "2026-04-08T23:38:48.389Z"
+      "fetchedAt": "2026-04-15T08:08:00.659Z"
     },
     "operational_profile": {
       "total_assets": "€250B",
@@ -7288,17 +7282,17 @@ export const BANK_DATA = {
     },
     "live_stock": {
       "ticker": "SYDB.CO",
-      "fetchedAt": "2026-04-08T23:38:22.096Z"
+      "fetchedAt": "2026-04-15T08:07:35.346Z"
     },
     "live_news": {
       "articles": [
         {
-          "title": "Sydbank to Buy Two Danish Rivals in ‘Surprise’ M&A Move - Bloomberg",
-          "link": "https://news.google.com/rss/articles/CBMivAFBVV95cUxPMlFXQUlXb0pyLURaNWlfM3k0WWljM08zQjl5NmgxejJaMjFiTC1Pc083cU9tTTZ6OU1nTVg2QmE1OGo2QlFYc1hTMDJielIxUmNyV2JNZTVMU1RTTjMxSlRQaEI2NE05ODZvWWdGZ1BJTk0tejJBWXlIVHZpZXZFNzdvZWk2YkpuUzVZS1N4RzNmaUFwRnZMS3NZMEJvenI1R2tGd2JVWTVDdm1Cci1tZkh5TnRPZldtd2hJVw?oc=5",
-          "publishedAt": "2025-10-27T07:00:00.000Z",
-          "source": "Bloomberg",
+          "title": "Sydbank A/S stock (DK0010311471): Why does its regional banking model matter more for global investo - AD HOC NEWS",
+          "link": "https://news.google.com/rss/articles/CBMivAFBVV95cUxNaDNBX005Nl8wTU5VSnhhUjlrTlhGbVBpRDZ3dHVTWXFWaDFqOTdoc2NtQlhQdjJSUE9jcW9YN1BiNktCOVBuTmdHOFRwcFVwS0dxbXo2M19Xd3lGMEJ6a1NLbUR3YkQ4NnhZUzFFelFfdXhGTV9fQmZPS2ljM1U2OHEtdU43Y1VDeFhBWnBET2RLRElxYnpLU3N4X1doVE9TU0FBOFJUSGF5QUNKdEJ4clplRjdmVjZsTHZ6WQ?oc=5",
+          "publishedAt": "2026-04-15T00:01:05.000Z",
+          "source": "AD HOC NEWS",
           "signals": [
-            "acquisition"
+            "investment"
           ],
           "relevanceScore": 1
         },
@@ -7343,12 +7337,12 @@ export const BANK_DATA = {
           "relevanceScore": 1
         },
         {
-          "title": "Sydbank, Arbejdernes Landsbank, and Vestjysk Bank Announce Merger - marketscreener.com",
-          "link": "https://news.google.com/rss/articles/CBMitwFBVV95cUxPazg1QVhyMXQ3T2RIaFBwZVp5TWVCbWNUM2Z2bW5mVi1kc2haNVdYZUFScldYUlhZck9YLTVYSld1MFh6ZmlUWVpsS3JUWXRDX3Z0TTFHbXhVZjRENTRBV2J6SW0xR3hpSXJKUXByNnpjTklhOG5ncl9wOGdNaXRXdDdpNzhBeHZpbUN2Nk9JYkJGTVZPX1ZWa2hybjVDV0ZYQjhidXllNUR4QzRhYUY5LXBzZDlmcUE?oc=5",
-          "publishedAt": "2025-10-27T07:00:00.000Z",
-          "source": "marketscreener.com",
+          "title": "Sydbank A/S stock (DK0010311471): Why its regional banking model matters more now for global investo - AD HOC NEWS",
+          "link": "https://news.google.com/rss/articles/CBMixwFBVV95cUxQNVNlYTVZQlNwbkdlWWpRdE1wVmNkdnJndlAtRGgwdkZDWFI2RHdPWS1tcFo0dmt0eFYyOFRKUmlPM2twRHE0V0pwNVg0WWdlMjktR3Z2NUJ6TUVxLTN2YzBQczkwaVloblc2bmNCZloydXdNM3Vhb3VzaXF1bEVLeER4TzFPNUhSVFM4R2s1NWxSLXlBbVIzcURsZmpYWExrNEJvNmFQMXFhSDFQQmhQeDZSZmluNFN0R1FDUWxsTE1KcDRHTmU0?oc=5",
+          "publishedAt": "2026-04-14T06:34:06.000Z",
+          "source": "AD HOC NEWS",
           "signals": [
-            "acquisition"
+            "investment"
           ],
           "relevanceScore": 1
         },
@@ -7363,21 +7357,23 @@ export const BANK_DATA = {
           "relevanceScore": 1
         },
         {
-          "title": "Three Danish Banks merge to form AL Sydbank - The Digital Banker",
-          "link": "https://news.google.com/rss/articles/CBMifkFVX3lxTE1mWlI1S1QzQ1VIU3BfZW8xNzlSOWEyWHNadFlmVUFyN0RZbE9SaGd6dTNhTGhXcVNJYm1BaWJQV3AtWWZQclFZcFpxQVV2eWVxa2xFWFliUVhIajltR2Z4d3oxUDlMUDR1Z09QZ1JlRGp1WlhvN0ZwUi1MbC1DUQ?oc=5",
-          "publishedAt": "2025-10-28T07:00:00.000Z",
-          "source": "The Digital Banker",
-          "signals": [],
-          "relevanceScore": 0
+          "title": "Sydbank A/S stock (DK0010311471): Why does its regional Danish focus matter for U.S. investors now? - AD HOC NEWS",
+          "link": "https://news.google.com/rss/articles/CBMiuwFBVV95cUxPYkFsRERfXzJvMEpVQTl1Q0ctdFpMcmFCYXVJMmNEZElWNDAybWc5TTlsVUNxNDJPcURWUFpiel85MlNLeldwNE53dHRhNEt5NWZjRVVpZWtlOUxsb01aS2dIdzRTRzBPYnVFMjd4ZkFUekItTkVTbThpSkRJT1FwYXJUUFppYXpTRl9mbV85UkxnLUwxMVpxQ0c2UFFpdjY4YVVDQ0NlWGxKUk5SYXJSWEc1dGh3bmFWYy1j?oc=5",
+          "publishedAt": "2026-04-10T15:34:58.000Z",
+          "source": "AD HOC NEWS",
+          "signals": [
+            "investment"
+          ],
+          "relevanceScore": 1
         }
       ],
       "topSignals": [
-        "acquisition",
-        "investment"
+        "investment",
+        "acquisition"
       ],
       "signalCount": 2,
       "articleCount": 10,
-      "fetchedAt": "2026-04-08T23:39:17.084Z"
+      "fetchedAt": "2026-04-15T08:08:30.030Z"
     },
     "backbase_landing_zones": [
       {
@@ -7656,13 +7652,13 @@ export const BANK_DATA = {
     "live_stock": {
       "ticker": "TFBANK.ST",
       "currency": "SEK",
-      "price": 174,
+      "price": 177.6,
       "dayChange": null,
       "dayChangePercent": null,
       "fiftyTwoWeekHigh": 190,
-      "fiftyTwoWeekLow": 107.833,
+      "fiftyTwoWeekLow": 110,
       "exchange": "STO",
-      "fetchedAt": "2026-04-08T23:38:03.978Z"
+      "fetchedAt": "2026-04-15T08:07:17.516Z"
     },
     "live_news": {
       "articles": [
@@ -7689,15 +7685,14 @@ export const BANK_DATA = {
           "relevanceScore": 2
         },
         {
-          "title": "TF Bank schedules Q1 2026 report release and investor call - TipRanks",
-          "link": "https://news.google.com/rss/articles/CBMirwFBVV95cUxObVdPTHU5YzJTeXJWWEFHQWE4SHZTaFZ0eEtVUDJGR3Q0aGZ1ZW1hdUYxUzBPUDlxLVRnOW9ncGdFSHcwcU50VUdPelNzNnhNVldMX1plYUk5cXF1VDNqbVBUWU1IWUdGeGM3NThkazNhbXNxUHlkTnBxVWRFSmtfb3NCUnNSdnRjX2wzT1B5NXZmUmtZRjRhdWNvWXM4czNsU3h4Uk42aE5KTFh0Z1NB?oc=5",
-          "publishedAt": "2026-04-07T11:41:07.000Z",
-          "source": "TipRanks",
+          "title": "Invested assets to total deposits of TF Bank AB – OMXSTO:AVARDA - TradingView — Track All Markets",
+          "link": "https://news.google.com/rss/articles/CBMitAFBVV95cUxPU2Q5YXBtcUhfOWFoN1k2akxZckRGbWRZY1lHQ092UElEcVJhLVZtbWdoLXluX1d4dU1ZRjZpNWN5Sk9wdFF3eEFCYjdDbEdoa2JIT2ZWYTBNX0s1ZkJPMjFLcHZaUHRvaXRDaDRtTDZUaE43ZkE2NmJ0YTdpNHNZYnZlckliZGk2T1hzYno2Q0s1b084WE8tQ3o1SlNJcFdoa21JMXI5czZwb1V2T09RdUYxSHM?oc=5",
+          "publishedAt": "2026-04-12T12:52:28.000Z",
+          "source": "TradingView — Track All Markets",
           "signals": [
-            "investment",
-            "product"
+            "investment"
           ],
-          "relevanceScore": 2
+          "relevanceScore": 1
         },
         {
           "title": "Why TF Bank has Selected NICE Actimize for AML Compliance - FinTech Magazine",
@@ -7720,19 +7715,9 @@ export const BANK_DATA = {
           "relevanceScore": 1
         },
         {
-          "title": "TF Bank AB (publ) enters into share purchase agreement regarding transfer of a majority stake in the subsidiary Rediem Capital AB - Finansavisen",
-          "link": "https://news.google.com/rss/articles/CBMiwAJBVV95cUxNekNxaDlMSXlCOTFLaFpTMDBMd3ZyX1AxVG5oNXNaak56RXJHbE5XSjBVem4yeDd0eE1zSFRLSlZ1M2x1bFBRVW1DNmhtQ3dOckNmY3A4WjZrTHhWM2I3R3I5dHl3OVVrQkNqWFVoNFd0Y2pnaC14RDM2bDZPRWJ1YTJua2puckYySllTVDVfaElDRlF0dlR4VHJJajRicnh0UmlzcElaN1FwUS1UeDQza1R2cTE4bUVERFFTUEZVM0tQNVpoWnI2U00zZ0pDMVcyMTRYb2JfWTBjS0FHRU9lTHZtOFpGQl9ud3JnbXd1MWoweXFXVnNibWp5TXVJVTN3RzZjdGtndVlEOWlFRlYwT05mUWtVcEFMaVJxRTVQLXlHTlBxWFhUUFVmWHdTWURHS1RKbFJhVXVXT0VfS0IwUg?oc=5",
-          "publishedAt": "2024-10-04T07:00:00.000Z",
-          "source": "Finansavisen",
-          "signals": [
-            "acquisition"
-          ],
-          "relevanceScore": 1
-        },
-        {
-          "title": "TF Bank Calls 2026 AGM to Decide on Governance, Share Programs and Capital Measures - TipRanks",
-          "link": "https://news.google.com/rss/articles/CBMizwFBVV95cUxQRnd5andEM3lkSGR2QUhnd204MEhaWnIxYVdSbF8ya1NnUHh0cHhDeWF2YzlNcEZaTE9oWUpHTzdzaWZESWlFODhJc3BsT2sxM1RhMFdQMWQwbG1EN3hSX3ZSRFhERzRZZ04wN1RsWXQ5NHBiZzZZNVFnUXVraGxzUFVNNE1WREpFTFgxVDM5c3RGWGJ2VWlxLU15ejAzYzJ2SHdQRFFKa3VqMnB6aHVJUVNUdFdZRGo0c3R2Z2h4MVRzT0VrMFNpVnkxYnh5aG8?oc=5",
-          "publishedAt": "2026-03-27T07:00:00.000Z",
+          "title": "TF Bank AB Announces Name Change to Avarda Bank AB - TipRanks",
+          "link": "https://news.google.com/rss/articles/CBMipAFBVV95cUxOTUtyV3NfZzlNRk5rNDIyOXZyQW11Wm9BWExYSG9SaHNVcXZNdEQ5NUVfWVVydG4xdTRSdzJheE5oWXJNVFhsRV90S3ljV3FiYS1CbTV6emZCLVJqUmFfRDVJbmhOVTdOTWYxalM0RGtfOGtHQlM1WWFaMVFHMHp4bnFDVnNTRWdIRzRZQkhJeFpWSUt4aklIMWRKSlpZbVNIWlk0SQ?oc=5",
+          "publishedAt": "2025-11-17T08:00:00.000Z",
           "source": "TipRanks",
           "signals": [],
           "relevanceScore": 0
@@ -7744,6 +7729,14 @@ export const BANK_DATA = {
           "source": "Finansavisen",
           "signals": [],
           "relevanceScore": 0
+        },
+        {
+          "title": "Sweden’s TF Bank select NICE Actimize’s solutions - Retail Banker International",
+          "link": "https://news.google.com/rss/articles/CBMiekFVX3lxTFBvaVY5M1gyLUFMV1pjdHZDczB2UEh3SlgxMFpZMGhhZmpSS1ItaDl6RXdDcjVuZ0pNR1U0alBIbG5VbWJlWmt5T1BuaWx0X1lHbVZhamlqQ1JTSmVUS3d2VC1ZdkFXZEFjc1laNmRsdnJFSk1ZVC13N3B3?oc=5",
+          "publishedAt": "2024-11-21T08:00:00.000Z",
+          "source": "Retail Banker International",
+          "signals": [],
+          "relevanceScore": 0
         }
       ],
       "topSignals": [
@@ -7751,13 +7744,11 @@ export const BANK_DATA = {
         "cloud",
         "partnership",
         "investment",
-        "product",
-        "regulation",
-        "acquisition"
+        "regulation"
       ],
-      "signalCount": 7,
+      "signalCount": 5,
       "articleCount": 10,
-      "fetchedAt": "2026-04-08T23:38:55.806Z"
+      "fetchedAt": "2026-04-15T08:08:08.156Z"
     },
     "operational_profile": {
       "total_assets": "SEK 25B (~€2.2B)",
@@ -7935,49 +7926,49 @@ export const BANK_DATA = {
     "live_stock": {
       "ticker": "ISB.IC",
       "currency": "ISK",
-      "price": 137,
+      "price": 139.8,
       "dayChange": null,
       "dayChangePercent": null,
       "fiftyTwoWeekHigh": 152,
       "fiftyTwoWeekLow": 106.5,
       "exchange": "ICE",
-      "fetchedAt": "2026-04-08T23:38:28.890Z"
+      "fetchedAt": "2026-04-15T08:07:41.828Z"
     },
     "live_news": {
       "articles": [
         {
-          "title": "Íslandsbanki hf.: Merger discussions between Íslandsbanki and Skagi hf. discontinued - TradingView",
+          "title": "Íslandsbanki hf.: Merger discussions between Íslandsbanki and Skagi hf. discontinued - TradingView — Track All Markets",
           "link": "https://news.google.com/rss/articles/CBMi3gFBVV95cUxNWXVaeFJMWFBjWVBDazBZSi1LLU91Umtiaml4WmhfSHJkWlc1emoweGp5Nlp0dkdXWUtDX3AyR3VyZFhTQWo1d3pjVnVVMVZRUTZncXpwdktWVjIzZWk4bmVyWEpWNTZuNDRDSFlXNDhVMkVzSVczVUplUzBhZ1NrUGMzbm1LMXJFY1BvZ1dXTlhuN2g1N19fZURuejJBS2gtQ3E0dHJWc2xFSWh3N1VKYjdMMnpZOGpvRWRpYVJIZG1ZVmE2NVpWaXF5ekxuXzZ0Tzc0ZERyc3kyZ2dxUHc?oc=5",
           "publishedAt": "2026-02-21T08:00:00.000Z",
-          "source": "TradingView",
+          "source": "TradingView — Track All Markets",
           "signals": [
             "acquisition"
           ],
           "relevanceScore": 1
         },
         {
-          "title": "Over 31,000 individuals purchase shares in Íslandsbanki auction - Iceland Monitor",
-          "link": "https://news.google.com/rss/articles/CBMipgFBVV95cUxOVHZDVzNFX2hDczdYOFB6enBFc2JTZTV1ZkFMc0NRbzF1WG5jeGQtem50VHBfRDB0WjJPYU91UHNYS0FnYkVxMEo5RUUxLWJraFlhdUE0RlhKdmdlQld5R3NPcXJ4clVXYUlaOGFZXzItY09GenIzUUhrSF93RDhYM0F1UmlOcDZuTnhNdXJoR29zWFBYemlWaGtHOU44TDZFSlpWY3BB?oc=5",
-          "publishedAt": "2025-05-16T07:00:00.000Z",
-          "source": "Iceland Monitor",
-          "signals": [
-            "acquisition"
-          ],
-          "relevanceScore": 1
-        },
-        {
-          "title": "Íslandsbanki hf. stock: Iceland's leading bank offers stability in a volatile Nordic market for Nor - AD HOC NEWS",
-          "link": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxPZTN6anVvUl9jNG9rb3kyT0M1bHZYSEVacXRnb2wzaF9lMjVMd21jRGItMC01RHJNVExBUHpGUndkSDUzd0dGVGNFWWVSSzRNZ2wxZEpoUWl6RmV0M0FJQ29YQjItYTBoc3A4cEhVLTJHVHlDTS1BUGZXbEVEdmpyV2Zkb0p0RGcwcmN6eWZuOW9obEZ3YTBucGEwUWgxYkY0ZnBtY3RORjFOY01IUHFmOHhPQzVXbDFiVHllOHRXdWxfT1U?oc=5",
-          "publishedAt": "2026-03-27T06:40:28.000Z",
+          "title": "Íslandsbanki (ISB) Just Got Interesting for US Investors – Here’s Why - AD HOC NEWS",
+          "link": "https://news.google.com/rss/articles/CBMiuwFBVV95cUxPQWJnajZfb09qLS1kSTRwLU1wV2pNbkJTSFNJdWtZMUdoVDFDM3V3cHBSQ1NuSUZva3dTbHZFb3QyMEdQNGlGXzY1LU5XZEFRaE5hVmJLYU1aSjVpWXJ0TFRqOE8zWGJGeF9pV1JGalpwd2EzVDAzVlMxTE5OOFRlNUIzc0F4VEVsZlZWbGxWSzFrNGlUY0diSU1aSVNFMXRIY1hPeEZEdHVxOXhBRllVeGdMZThyaDk4cWNV?oc=5",
+          "publishedAt": "2026-02-22T08:00:00.000Z",
           "source": "AD HOC NEWS",
+          "signals": [
+            "investment"
+          ],
+          "relevanceScore": 1
+        },
+        {
+          "title": "New Year‘s Eve no longer a banking day - Íslandsbanki",
+          "link": "https://news.google.com/rss/articles/CBMifkFVX3lxTE9oZG1PZ0lGUXNycUk5SUtRQWg0MEdaVUFaMjJIU3BWeGRwaE5rcjhZbmhsa1RpaEVKNlozR1R1MjAtb1BFQU9VNDJQaTRzZERqeWRtZThiMUg5Nl9McWJ0M1liRVFpNllTTVVvT0JBU1dXZ1VRUE9iR0ZKcEtvUQ?oc=5",
+          "publishedAt": "2025-12-10T08:00:00.000Z",
+          "source": "Íslandsbanki",
           "signals": [],
           "relevanceScore": 0
         },
         {
-          "title": "Financial results for third quarter 2025 - Íslandsbanki",
-          "link": "https://news.google.com/rss/articles/CBMiggFBVV95cUxOcmk2Ym5LQVBMZDRwVnB5Z2tVWnRtdWlpWUNLc1VFYmxaeWt6Wm9YMkxvclJzUzN2aUNsd0NLVmptb0Yyb1NCM19QejlNZzhLdXV0dS1ldGpDNDFYdGlvZHEycGsyQzJ6MVpSMTdVYlpjV0ZwbEFyVXFNcHRuU1BRVVVB?oc=5",
-          "publishedAt": "2025-10-30T07:00:00.000Z",
-          "source": "Íslandsbanki",
+          "title": "Íslandsbanki hf. stock: Iceland's leading bank offers stability in a volatile Nordic market for Nor - AD HOC NEWS",
+          "link": "https://news.google.com/rss/articles/CBMiwwFBVV95cUxPZTN6anVvUl9jNG9rb3kyT0M1bHZYSEVacXRnb2wzaF9lMjVMd21jRGItMC01RHJNVExBUHpGUndkSDUzd0dGVGNFWWVSSzRNZ2wxZEpoUWl6RmV0M0FJQ29YQjItYTBoc3A4cEhVLTJHVHlDTS1BUGZXbEVEdmpyV2Zkb0p0RGcwcmN6eWZuOW9obEZ3YTBucGEwUWgxYkY0ZnBtY3RORjFOY01IUHFmOHhPQzVXbDFiVHllOHRXdWxfT1U?oc=5",
+          "publishedAt": "2026-03-27T07:00:00.000Z",
+          "source": "AD HOC NEWS",
           "signals": [],
           "relevanceScore": 0
         },
@@ -8006,20 +7997,21 @@ export const BANK_DATA = {
           "relevanceScore": 0
         },
         {
-          "title": "Cold comfort from landmark Íslandsbanki IPO as Iceland politics puts privatizations in limbo - Euromoney",
-          "link": "https://news.google.com/rss/articles/CBMi-AFBVV95cUxQRTNQbmdnUk5neUlxRzlzeEprbDZBN2NYTmphWW85LTdaUVZlcHpRNi1RSTRoVjlybkM0czhQa3ViZ2RlZF9Td2dCMEpsLWFMSm9xSmxUT0lwWl8zS2ZuekFPa0U5THBPMHN4ZGRqalRFSzRhbXRNNEM3bVQzMjRiTUd5dE01T05fUFdDbEY2YVNrOW9HREJxdUVyNWU4Y0JkaUs0MWw4OHJvRUxrdDdwNWc3TkxCUU1YY0VITl83am9BT1Z0RGZSU09GbTlsYXR4aGNTczU3d0diMG45eFFNSE9rOFhmeGhBSzMtbmp4WkRzSWxSY1FPTg?oc=5",
-          "publishedAt": "2022-05-12T07:00:00.000Z",
-          "source": "Euromoney",
+          "title": "Financial results for third quarter 2025 - Íslandsbanki",
+          "link": "https://news.google.com/rss/articles/CBMiggFBVV95cUxOcmk2Ym5LQVBMZDRwVnB5Z2tVWnRtdWlpWUNLc1VFYmxaeWt6Wm9YMkxvclJzUzN2aUNsd0NLVmptb0Yyb1NCM19QejlNZzhLdXV0dS1ldGpDNDFYdGlvZHEycGsyQzJ6MVpSMTdVYlpjV0ZwbEFyVXFNcHRuU1BRVVVB?oc=5",
+          "publishedAt": "2025-10-30T07:00:00.000Z",
+          "source": "Íslandsbanki",
           "signals": [],
           "relevanceScore": 0
         }
       ],
       "topSignals": [
-        "acquisition"
+        "acquisition",
+        "investment"
       ],
-      "signalCount": 1,
+      "signalCount": 2,
       "articleCount": 10,
-      "fetchedAt": "2026-04-08T23:39:30.760Z"
+      "fetchedAt": "2026-04-15T08:08:43.605Z"
     },
     "backbase_landing_zones": [
       {
