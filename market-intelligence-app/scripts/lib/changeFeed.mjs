@@ -96,7 +96,17 @@ function loadSignalEvents(db, { bankKey, cutoffISO, limit = 50 }) {
       confidence_tier: s.relevance_score >= 7 ? 1 : 2,
       citation: {
         url: s.source_url,
-        label: s.publisher_name ? `${s.publisher_name}` : s.source_type,
+        // Sprint 4 audit fix: A-grade signals without a parsed publisher
+        // (e.g., bank-press URLs whose titles lack a "- Publisher" pattern)
+        // got "news" as label, which is misleading. Use a contextual label
+        // based on the grade so the AE knows it's a primary source.
+        label: s.publisher_name
+          ? s.publisher_name
+          : s.source_grade === 'A' ? 'Primary source'
+          : s.source_grade === 'B' ? 'Tier-1 press'
+          : s.source_grade === 'C' ? 'Trade press'
+          : s.source_grade === 'D' ? 'Low-authority source'
+          : (s.source_type || 'source'),
         evidence_quote: s.evidence_quote,
       },
     };
@@ -178,7 +188,33 @@ function loadPatternEvents(db, { bankKey, cutoffISO, minConfidence = 'medium', l
     LIMIT ?
   `).all(...params, limit);
 
-  return rows.map(p => {
+  // Sprint 4 audit fix: signal-side duplication amplifies in the feed when
+  // multiple news outlets cover the same underlying event. We dedupe by
+  // (fact_id, topic, pattern_type), keeping the variant with the highest
+  // signal_grade (A > B > C > D), then by confidence (high > medium > low).
+  // This collapses "CEO accelerating after [Omni / Computer Weekly / FinTech]"
+  // into one canonical "CEO accelerating after [best-grade source]" event.
+  const GRADE_RANK = { A: 4, B: 3, C: 2, D: 1 };
+  const CONF_RANK = { high: 3, medium: 2, low: 1 };
+  const dedupKey = (p) => `${p.internal_fact_id || ''}|${p.topic || ''}|${p.pattern_type || ''}`;
+  const bestByKey = new Map();
+  let dedupedCount = 0;
+  for (const p of rows) {
+    const key = dedupKey(p);
+    if (!key.includes('||')) { // require both fact + topic + type for collapse
+      const existing = bestByKey.get(key);
+      if (!existing) { bestByKey.set(key, p); continue; }
+      const a = (GRADE_RANK[p.signal_grade] || 0) * 10 + (CONF_RANK[p.confidence] || 0);
+      const b = (GRADE_RANK[existing.signal_grade] || 0) * 10 + (CONF_RANK[existing.confidence] || 0);
+      if (a > b) bestByKey.set(key, p);
+      dedupedCount += 1;
+    } else {
+      // Pattern lacks fact_id or topic — surface as-is, no dedup
+      bestByKey.set(p.id, p);
+    }
+  }
+
+  return Array.from(bestByKey.values()).map(p => {
     const confBase = { high: 7, medium: 5, low: 3 }[p.confidence] || 3;
     const gradeBoost = { A: 2, B: 1, C: 0, D: -1 }[p.signal_grade] || 0;
     const significance = Math.min(10, Math.max(1, confBase + gradeBoost));
