@@ -160,6 +160,7 @@ export const getPlays = (dealId) => request(`/api/deals/${enc(dealId)}/plays`);
 export const getPlayDetail = (dealId, playId) => request(`/api/deals/${enc(dealId)}/plays/${enc(playId)}`);
 export const updatePlay = (dealId, playId, data) => request(`/api/deals/${enc(dealId)}/plays/${enc(playId)}`, { method: 'PUT', body: JSON.stringify(data) });
 export const generatePlayOutputs = (dealId, playId) => request(`/api/deals/${enc(dealId)}/plays/${enc(playId)}/generate`, { method: 'POST', timeout: AI_TIMEOUT });
+export const regenerateStalePlays = (dealId) => request(`/api/deals/${enc(dealId)}/plays/regenerate-stale`, { method: 'POST' });
 
 // ── Intelligence Layer: Play Outputs ──
 export const getPlayOutputs = (playId) => request(`/api/plays/${enc(playId)}/outputs`);
@@ -174,6 +175,24 @@ export const getSignals = (dealId, params = {}) => {
 };
 export const updateSignal = (dealId, signalId, data) => request(`/api/deals/${enc(dealId)}/signals/${enc(signalId)}`, { method: 'PUT', body: JSON.stringify(data) });
 export const getSignalSummary = (dealId) => request(`/api/deals/${enc(dealId)}/signals/summary`);
+// Refresh signals for one bank — runs harvest + classify + route end-to-end. ~3-5 min.
+export const refreshDealSignals = (dealId) => request(`/api/deals/${enc(dealId)}/signals/refresh`, { method: 'POST', timeout: 600000 });
+// When was this bank's signal feed last refreshed? Used for the "Last updated X ago" badge.
+export const getSignalFreshness = (dealId) => request(`/api/deals/${enc(dealId)}/signals/freshness`);
+// Signals mentioning a specific person — for the bidirectional cross-link.
+export const getSignalsForPerson = (bankKey, personId) => request(`/api/banks/${enc(bankKey)}/persons/${enc(personId)}/signals`);
+// Manual signal submission (Stage 4C) — paste a URL/LinkedIn link, classify on backend.
+export const submitManualSignal = (dealId, payload) => request(`/api/deals/${enc(dealId)}/signals/manual`, { method: 'POST', body: JSON.stringify(payload), timeout: 60000 });
+// Live OG-fetch for the submission modal — pastes URL, returns title + description.
+export const fetchOpenGraph = (url) => request('/api/og-fetch', { method: 'POST', body: JSON.stringify({ url }), timeout: 20000 });
+
+// ── Pulse (Strategic Repositioning Sprint 1) ──
+export const getReviewPeriods = () => request('/api/review-periods');
+export const getBankPulses = (bankKey) => request(`/api/banks/${enc(bankKey)}/pulses`);
+export const generatePulse = (bankKey, periodId = '2026-Q2') => request(`/api/banks/${enc(bankKey)}/pulses?period=${enc(periodId)}`, { method: 'POST', timeout: 60000 });
+export const getPulse = (pulseId) => request(`/api/pulses/${enc(pulseId)}`);
+export const overrideCell = (pulseId, payload) => request(`/api/pulses/${enc(pulseId)}/cells`, { method: 'PUT', body: JSON.stringify(payload) });
+export const confirmPulse = (pulseId, aeId) => request(`/api/pulses/${enc(pulseId)}/confirm`, { method: 'POST', body: JSON.stringify({ ae_id: aeId }) });
 
 // ── Intelligence Layer: Deal Twin ──
 export const getDealTwin = (dealId) => request(`/api/deals/${enc(dealId)}/twin`);
@@ -252,6 +271,21 @@ export const extractMeetingFromTranscript = (bankKey, transcript) => request(`/a
 
 // ── Change Detection (Layer 3) ──
 export const getRecentChanges = (bankKey, { limit } = {}) => request(`/api/banks/${encodeURIComponent(bankKey)}/changes${limit ? `?limit=${limit}` : ''}`);
+
+// ── Stakeholder Drift + Patterns (Sprint 2.3 / 2.4) ──
+export const getStakeholderDrift = (bankKey, { view = 'cells', includeUnattributed = false, minFacts = 1 } = {}) => {
+  const params = new URLSearchParams({ view, min_facts: String(minFacts) });
+  if (includeUnattributed) params.set('include_unattributed', '1');
+  return request(`/api/banks/${encodeURIComponent(bankKey)}/stakeholder-drift?${params}`);
+};
+export const getBankPatterns = (bankKey, { minConfidence = null, onlyUnacknowledged = false } = {}) => {
+  const params = new URLSearchParams();
+  if (minConfidence) params.set('min_confidence', minConfidence);
+  if (onlyUnacknowledged) params.set('unack', '1');
+  const qs = params.toString();
+  return request(`/api/banks/${encodeURIComponent(bankKey)}/patterns${qs ? `?${qs}` : ''}`);
+};
+export const acknowledgePattern = (patternId, aeId) => request(`/api/patterns/${encodeURIComponent(patternId)}/acknowledge`, { method: 'POST', body: JSON.stringify({ ae_id: aeId }) });
 
 // ── Power Map (MEDDICC) ──
 export const generatePowerMap = (bankKey, { persona } = {}) => request(`/api/banks/${encodeURIComponent(bankKey)}/power-map`, { method: 'POST', body: JSON.stringify({ persona }), timeout: AI_TIMEOUT });

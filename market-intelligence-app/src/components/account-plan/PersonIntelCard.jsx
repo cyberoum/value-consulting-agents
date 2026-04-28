@@ -9,6 +9,8 @@ import {
   RELATIONSHIP_TYPES,
   ROLE_CATEGORY_META,
 } from './constants';
+import PersonSignalsPanel from './PersonSignalsPanel';
+import PersonDriftPanel from './PersonDriftPanel';
 
 /**
  * PersonIntelCard — slide-in right panel showing full stakeholder intel.
@@ -274,6 +276,28 @@ export default function PersonIntelCard({ bankKey, person, onClose, onChanged })
           <TagInput label="KPIs They Care About" tags={form.kpis_of_interest}
             onChange={v => set('kpis_of_interest', v)}
             placeholder="e.g., Cost-income ratio, ROE, CAC…" />
+
+          {/* Signals mentioning this person — Stage 5A bidirectional cross-link */}
+          {person?.id && (
+            <div className="p-3 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-subtle)]">
+              <PersonSignalsPanel
+                bankKey={bankKey}
+                personId={person.id}
+                personName={person.canonical_name}
+              />
+            </div>
+          )}
+
+          {/* Sprint 2.6 — stakeholder positions across meetings (drift) */}
+          {person?.id && (
+            <div className="p-3 rounded-lg bg-[var(--bg-secondary)] border border-[var(--border-subtle)]">
+              <PersonDriftPanel
+                bankKey={bankKey}
+                personId={person.id}
+                personName={person.canonical_name}
+              />
+            </div>
+          )}
 
           {/* Notes */}
           <div>

@@ -342,6 +342,241 @@ function initSchema(db) {
   try { db.exec("ALTER TABLE pipeline_settings ADD COLUMN status TEXT DEFAULT 'prospect'"); } catch (e) { /* exists */ }
   try { db.exec("ALTER TABLE pipeline_settings ADD COLUMN disqualify_reason TEXT"); } catch (e) { /* exists */ }
 
+  // Migration (Stage 1 signals revamp): enrich live_signals with consultant-grade fields.
+  //   action_point         — concrete next step for the consultant ("Trigger Discovery play with new CTO")
+  //   evidence_quote       — the actual sentence from the article that triggered the signal
+  //   mentioned_stakeholders — JSON array of person names mentioned (links signal → persons table)
+  try { db.exec("ALTER TABLE live_signals ADD COLUMN action_point TEXT"); } catch (e) { /* exists */ }
+  try { db.exec("ALTER TABLE live_signals ADD COLUMN evidence_quote TEXT"); } catch (e) { /* exists */ }
+  try { db.exec("ALTER TABLE live_signals ADD COLUMN mentioned_stakeholders TEXT"); } catch (e) { /* exists */ }
+  // Pack A: is_strategic_initiative — 1 when the article represents a
+  // multi-year transformation, lasting plan, or roadmap whose relevance
+  // extends beyond the 2-year recency cap. Lets older "Bank announces 2024-2027
+  // transformation" articles stay visible while routine 2024 quarterly
+  // earnings articles get filtered out.
+  try { db.exec("ALTER TABLE live_signals ADD COLUMN is_strategic_initiative INTEGER DEFAULT 0"); } catch (e) { /* exists */ }
+  // Pack B (placeholder for next pack): domain_tags JSON array of LOB tags
+  // (Retail / Channels / Wealth & Private / SME / Corporate / AI). Each
+  // signal can carry multiple — a digital-RFP article might be ["Retail","AI"].
+  try { db.exec("ALTER TABLE live_signals ADD COLUMN domain_tags TEXT"); } catch (e) { /* exists */ }
+
+  // Migration (Stage 2 signals revamp): bridge live_signals → deal_signals.
+  // High-relevance live signals get auto-promoted into deal_signals; these
+  // columns let the bridge dedup, link back, distinguish demo from real,
+  // and show the consultant the same action_point + evidence + stakeholder
+  // mentions in the bank profile UI.
+  //   action_point           — copied from live_signal at promotion time
+  //   evidence_quote         — copied from live_signal at promotion time
+  //   mentioned_stakeholders — copied from live_signal at promotion time
+  //   live_signal_id         — back-reference for dedup ("did we already promote this article?")
+  //   relevance_score        — Backbase relevance copied from live_signal (allows sorting)
+  //   is_demo                — flag the original 33 hand-seeded demo rows so the UI can hide
+  //                            them once real signals exist for a bank
+  try { db.exec("ALTER TABLE deal_signals ADD COLUMN action_point TEXT"); } catch (e) { /* exists */ }
+  try { db.exec("ALTER TABLE deal_signals ADD COLUMN evidence_quote TEXT"); } catch (e) { /* exists */ }
+  try { db.exec("ALTER TABLE deal_signals ADD COLUMN mentioned_stakeholders TEXT"); } catch (e) { /* exists */ }
+  try { db.exec("ALTER TABLE deal_signals ADD COLUMN live_signal_id INTEGER"); } catch (e) { /* exists */ }
+  try { db.exec("ALTER TABLE deal_signals ADD COLUMN relevance_score REAL"); } catch (e) { /* exists */ }
+  try { db.exec("ALTER TABLE deal_signals ADD COLUMN is_demo INTEGER DEFAULT 0"); } catch (e) { /* exists */ }
+  try { db.exec("CREATE UNIQUE INDEX IF NOT EXISTS idx_deal_signals_live_id ON deal_signals(deal_id, live_signal_id) WHERE live_signal_id IS NOT NULL"); } catch (e) { /* exists */ }
+  // Pack A + B: mirror new live_signals columns to deal_signals so the bridge
+  // (signalRouter) can carry these fields through the promotion.
+  try { db.exec("ALTER TABLE deal_signals ADD COLUMN is_strategic_initiative INTEGER DEFAULT 0"); } catch (e) { /* exists */ }
+  try { db.exec("ALTER TABLE deal_signals ADD COLUMN domain_tags TEXT"); } catch (e) { /* exists */ }
+  // Stage 4B: per-bank freshness tracking via signal_refresh_log.bank_key
+  try { db.exec("ALTER TABLE signal_refresh_log ADD COLUMN bank_key TEXT"); } catch (e) { /* exists */ }
+  try { db.exec("ALTER TABLE signal_refresh_log ADD COLUMN promoted INTEGER DEFAULT 0"); } catch (e) { /* exists */ }
+  try { db.exec("CREATE INDEX IF NOT EXISTS idx_signal_refresh_log_bank ON signal_refresh_log(bank_key, completed_at)"); } catch (e) { /* exists */ }
+
+  // ════════════════════════════════════════════════════════════════════
+  //  PULSE SYSTEM (Strategic Repositioning Sprint 1)
+  // ════════════════════════════════════════════════════════════════════
+  // The pulse is Nova's flagship output: a quarterly account review with
+  // every cell source-cited and diff-able against the prior period. This is
+  // the demo that wins the redundancy argument vs. Claude-in-a-chat.
+  //
+  // Three tables:
+  //   review_periods  — Q1 / Q2 / Q3 / Q4 buckets with start/end dates
+  //   pulses          — one pulse per (bank_key, period_id), payload = JSON
+  //   pulse_overrides — per-cell AE corrections (telemetry on synthesizer
+  //                     weaknesses, so we know where to harden the prompt)
+
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS review_periods (
+      id TEXT PRIMARY KEY,
+      starts_at TEXT NOT NULL,
+      ends_at TEXT NOT NULL,
+      status TEXT NOT NULL CHECK(status IN ('active', 'closed')),
+      closed_at TEXT
+    );
+
+    CREATE TABLE IF NOT EXISTS pulses (
+      id TEXT PRIMARY KEY,
+      account_id TEXT NOT NULL REFERENCES banks(key) ON DELETE CASCADE,
+      period_id TEXT NOT NULL REFERENCES review_periods(id),
+      payload_json TEXT NOT NULL,
+      generated_at TEXT NOT NULL DEFAULT (datetime('now')),
+      generated_by TEXT,
+      confirmed_by_ae_at TEXT,
+      confirmed_by_ae TEXT,
+      exported_at TEXT,
+      UNIQUE(account_id, period_id)
+    );
+    CREATE INDEX IF NOT EXISTS idx_pulses_account ON pulses(account_id);
+    CREATE INDEX IF NOT EXISTS idx_pulses_period ON pulses(period_id);
+
+    CREATE TABLE IF NOT EXISTS pulse_overrides (
+      id TEXT PRIMARY KEY,
+      pulse_id TEXT NOT NULL REFERENCES pulses(id) ON DELETE CASCADE,
+      cell_path TEXT NOT NULL,
+      original_value TEXT,
+      override_value TEXT,
+      ae_id TEXT,
+      reason TEXT,
+      created_at TEXT DEFAULT (datetime('now'))
+    );
+    CREATE INDEX IF NOT EXISTS idx_pulse_overrides_pulse ON pulse_overrides(pulse_id);
+  `);
+
+  // ════════════════════════════════════════════════════════════════════
+  //  MEETING INTELLIGENCE LAYER (Strategic Repositioning Sprint 2)
+  // ════════════════════════════════════════════════════════════════════
+  // Three tables turn free-text meeting transcripts into the structural
+  // moat the brief calls out: persistent, longitudinal, attributed
+  // internal data that no public chat-LLM workflow can produce.
+  //
+  //   meeting_facts        — discrete claims extracted from a meeting.
+  //                          Each fact is attributed to a speaker (linked
+  //                          to persons.id) + topic + verbatim evidence.
+  //   stakeholder_positions — derived view: for each (person_id, topic),
+  //                          their latest known position with all
+  //                          supporting facts. Computed on-write from
+  //                          meeting_facts.
+  //   pattern_matches      — internal+external pairs the cross-reference
+  //                          engine surfaces ("COO said vendor lock-in
+  //                          concerns in March + April job posting for
+  //                          Vendor Strategy Lead").
+
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS meeting_facts (
+      id TEXT PRIMARY KEY,
+      meeting_id TEXT NOT NULL REFERENCES meeting_history(id) ON DELETE CASCADE,
+      bank_key TEXT NOT NULL REFERENCES banks(key) ON DELETE CASCADE,
+      speaker_person_id TEXT REFERENCES persons(id),
+      speaker_name TEXT,                  -- captured even when no person match
+      topic TEXT NOT NULL,                -- canonical topic: budget|vendors|timeline|politics|technical|blockers|other
+      position TEXT NOT NULL,             -- the claim — e.g., "concerned about vendor lock-in"
+      sentiment TEXT CHECK(sentiment IN ('positive', 'neutral', 'negative', 'mixed')),
+      evidence_quote TEXT NOT NULL,       -- verbatim from notes/transcript
+      meeting_date TEXT NOT NULL,
+      confidence_tier INTEGER DEFAULT 1,  -- meeting facts are tier 1 by default (direct quote)
+      extracted_at TEXT DEFAULT (datetime('now')),
+      extracted_by TEXT                   -- 'auto' (LLM) | 'ae' (manual)
+    );
+    CREATE INDEX IF NOT EXISTS idx_meeting_facts_bank ON meeting_facts(bank_key);
+    CREATE INDEX IF NOT EXISTS idx_meeting_facts_person ON meeting_facts(speaker_person_id);
+    CREATE INDEX IF NOT EXISTS idx_meeting_facts_topic ON meeting_facts(topic);
+    CREATE INDEX IF NOT EXISTS idx_meeting_facts_date ON meeting_facts(meeting_date);
+
+    CREATE TABLE IF NOT EXISTS pattern_matches (
+      id TEXT PRIMARY KEY,
+      bank_key TEXT NOT NULL REFERENCES banks(key) ON DELETE CASCADE,
+      internal_fact_id TEXT REFERENCES meeting_facts(id),
+      external_signal_id TEXT,            -- deal_signal id
+      pattern_type TEXT NOT NULL,         -- 'corroborates' | 'contradicts' | 'evolves'
+      summary TEXT NOT NULL,              -- one-line summary of the pattern
+      detected_at TEXT DEFAULT (datetime('now')),
+      acknowledged_at TEXT,
+      acknowledged_by TEXT
+    );
+    CREATE INDEX IF NOT EXISTS idx_pattern_matches_bank ON pattern_matches(bank_key);
+  `);
+
+  // Sprint 2.4 migration — additive columns for the cross-reference engine.
+  // These are added separately so reruns on existing DBs don't fail.
+  const addColIfMissing = (table, col, ddl) => {
+    try { db.exec(`ALTER TABLE ${table} ADD COLUMN ${col} ${ddl}`); } catch { /* exists */ }
+  };
+  addColIfMissing('pattern_matches', 'content_hash', 'TEXT');                 // idempotency key
+  addColIfMissing('pattern_matches', 'confidence', "TEXT DEFAULT 'medium'");  // 'low' | 'medium' | 'high'
+  addColIfMissing('pattern_matches', 'time_gap_days', 'INTEGER');             // days between fact and signal
+  addColIfMissing('pattern_matches', 'topic', 'TEXT');                        // canonical topic from fact
+  addColIfMissing('pattern_matches', 'fact_evidence', 'TEXT');                // verbatim quote snapshot
+  addColIfMissing('pattern_matches', 'signal_evidence', 'TEXT');              // signal title snapshot
+  try { db.exec(`CREATE UNIQUE INDEX IF NOT EXISTS idx_pattern_matches_hash ON pattern_matches(content_hash) WHERE content_hash IS NOT NULL`); } catch { /* exists */ }
+
+  // Seed initial review periods — Q1 + Q2 2026 + Q3 + Q4 2026.
+  // Idempotent: INSERT OR IGNORE keys on the period id.
+  const seedPeriods = [
+    { id: '2026-Q1', starts_at: '2026-01-01', ends_at: '2026-03-31', status: 'closed', closed_at: '2026-04-01' },
+    { id: '2026-Q2', starts_at: '2026-04-01', ends_at: '2026-06-30', status: 'active', closed_at: null },
+    { id: '2026-Q3', starts_at: '2026-07-01', ends_at: '2026-09-30', status: 'active', closed_at: null },
+    { id: '2026-Q4', starts_at: '2026-10-01', ends_at: '2026-12-31', status: 'active', closed_at: null },
+  ];
+  const periodInsert = db.prepare(
+    `INSERT OR IGNORE INTO review_periods (id, starts_at, ends_at, status, closed_at) VALUES (?, ?, ?, ?, ?)`
+  );
+  for (const p of seedPeriods) periodInsert.run(p.id, p.starts_at, p.ends_at, p.status, p.closed_at);
+
+  // Migration (Stage 2): the original CHECK on signal_category allowed only the
+  // first taxonomy: {stakeholder, strategic, competitive, momentum, market, internal}.
+  // The Stage 1 classifier emits {stakeholder, strategic, competitive, momentum,
+  // market, regulatory} — same 5 + regulatory instead of internal. We need both
+  // 'internal' (legacy demo + meeting-derived events) AND 'regulatory' (live news)
+  // to be valid. SQLite can't drop a CHECK in place, so recreate the table once.
+  // Idempotent: skips if the new constraint is already in place.
+  try {
+    const schemaInfo = db.prepare("SELECT sql FROM sqlite_master WHERE type='table' AND name='deal_signals'").get();
+    const hasRegulatory = schemaInfo?.sql?.includes("'regulatory'");
+    if (!hasRegulatory) {
+      db.exec('BEGIN');
+      db.exec(`
+        CREATE TABLE deal_signals_new (
+          id TEXT PRIMARY KEY,
+          deal_id TEXT NOT NULL,
+          signal_category TEXT NOT NULL CHECK(signal_category IN ('stakeholder', 'strategic', 'competitive', 'momentum', 'market', 'internal', 'regulatory')),
+          signal_event TEXT NOT NULL,
+          title TEXT NOT NULL,
+          description TEXT,
+          source_url TEXT,
+          source_type TEXT CHECK(source_type IN ('linkedin', 'news', 'internal', 'manual', 'meeting')),
+          severity TEXT DEFAULT 'info' CHECK(severity IN ('info', 'attention', 'urgent')),
+          detected_at TEXT NOT NULL DEFAULT (datetime('now')),
+          acknowledged_at TEXT,
+          actioned_at TEXT,
+          routed_to_plays TEXT DEFAULT '[]',
+          triggered_output_ids TEXT DEFAULT '[]',
+          action_point TEXT,
+          evidence_quote TEXT,
+          mentioned_stakeholders TEXT,
+          live_signal_id INTEGER,
+          relevance_score REAL,
+          is_demo INTEGER DEFAULT 0
+        )
+      `);
+      db.exec(`
+        INSERT INTO deal_signals_new
+        SELECT id, deal_id, signal_category, signal_event, title, description,
+               source_url, source_type, severity, detected_at, acknowledged_at,
+               actioned_at, routed_to_plays, triggered_output_ids,
+               action_point, evidence_quote, mentioned_stakeholders,
+               live_signal_id, relevance_score, is_demo
+        FROM deal_signals
+      `);
+      db.exec('DROP TABLE deal_signals');
+      db.exec('ALTER TABLE deal_signals_new RENAME TO deal_signals');
+      db.exec('CREATE INDEX IF NOT EXISTS idx_deal_signals_deal ON deal_signals(deal_id)');
+      db.exec('CREATE INDEX IF NOT EXISTS idx_deal_signals_severity ON deal_signals(severity)');
+      db.exec('CREATE INDEX IF NOT EXISTS idx_deal_signals_detected ON deal_signals(detected_at)');
+      db.exec("CREATE UNIQUE INDEX IF NOT EXISTS idx_deal_signals_live_id ON deal_signals(deal_id, live_signal_id) WHERE live_signal_id IS NOT NULL");
+      db.exec('COMMIT');
+      console.log("[db] Relaxed signal_category CHECK to include 'regulatory'");
+    }
+  } catch (e) {
+    db.exec('ROLLBACK');
+    console.warn('[db] Failed to relax signal_category constraint:', e.message);
+  }
+
   // Power Maps table (MEDDICC analysis cache)
   db.exec(`
     CREATE TABLE IF NOT EXISTS power_maps (

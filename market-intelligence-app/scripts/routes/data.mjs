@@ -4,7 +4,17 @@
 
 import crypto from 'node:crypto';
 import { jsonResponse, parseBody } from './helpers.mjs';
+import { getSignalRouting } from '../../src/data/intelligenceLayer.js';
 import { getChangesForBank } from '../lib/changeWriter.mjs';
+import { harvestSignalsForBank } from '../harvestNordicSignals.mjs';
+import { reclassifyStaleForBank } from '../reclassifySignals.mjs';
+import { routeLiveSignals } from '../lib/signalRouter.mjs';
+import { buildStakeholderMatcher, enrichStakeholders } from '../lib/stakeholderMatcher.mjs';
+import { fetchOpenGraph } from '../lib/ogFetcher.mjs';
+import { runningRefreshes } from '../lib/signalScheduler.mjs';
+import { generatePulseForBank } from '../lib/pulseGenerator.mjs';
+import { getStakeholderDrift, getDriftByStakeholder, getBankDriftRollup } from '../lib/stakeholderDrift.mjs';
+import { getPatternsForBank, runCrossReferenceForBank } from '../lib/crossReferenceEngine.mjs';
 
 // ── Qualification Score Calculator (mirrors client-side calcScoreFromData) ──
 const QUAL_WEIGHTS = {
@@ -1089,19 +1099,13 @@ export async function handleDataRoute(req, res, { path, url, db, parseRow, parse
       body.description || null, body.source_url || null, body.source_type || 'manual', body.severity || 'info'
     );
 
-    // Route signal to active plays based on SIGNAL_CATALOGUE routing config
-    const SIGNAL_ROUTING = {
-      stakeholder: ['discovery'],
-      strategic: ['discovery', 'competitive'],
-      competitive: ['competitive'],
-      momentum: ['discovery', 'value', 'competitive', 'proposal', 'expansion'],
-      market: ['value', 'competitive'],
-      internal: ['value', 'proposal'],
-    };
-    const targetTypes = SIGNAL_ROUTING[body.signal_category] || [];
+    // Route signal to active plays based on the shared SIGNAL_CATALOGUE routing config.
+    // (Single source of truth: src/data/intelligenceLayer.js — used by both frontend & backend.)
+    const targetTypes = getSignalRouting(body.signal_category);
     const activePlays = db.prepare("SELECT id, play_type FROM deal_plays WHERE deal_id = ? AND status = 'active'").all(dealId);
     const routedPlays = activePlays.filter(p => targetTypes.includes(p.play_type));
 
+    let outputsStaled = 0;
     if (routedPlays.length > 0) {
       const playIds = routedPlays.map(p => p.id);
       db.prepare('UPDATE deal_signals SET routed_to_plays = ? WHERE id = ?').run(JSON.stringify(playIds), id);
@@ -1116,29 +1120,400 @@ export async function handleDataRoute(req, res, { path, url, db, parseRow, parse
             staleIds.push(o.id);
           }
         }
+        outputsStaled = staleIds.length;
         if (staleIds.length > 0) {
           db.prepare('UPDATE deal_signals SET triggered_output_ids = ? WHERE id = ?').run(JSON.stringify(staleIds), id);
         }
       }
     }
 
-    jsonResponse(res, 201, { id, routed_to: routedPlays.length, outputs_staled: 0 });
+    jsonResponse(res, 201, { id, routed_to: routedPlays.length, outputs_staled: outputsStaled });
     return true;
   }
 
   // ── GET /api/deals/:dealId/signals — List signals ──
+  // Query parameters:
+  //   ?category=stakeholder|strategic|...  filter by signal category
+  //   ?severity=urgent|attention|info       filter by severity
+  //   ?sort=relevance|recent|oldest         sort order (default: relevance)
+  //   ?include_demos=true                   include is_demo=1 rows
+  //   ?include_old=true                     include articles older than 2 years
+  //                                         (lasting-strategic articles always shown)
+  //
+  // Recency policy: by default, articles older than 2 years are filtered out
+  // because banking news loses relevance fast. EXCEPTION: signals tagged
+  // is_strategic_initiative=1 are always shown (these represent multi-year
+  // transformations or lasting plans whose relevance extends beyond 2 years).
   match = path.match(/^\/api\/deals\/([^/]+)\/signals$/);
   if (match && req.method === 'GET') {
     const dealId = decodeURIComponent(match[1]);
     const category = url.searchParams.get('category');
     const severity = url.searchParams.get('severity');
+    const sortMode = url.searchParams.get('sort') || 'relevance';
+    const includeDemos = url.searchParams.get('include_demos') === 'true';
+    const includeOld = url.searchParams.get('include_old') === 'true';
+
+    // Hide-demo decision: if the deal has any non-demo signals, hide demos by default.
+    const hasReal = db.prepare(
+      "SELECT COUNT(*) AS c FROM deal_signals WHERE deal_id = ? AND COALESCE(is_demo, 0) = 0"
+    ).get(dealId)?.c > 0;
+    const hideDemos = !includeDemos && hasReal;
+
     let sql = 'SELECT * FROM deal_signals WHERE deal_id = ?';
     const params = [dealId];
     if (category) { sql += ' AND signal_category = ?'; params.push(category); }
     if (severity) { sql += ' AND severity = ?'; params.push(severity); }
-    sql += ' ORDER BY detected_at DESC LIMIT 50';
+    if (hideDemos) { sql += ' AND COALESCE(is_demo, 0) = 0'; }
+    // 2-year recency cap with lasting-strategic-initiative escape hatch.
+    // Demos and internal/manual notes are exempt (no public article date to compare).
+    if (!includeOld) {
+      sql += ` AND (
+        COALESCE(is_demo, 0) = 1
+        OR source_type IN ('internal', 'manual', 'meeting')
+        OR detected_at IS NULL
+        OR detected_at >= date('now', '-2 years')
+        OR COALESCE(is_strategic_initiative, 0) = 1
+      )`;
+    }
+    // Sort modes
+    if (sortMode === 'recent') {
+      sql += ' ORDER BY detected_at DESC, COALESCE(relevance_score, 0) DESC';
+    } else if (sortMode === 'oldest') {
+      sql += ' ORDER BY detected_at ASC, COALESCE(relevance_score, 0) DESC';
+    } else {
+      // 'relevance' (default) — score DESC, then severity, then most recent
+      sql += ` ORDER BY
+        COALESCE(relevance_score, 0) DESC,
+        CASE severity WHEN 'urgent' THEN 3 WHEN 'attention' THEN 2 ELSE 1 END DESC,
+        detected_at DESC`;
+    }
+    sql += ' LIMIT 50';
     const rows = db.prepare(sql).all(...params);
-    jsonResponse(res, 200, parseRows('deal_signals', rows));
+    // Enrich mentioned_stakeholders with personId so the UI can link chips
+    // to the person profile. One matcher per request (cached across rows).
+    const matcher = buildStakeholderMatcher(db, dealId);
+    const parsed = parseRows('deal_signals', rows).map(r => ({
+      ...r,
+      mentioned_stakeholders: enrichStakeholders(matcher, r.mentioned_stakeholders),
+    }));
+    jsonResponse(res, 200, parsed);
+    return true;
+  }
+
+  // ── POST /api/deals/:dealId/signals/refresh — Pull latest news for ONE bank ──
+  // Chains: harvest (5 strands × English + native locales) → classify (Claude
+  // scores Backbase relevance + categorizes + emits action_point) → route
+  // (promotes score >= 5 into deal_signals). Idempotent: re-running only
+  // adds genuinely-new articles. Synchronous — takes 3-5 minutes.
+  // Tip: client should set a long timeout (≥ 10 min) when calling.
+  match = path.match(/^\/api\/deals\/([^/]+)\/signals\/refresh$/);
+  if (match && req.method === 'POST') {
+    const dealId = decodeURIComponent(match[1]);
+    const bank = db.prepare('SELECT key, bank_name FROM banks WHERE key = ?').get(dealId);
+    if (!bank) { jsonResponse(res, 404, { error: `Bank not found: ${dealId}` }); return true; }
+    // 409 Conflict if another refresh (manual or scheduled) is already running for this bank
+    if (runningRefreshes.has(dealId)) {
+      jsonResponse(res, 409, { error: `Refresh already in progress for ${bank.bank_name}. Try again in a few minutes.` });
+      return true;
+    }
+    runningRefreshes.add(dealId);
+    const startTime = Date.now();
+    // Stage 4B: log the refresh attempt to signal_refresh_log so the UI can
+    // show "Last refreshed X minutes ago".
+    const logId = db.prepare(
+      `INSERT INTO signal_refresh_log (source, bank_key, status, started_at) VALUES (?, ?, 'running', datetime('now'))`
+    ).run('manual_refresh', dealId).lastInsertRowid;
+    try {
+      // Step 1: harvest fresh articles for this bank (English + native locales)
+      const { inserted, articlesFound, queriesRun } = await harvestSignalsForBank(db, dealId);
+      // Step 2: classify any stale (score=0/unclassified) rows for this bank
+      const { classified } = await reclassifyStaleForBank(db, dealId);
+      // Step 3: promote actionable signals into deal_signals
+      const { promoted } = routeLiveSignals(db, { minScore: 5, bankKey: dealId });
+      const durationMs = Date.now() - startTime;
+      // Mark the log row complete with stats
+      db.prepare(
+        `UPDATE signal_refresh_log
+         SET status='complete', articles_fetched=?, articles_classified=?, promoted=?, duration_ms=?, completed_at=datetime('now')
+         WHERE id=?`
+      ).run(inserted, classified, promoted, durationMs, logId);
+      jsonResponse(res, 200, {
+        bank: bank.bank_name,
+        bankKey: dealId,
+        queries_run: queriesRun,
+        articles_found: articlesFound,
+        harvested: inserted,
+        classified,
+        promoted,
+        elapsed_seconds: parseFloat((durationMs / 1000).toFixed(1)),
+      });
+    } catch (err) {
+      console.error(`[refresh] ${dealId} failed:`, err);
+      db.prepare(
+        `UPDATE signal_refresh_log SET status='error', errors=1, completed_at=datetime('now') WHERE id=?`
+      ).run(logId);
+      jsonResponse(res, 500, { error: err.message || String(err) });
+    } finally {
+      runningRefreshes.delete(dealId);
+    }
+    return true;
+  }
+
+  // ── POST /api/deals/:dealId/signals/manual — Manual / LinkedIn signal submission ──
+  // Stage 4C. Accepts { url, title, description, category, severity, source_type }.
+  // Inserts directly into deal_signals (skipping the live_signals harvest path)
+  // because the consultant has already curated it. source_type defaults to 'manual'
+  // unless the URL is from linkedin.com (then 'linkedin'). The signal goes
+  // into the bank's feed immediately and is eligible for acknowledgment + AI
+  // output injection like any other signal.
+  match = path.match(/^\/api\/deals\/([^/]+)\/signals\/manual$/);
+  if (match && req.method === 'POST') {
+    const dealId = decodeURIComponent(match[1]);
+    const body = await parseBody(req);
+    if (!body.title || body.title.length < 5) {
+      jsonResponse(res, 400, { error: 'title is required (≥5 chars)' });
+      return true;
+    }
+    const validCategories = ['stakeholder', 'strategic', 'competitive', 'momentum', 'market', 'regulatory', 'internal'];
+    const category = validCategories.includes(body.category) ? body.category : 'strategic';
+    const severity = ['urgent', 'attention', 'info'].includes(body.severity) ? body.severity : 'info';
+    // LinkedIn URL detection
+    const url = body.url ? String(body.url).trim() : null;
+    const isLinkedIn = url && /linkedin\.com/i.test(url);
+    const sourceType = body.source_type
+      || (isLinkedIn ? 'linkedin' : url ? 'manual' : 'internal');
+    const signalEvent = isLinkedIn ? 'StakeholderPublishedContent' : `Manual${category[0].toUpperCase()}${category.slice(1)}Note`;
+
+    const id = crypto.randomUUID();
+    const detectedAt = body.detected_at || new Date().toISOString().replace('T', ' ').replace(/\.\d+Z$/, '');
+    db.prepare(`
+      INSERT INTO deal_signals (
+        id, deal_id, signal_category, signal_event, title, description,
+        source_url, source_type, severity, detected_at, action_point,
+        evidence_quote, mentioned_stakeholders, relevance_score, is_demo,
+        is_strategic_initiative, domain_tags
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)
+    `).run(
+      id, dealId, category, signalEvent, body.title, body.description || null,
+      url, sourceType, severity, detectedAt,
+      body.action_point || null,
+      body.evidence_quote || null,
+      JSON.stringify(body.mentioned_stakeholders || []),
+      body.relevance_score != null ? body.relevance_score : 6, // manual signals default to 6 (mid-actionable)
+      body.is_strategic_initiative ? 1 : 0,
+      JSON.stringify(body.domain_tags || []),
+    );
+    const created = db.prepare('SELECT * FROM deal_signals WHERE id = ?').get(id);
+    jsonResponse(res, 201, parseRow('deal_signals', created));
+    return true;
+  }
+
+  // ════════════════════════════════════════════════════════════════════
+  //  PULSE ENDPOINTS (Strategic Repositioning Sprint 1)
+  // ════════════════════════════════════════════════════════════════════
+
+  // GET /api/review-periods — list all periods (for UI dropdowns)
+  if (path === '/api/review-periods' && req.method === 'GET') {
+    const rows = db.prepare('SELECT * FROM review_periods ORDER BY id DESC').all();
+    jsonResponse(res, 200, rows);
+    return true;
+  }
+
+  // GET /api/banks/:key/pulses — list all pulses for an account
+  match = path.match(/^\/api\/banks\/([^/]+)\/pulses$/);
+  if (match && req.method === 'GET') {
+    const bankKey = decodeURIComponent(match[1]);
+    const rows = db.prepare(`
+      SELECT id, account_id, period_id, generated_at, generated_by,
+             confirmed_by_ae_at, confirmed_by_ae, exported_at
+      FROM pulses
+      WHERE account_id = ?
+      ORDER BY period_id DESC
+    `).all(bankKey);
+    jsonResponse(res, 200, rows);
+    return true;
+  }
+
+  // POST /api/banks/:key/pulses?period=2026-Q2 — generate (or regenerate) a pulse.
+  // Synchronous; takes ~50ms because it's structured composition, not LLM calls.
+  match = path.match(/^\/api\/banks\/([^/]+)\/pulses$/);
+  if (match && req.method === 'POST') {
+    const bankKey = decodeURIComponent(match[1]);
+    const periodId = url.searchParams.get('period') || '2026-Q2';
+    try {
+      const pulse = generatePulseForBank(db, bankKey, periodId, { generated_by: 'manual' });
+      jsonResponse(res, 200, pulse);
+    } catch (err) {
+      jsonResponse(res, 500, { error: err.message });
+    }
+    return true;
+  }
+
+  // GET /api/pulses/:id — fetch a stored pulse + its overrides
+  match = path.match(/^\/api\/pulses\/([^/]+)$/);
+  if (match && req.method === 'GET') {
+    const pulseId = decodeURIComponent(match[1]);
+    const row = db.prepare('SELECT * FROM pulses WHERE id = ?').get(pulseId);
+    if (!row) { jsonResponse(res, 404, { error: 'Pulse not found' }); return true; }
+    const overrides = db.prepare('SELECT * FROM pulse_overrides WHERE pulse_id = ? ORDER BY created_at DESC').all(pulseId);
+    const payload = JSON.parse(row.payload_json);
+    payload.id = row.id;
+    payload.confirmed_by_ae_at = row.confirmed_by_ae_at;
+    payload.confirmed_by_ae = row.confirmed_by_ae;
+    payload.exported_at = row.exported_at;
+    payload.ae_overrides = overrides;
+    jsonResponse(res, 200, payload);
+    return true;
+  }
+
+  // PUT /api/pulses/:id/cells — apply an AE cell override (telemetry on
+  // synthesizer weakness). Body: { cell_path, original_value, override_value, reason, ae_id }
+  match = path.match(/^\/api\/pulses\/([^/]+)\/cells$/);
+  if (match && req.method === 'PUT') {
+    const pulseId = decodeURIComponent(match[1]);
+    const body = await parseBody(req);
+    if (!body.cell_path || body.override_value === undefined) {
+      jsonResponse(res, 400, { error: 'cell_path and override_value required' });
+      return true;
+    }
+    const overrideId = crypto.randomUUID();
+    db.prepare(`
+      INSERT INTO pulse_overrides (id, pulse_id, cell_path, original_value, override_value, ae_id, reason)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `).run(
+      overrideId, pulseId, body.cell_path,
+      JSON.stringify(body.original_value ?? null),
+      JSON.stringify(body.override_value),
+      body.ae_id || null,
+      body.reason || null,
+    );
+    // Apply override to the stored pulse payload by mutating cell_path
+    const row = db.prepare('SELECT payload_json FROM pulses WHERE id = ?').get(pulseId);
+    if (row) {
+      const payload = JSON.parse(row.payload_json);
+      // cell_path is a dot-path like "sections.engagement_trend.synthesis"
+      const parts = body.cell_path.split('.');
+      let target = payload;
+      for (let i = 0; i < parts.length - 1; i++) {
+        if (target[parts[i]] === undefined) target[parts[i]] = {};
+        target = target[parts[i]];
+      }
+      target[parts[parts.length - 1]] = body.override_value;
+      db.prepare('UPDATE pulses SET payload_json = ? WHERE id = ?').run(JSON.stringify(payload), pulseId);
+    }
+    jsonResponse(res, 201, { id: overrideId, cell_path: body.cell_path });
+    return true;
+  }
+
+  // POST /api/pulses/:id/confirm — mark the pulse as AE-confirmed (locks for export)
+  match = path.match(/^\/api\/pulses\/([^/]+)\/confirm$/);
+  if (match && req.method === 'POST') {
+    const pulseId = decodeURIComponent(match[1]);
+    const body = await parseBody(req);
+    db.prepare(`UPDATE pulses SET confirmed_by_ae_at = datetime('now'), confirmed_by_ae = ? WHERE id = ?`)
+      .run(body.ae_id || 'unknown', pulseId);
+    const updated = db.prepare('SELECT confirmed_by_ae_at, confirmed_by_ae FROM pulses WHERE id = ?').get(pulseId);
+    jsonResponse(res, 200, updated);
+    return true;
+  }
+
+  // ── GET /api/banks/:key/stakeholder-drift — Sprint 2.3 ──
+  // Returns per-(stakeholder, topic) sentiment drift cells for the bank.
+  // Query params:
+  //   ?view=cells     (default) — flat list of drift cells, sorted by influence
+  //   ?view=by-person — grouped by stakeholder, each carrying their topic series
+  //   ?view=rollup    — bank-level diff buckets (improving/deteriorating/new)
+  //   &include_unattributed=1 — include facts whose speaker isn't matched to persons
+  //   &min_facts=1    — minimum series length to include a cell
+  match = path.match(/^\/api\/banks\/([^/]+)\/stakeholder-drift$/);
+  if (match && req.method === 'GET') {
+    const bankKey = decodeURIComponent(match[1]);
+    const view = url.searchParams.get('view') || 'cells';
+    const includeUnattributed = url.searchParams.get('include_unattributed') === '1';
+    const minFacts = parseInt(url.searchParams.get('min_facts') || '1', 10);
+    const opts = { includeUnattributed, minFacts };
+    let payload;
+    if (view === 'by-person') payload = getDriftByStakeholder(db, bankKey, opts);
+    else if (view === 'rollup') payload = getBankDriftRollup(db, bankKey, opts);
+    else payload = getStakeholderDrift(db, bankKey, opts);
+    jsonResponse(res, 200, { bank_key: bankKey, view, data: payload });
+    return true;
+  }
+
+  // ── GET /api/banks/:key/patterns — Sprint 2.4 ──
+  // Returns cross-reference patterns (internal fact ↔ external signal pairs).
+  // Query: ?min_confidence=high|medium|low   ?unack=1
+  match = path.match(/^\/api\/banks\/([^/]+)\/patterns$/);
+  if (match && req.method === 'GET') {
+    const bankKey = decodeURIComponent(match[1]);
+    const minConfidence = url.searchParams.get('min_confidence') || null;
+    const onlyUnacknowledged = url.searchParams.get('unack') === '1';
+    const patterns = getPatternsForBank(db, bankKey, { minConfidence, onlyUnacknowledged });
+    jsonResponse(res, 200, { bank_key: bankKey, count: patterns.length, patterns });
+    return true;
+  }
+
+  // ── POST /api/banks/:key/patterns/run — trigger cross-reference engine on demand
+  match = path.match(/^\/api\/banks\/([^/]+)\/patterns\/run$/);
+  if (match && req.method === 'POST') {
+    const bankKey = decodeURIComponent(match[1]);
+    const body = await parseBody(req).catch(() => ({}));
+    const result = await runCrossReferenceForBank(db, bankKey, {
+      windowDays: body.window_days || 60,
+      maxCandidates: body.max_candidates || 4,
+      force: body.force === true,
+    });
+    jsonResponse(res, 200, { bank_key: bankKey, ...result });
+    return true;
+  }
+
+  // ── POST /api/patterns/:id/acknowledge — AE marks a pattern as seen/handled
+  match = path.match(/^\/api\/patterns\/([^/]+)\/acknowledge$/);
+  if (match && req.method === 'POST') {
+    const patternId = decodeURIComponent(match[1]);
+    const body = await parseBody(req).catch(() => ({}));
+    db.prepare(`UPDATE pattern_matches SET acknowledged_at = datetime('now'), acknowledged_by = ? WHERE id = ?`)
+      .run(body.ae_id || 'unknown', patternId);
+    jsonResponse(res, 200, { id: patternId, acknowledged: true });
+    return true;
+  }
+
+  // ── POST /api/og-fetch — Fetch Open Graph metadata for a URL ──
+  // Used by the manual-submission UI to auto-populate title/description from
+  // a pasted URL before the consultant clicks Submit.
+  if (path === '/api/og-fetch' && req.method === 'POST') {
+    const body = await parseBody(req);
+    if (!body.url || typeof body.url !== 'string') {
+      jsonResponse(res, 400, { error: 'url is required' });
+      return true;
+    }
+    const og = await fetchOpenGraph(body.url);
+    jsonResponse(res, 200, og || { error: 'Could not fetch metadata' });
+    return true;
+  }
+
+  // ── GET /api/deals/:dealId/signals/freshness — when was last refresh + summary ──
+  match = path.match(/^\/api\/deals\/([^/]+)\/signals\/freshness$/);
+  if (match && req.method === 'GET') {
+    const dealId = decodeURIComponent(match[1]);
+    const lastRefresh = db.prepare(`
+      SELECT completed_at, articles_fetched, promoted, status
+      FROM signal_refresh_log
+      WHERE bank_key = ? AND status = 'complete'
+      ORDER BY completed_at DESC LIMIT 1
+    `).get(dealId);
+    // Fall back to MAX(detected_at) on existing deal_signals if no refresh log
+    const fallbackLatest = db.prepare(`
+      SELECT MAX(detected_at) AS latest FROM deal_signals
+      WHERE deal_id = ? AND COALESCE(is_demo, 0) = 0
+    `).get(dealId)?.latest;
+    jsonResponse(res, 200, {
+      bankKey: dealId,
+      last_refreshed_at: lastRefresh?.completed_at || null,
+      last_article_at: fallbackLatest || null,
+      last_refresh_added: lastRefresh?.articles_fetched || 0,
+      last_refresh_promoted: lastRefresh?.promoted || 0,
+    });
     return true;
   }
 
@@ -1147,11 +1522,19 @@ export async function handleDataRoute(req, res, { path, url, db, parseRow, parse
   if (match && req.method === 'PUT') {
     const signalId = decodeURIComponent(match[2]);
     const body = await parseBody(req);
-    if (body.acknowledged) {
+    // acknowledged: true → set timestamp; acknowledged: false → clear it (undo)
+    // We must check `body.acknowledged !== undefined` so an explicit `false`
+    // is accepted; the older truthy check was rejecting un-ack requests.
+    if (body.acknowledged === true) {
       db.prepare("UPDATE deal_signals SET acknowledged_at = datetime('now') WHERE id = ?").run(signalId);
+    } else if (body.acknowledged === false) {
+      db.prepare('UPDATE deal_signals SET acknowledged_at = NULL WHERE id = ?').run(signalId);
     }
-    if (body.actioned) {
+    // Same toggle pattern for actioned
+    if (body.actioned === true) {
       db.prepare("UPDATE deal_signals SET actioned_at = datetime('now') WHERE id = ?").run(signalId);
+    } else if (body.actioned === false) {
+      db.prepare('UPDATE deal_signals SET actioned_at = NULL WHERE id = ?').run(signalId);
     }
     const updated = db.prepare('SELECT * FROM deal_signals WHERE id = ?').get(signalId);
     jsonResponse(res, 200, parseRow('deal_signals', updated));
@@ -1220,6 +1603,47 @@ export async function handleDataRoute(req, res, { path, url, db, parseRow, parse
     }
     return out;
   };
+
+  // ── GET /api/banks/:key/persons/:personId/signals — Signals mentioning this person ──
+  // Powers the "Recent signals mentioning this person" panel on stakeholder profiles.
+  // Searches deal_signals.mentioned_stakeholders for the person's canonical name + aliases.
+  match = path.match(/^\/api\/banks\/([^/]+)\/persons\/([^/]+)\/signals$/);
+  if (match && req.method === 'GET') {
+    const bankKey = decodeURIComponent(match[1]);
+    const personId = decodeURIComponent(match[2]);
+    const person = db.prepare('SELECT id, canonical_name, aliases FROM persons WHERE id = ? AND bank_key = ?').get(personId, bankKey);
+    if (!person) { jsonResponse(res, 404, { error: 'Person not found' }); return true; }
+
+    // Build the set of names to search for
+    const names = [person.canonical_name];
+    if (person.aliases) {
+      try {
+        const a = typeof person.aliases === 'string' ? JSON.parse(person.aliases) : person.aliases;
+        if (Array.isArray(a)) names.push(...a);
+      } catch { /* not json — treat as comma-separated */
+        names.push(...String(person.aliases).split(',').map(s => s.trim()));
+      }
+    }
+    // Match in JSON via LIKE — fast enough at our scale (≤500 deal_signals per bank)
+    const likeClauses = names.map(() => 'mentioned_stakeholders LIKE ?').join(' OR ');
+    const likeParams = names.map(n => `%"${n}"%`);
+    const sql = `
+      SELECT id, signal_category, signal_event, title, description,
+             source_url, source_type, severity, detected_at,
+             acknowledged_at, action_point, evidence_quote,
+             relevance_score, is_strategic_initiative, domain_tags,
+             mentioned_stakeholders
+      FROM deal_signals
+      WHERE deal_id = ?
+        AND COALESCE(is_demo, 0) = 0
+        AND (${likeClauses})
+      ORDER BY COALESCE(relevance_score, 0) DESC, detected_at DESC
+      LIMIT 30
+    `;
+    const rows = db.prepare(sql).all(bankKey, ...likeParams);
+    jsonResponse(res, 200, parseRows('deal_signals', rows));
+    return true;
+  }
 
   // ── POST /api/banks/:key/persons — Create a new person ──
   match = path.match(/^\/api\/banks\/([^/]+)\/persons$/);
