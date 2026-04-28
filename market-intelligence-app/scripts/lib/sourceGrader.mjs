@@ -75,11 +75,16 @@ const TIER_D_PUBLISHERS_PATTERN = /\b(linkedin|twitter|x\.com|facebook|reddit|me
  */
 export function extractPublisher(title) {
   if (!title || typeof title !== 'string') return null;
-  // Match the LAST " - X" segment (publisher always comes last in our feeds)
-  const m = title.match(/[\s\-–—]+([^\-–—]+)$/);
-  if (!m) return null;
-  const candidate = m[1].trim();
-  // Heuristic: publishers are typically 2-50 chars, no trailing punct
+  // Match the LAST " - X" / " – X" / " — X" separator pattern. Requires an
+  // explicit dash with whitespace context — bare trailing word groups don't
+  // count (otherwise "Nordea Capital Markets Day 2025" would mis-extract).
+  // Use matchAll to find every separator, take the publisher after the last.
+  const matches = [...title.matchAll(/\s+[\-–—]\s+/g)];
+  if (matches.length === 0) return null;
+  const lastSep = matches[matches.length - 1];
+  const candidate = title.slice(lastSep.index + lastSep[0].length).trim();
+  // Heuristic: publishers are typically 2-50 chars, no trailing punct, and
+  // shouldn't contain mid-string dashes themselves (would imply we cut wrong)
   if (candidate.length < 2 || candidate.length > 60) return null;
   return candidate;
 }

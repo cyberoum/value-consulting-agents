@@ -217,12 +217,6 @@ function CorroboratedPatternsPanel({ patterns }) {
     </div>
   );
 }
-const TIER_STYLE = {
-  1: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-  2: 'bg-amber-50 text-amber-700 border-amber-200',
-  3: 'bg-slate-50 text-slate-600 border-slate-200',
-};
-
 function formatDate(s) {
   if (!s) return '—';
   try {
@@ -677,7 +671,10 @@ function pulseToMarkdown(pulse) {
       sec.source_records.forEach(s => {
         const tier = TIER_LABELS[s.confidence_tier] || 'Estimated';
         const link = s.source_url ? `[${s.label || s.source_url}](${s.source_url})` : (s.label || '(no link)');
-        lines.push(`- [T${s.confidence_tier} · ${tier}] ${link} — ${s.source_type}${s.source_date ? ' · ' + formatDate(s.source_date) : ''}`);
+        // Sprint 3: include grade + publisher in markdown export for downstream auditability
+        const gradeChip = s.source_grade ? ` · grade ${s.source_grade}` : '';
+        const pubChip = s.publisher_name ? ` · ${s.publisher_name}` : '';
+        lines.push(`- [T${s.confidence_tier} · ${tier}${gradeChip}] ${link} — ${s.source_type}${pubChip}${s.source_date ? ' · ' + formatDate(s.source_date) : ''}`);
       });
     }
     lines.push('');
