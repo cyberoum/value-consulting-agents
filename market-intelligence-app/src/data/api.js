@@ -287,6 +287,28 @@ export const getBankPatterns = (bankKey, { minConfidence = null, onlyUnacknowled
 };
 export const acknowledgePattern = (patternId, aeId) => request(`/api/patterns/${encodeURIComponent(patternId)}/acknowledge`, { method: 'POST', body: JSON.stringify({ ae_id: aeId }) });
 
+// ── Change Feed (Sprint 4) ──
+export const getBankChangeFeed = (bankKey, opts = {}) => {
+  const params = new URLSearchParams();
+  if (opts.lookback != null)        params.set('lookback', String(opts.lookback));
+  if (opts.sort)                    params.set('sort', opts.sort);
+  if (opts.minSignificance != null) params.set('min_significance', String(opts.minSignificance));
+  if (opts.limit != null)           params.set('limit', String(opts.limit));
+  if (opts.include?.length)         params.set('include', opts.include.join(','));
+  const qs = params.toString();
+  return request(`/api/banks/${encodeURIComponent(bankKey)}/change-feed${qs ? `?${qs}` : ''}`);
+};
+export const getPortfolioChangeFeed = (opts = {}) => {
+  const params = new URLSearchParams();
+  if (opts.lookback != null)        params.set('lookback', String(opts.lookback));
+  if (opts.sort)                    params.set('sort', opts.sort);
+  if (opts.minSignificance != null) params.set('min_significance', String(opts.minSignificance));
+  if (opts.limit != null)           params.set('limit', String(opts.limit));
+  if (opts.include?.length)         params.set('include', opts.include.join(','));
+  const qs = params.toString();
+  return request(`/api/change-feed${qs ? `?${qs}` : ''}`);
+};
+
 // ── Power Map (MEDDICC) ──
 export const generatePowerMap = (bankKey, { persona } = {}) => request(`/api/banks/${encodeURIComponent(bankKey)}/power-map`, { method: 'POST', body: JSON.stringify({ persona }), timeout: AI_TIMEOUT });
 export const getPowerMap = (bankKey) => request(`/api/banks/${encodeURIComponent(bankKey)}/power-map`);

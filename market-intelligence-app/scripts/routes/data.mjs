@@ -15,6 +15,7 @@ import { runningRefreshes } from '../lib/signalScheduler.mjs';
 import { generatePulseForBank } from '../lib/pulseGenerator.mjs';
 import { getStakeholderDrift, getDriftByStakeholder, getBankDriftRollup } from '../lib/stakeholderDrift.mjs';
 import { getPatternsForBank, runCrossReferenceForBank } from '../lib/crossReferenceEngine.mjs';
+import { getChangeFeed, getChangeFeedCounts } from '../lib/changeFeed.mjs';
 
 // ── Qualification Score Calculator (mirrors client-side calcScoreFromData) ──
 const QUAL_WEIGHTS = {
@@ -1464,6 +1465,45 @@ export async function handleDataRoute(req, res, { path, url, db, parseRow, parse
       force: body.force === true,
     });
     jsonResponse(res, 200, { bank_key: bankKey, ...result });
+    return true;
+  }
+
+  // ── GET /api/banks/:key/change-feed — Sprint 4.2 ──
+  // Returns the unified change feed for one bank. Query:
+  //   ?lookback=30          — days back from now (default 30)
+  //   ?sort=significance|time  (default time)
+  //   ?min_significance=N   — filter (default 0)
+  //   ?limit=N              — cap (default 100)
+  //   ?include=NEW_SIGNAL,NEW_PATTERN,…  (default all 6)
+  match = path.match(/^\/api\/banks\/([^/]+)\/change-feed$/);
+  if (match && req.method === 'GET') {
+    const bankKey = decodeURIComponent(match[1]);
+    const lookback = parseInt(url.searchParams.get('lookback') || '30', 10);
+    const sort = url.searchParams.get('sort') || 'time';
+    const minSig = parseInt(url.searchParams.get('min_significance') || '0', 10);
+    const limit = parseInt(url.searchParams.get('limit') || '100', 10);
+    const include = url.searchParams.get('include')?.split(',').filter(Boolean);
+    const opts = { bankKey, lookbackDays: lookback, sort, minSignificance: minSig, limit };
+    if (include?.length) opts.include = include;
+    const events = getChangeFeed(db, opts);
+    const counts = getChangeFeedCounts(db, { bankKey, lookbackDays: lookback });
+    jsonResponse(res, 200, { bank_key: bankKey, lookback_days: lookback, counts, events });
+    return true;
+  }
+
+  // ── GET /api/change-feed — Sprint 4.3 ──
+  // Portfolio-wide change feed (no bank filter). Same query params.
+  if (path === '/api/change-feed' && req.method === 'GET') {
+    const lookback = parseInt(url.searchParams.get('lookback') || '7', 10);
+    const sort = url.searchParams.get('sort') || 'significance';
+    const minSig = parseInt(url.searchParams.get('min_significance') || '5', 10);
+    const limit = parseInt(url.searchParams.get('limit') || '50', 10);
+    const include = url.searchParams.get('include')?.split(',').filter(Boolean);
+    const opts = { bankKey: null, lookbackDays: lookback, sort, minSignificance: minSig, limit };
+    if (include?.length) opts.include = include;
+    const events = getChangeFeed(db, opts);
+    const counts = getChangeFeedCounts(db, { lookbackDays: lookback });
+    jsonResponse(res, 200, { lookback_days: lookback, counts, events });
     return true;
   }
 
