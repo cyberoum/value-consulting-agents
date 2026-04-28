@@ -505,6 +505,19 @@ function initSchema(db) {
   addColIfMissing('pattern_matches', 'signal_evidence', 'TEXT');              // signal title snapshot
   try { db.exec(`CREATE UNIQUE INDEX IF NOT EXISTS idx_pattern_matches_hash ON pattern_matches(content_hash) WHERE content_hash IS NOT NULL`); } catch { /* exists */ }
 
+  // Sprint 3.1 — source-grade columns. Grade is independent of confidence_tier:
+  //   tier (1/2/3) = how the FACT was derived (Verified / Inferred / Estimated)
+  //   grade (A/B/C/D) = the SOURCE's authority
+  //     A = primary / bank-originated (press release, regulator, internal doc, AE-logged meeting)
+  //     B = tier-1 financial press (Reuters, Bloomberg, FT, WSJ, regional national newspapers)
+  //     C = specialized fintech/business press, sector trades, aggregators
+  //     D = social media, blogs, unverified third-party, inferred-without-source
+  // A high-tier fact from a low-grade source is a yellow flag — both dimensions matter.
+  addColIfMissing('deal_signals', 'source_grade', "TEXT CHECK(source_grade IN ('A','B','C','D'))");
+  addColIfMissing('deal_signals', 'is_primary_source', 'INTEGER DEFAULT 0');
+  addColIfMissing('deal_signals', 'publisher_name', 'TEXT'); // parsed from title tail (" - Reuters" → "Reuters")
+  try { db.exec(`CREATE INDEX IF NOT EXISTS idx_deal_signals_grade ON deal_signals(source_grade)`); } catch { /* exists */ }
+
   // Seed initial review periods — Q1 + Q2 2026 + Q3 + Q4 2026.
   // Idempotent: INSERT OR IGNORE keys on the period id.
   const seedPeriods = [

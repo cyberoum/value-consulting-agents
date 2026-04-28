@@ -46,6 +46,60 @@ const FRESHNESS_GREEN_DAYS = 30;   // any source < 30d old → green
 const FRESHNESS_YELLOW_DAYS = 90;  // 30-90d → yellow
                                    // > 90d → stale (or no sources)
 
+/**
+ * Sprint 3.4 — Unsourced-claim lint. Runs after each section is synthesized
+ * and returns warnings about claims that aren't backed by sources.
+ *
+ * Specific checks:
+ *   - "synthesis is non-trivial but source_records is empty"
+ *   - "synthesis cites a year/percentage/currency-amount but no source has a date"
+ *   - "synthesis says 'X% increase' or 'NOK Yb' without any quantitative source"
+ *
+ * Returns: array of { code, message } warnings (empty array = clean).
+ */
+function lintSynthesisProvenance(section) {
+  const warnings = [];
+  const synthesis = String(section.synthesis || '').trim();
+  const sources = section.source_records || [];
+  if (!synthesis || synthesis.length < 10) return warnings;
+
+  // C1: Non-trivial text with no sources
+  const isDataGapPhrase = /no signals|data gap|no engagement|not recorded|no DMU changes detected this period\.?$/i.test(synthesis);
+  if (sources.length === 0 && !isDataGapPhrase) {
+    warnings.push({
+      code: 'no_sources',
+      message: 'Synthesis text present but no source records attached. Either add provenance or rephrase as a data gap.',
+    });
+  }
+
+  // C2: Synthesis cites a 4-digit year (2020-2030) but no source has a date
+  const yearMentioned = /\b(20[12]\d)\b/.test(synthesis);
+  const anyDated = sources.some(s => s.source_date);
+  if (yearMentioned && !anyDated && sources.length > 0) {
+    warnings.push({
+      code: 'undated_year_claim',
+      message: 'Synthesis cites a year but no attached source has a date — temporal claim is unverified.',
+    });
+  }
+
+  // C3: Synthesis cites a percentage or currency amount but no source carries
+  // quantitative evidence (label or evidence_quote includes a number)
+  const quantClaim = /\b\d+(?:\.\d+)?\s*%|\b(?:NOK|SEK|DKK|EUR|USD)\s*\d|\b\d+(?:\.\d+)?\s*(?:billion|million|bn|m\b)/i.test(synthesis);
+  if (quantClaim && sources.length > 0) {
+    const anyQuantSource = sources.some(s =>
+      /\d/.test(`${s.label || ''} ${s.evidence_quote || ''}`)
+    );
+    if (!anyQuantSource) {
+      warnings.push({
+        code: 'unsourced_quantity',
+        message: 'Synthesis cites a quantity (%/currency/multiplier) but no source has matching numeric evidence.',
+      });
+    }
+  }
+
+  return warnings;
+}
+
 function freshnessFor(sources) {
   if (!sources || sources.length === 0) return 'stale';
   const newest = sources.reduce((max, s) => {
@@ -69,6 +123,10 @@ function sourceFromSignal(s) {
     confidence_tier: s.is_demo ? 3 : (s.relevance_score >= 7 ? 1 : 2),
     verifier: s.acknowledged_at ? 'ae_confirmed' : 'auto',
     label: s.title?.substring(0, 100),
+    // Sprint 3.1: pass source grade + publisher through to UI provenance chips.
+    // These columns are populated by gradeAllSignals() — null is OK if not yet graded.
+    source_grade: s.source_grade || null,
+    publisher_name: s.publisher_name || null,
   };
 }
 
@@ -106,7 +164,8 @@ function loadAllSignalsForBank(db, bankKey, asOf = null) {
     SELECT id, signal_category, signal_event, title, description, source_url,
            source_type, severity, detected_at, acknowledged_at, action_point,
            evidence_quote, mentioned_stakeholders, relevance_score,
-           is_strategic_initiative, domain_tags, is_demo
+           is_strategic_initiative, domain_tags, is_demo,
+           source_grade, publisher_name, is_primary_source
     FROM deal_signals
     WHERE ${where}
     ORDER BY detected_at DESC
@@ -542,6 +601,10 @@ function synthesizeDmuChanges(ctx) {
         meeting_date: p.fact_meeting_date,
         signal_title: p.signal_title,
         signal_url: p.signal_source_url,
+        signal_detected_at: p.signal_detected_at,
+        // Sprint 3.3: pass signal grade + publisher through for inline provenance chips.
+        signal_grade: p.signal_grade,
+        signal_publisher: p.signal_publisher,
       })),
     },
     source_records: sources,
@@ -702,6 +765,13 @@ export function generatePulseForBank(db, bankKey, periodId, options = {}) {
     blockers_asks_actions:    synthesizeBlockersAsksActions(ctx),
   };
 
+  // Sprint 3.4 — run unsourced-claim lint on every section. Warnings are
+  // attached to the section as `_lint` so the UI can render warning chips
+  // and the JSON export carries the audit trail.
+  for (const [key, section] of Object.entries(sections)) {
+    section._lint = lintSynthesisProvenance(section);
+  }
+
   // Overall freshness = worst section freshness
   const freshnessLevels = Object.values(sections).map(s => s.freshness);
   const worstFreshness = freshnessLevels.includes('stale') ? 'stale'
@@ -726,6 +796,8 @@ export function generatePulseForBank(db, bankKey, periodId, options = {}) {
       total_source_records: totalSourceRecords,
       sections_with_internal_data: internalDataCells,
       total_signals_in_period: ctx.signals.filter(s => withinPeriod(s.detected_at, period)).length,
+      // Sprint 3.4: roll up lint warnings into payload metrics
+      lint_warning_count: Object.values(sections).reduce((sum, s) => sum + (s._lint?.length || 0), 0),
     },
     sections,
     ae_overrides: [],

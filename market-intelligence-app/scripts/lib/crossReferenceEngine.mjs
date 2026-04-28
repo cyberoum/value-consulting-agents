@@ -311,7 +311,9 @@ export function getPatternsForBank(db, bankKey, options = {}) {
       ds.description AS signal_description,
       ds.signal_category AS signal_category,
       ds.detected_at AS signal_detected_at,
-      ds.source_url AS signal_source_url
+      ds.source_url AS signal_source_url,
+      ds.source_grade AS signal_grade,
+      ds.publisher_name AS signal_publisher
     FROM pattern_matches pm
     LEFT JOIN meeting_facts mf ON mf.id = pm.internal_fact_id
     LEFT JOIN deal_signals ds ON ds.id = pm.external_signal_id

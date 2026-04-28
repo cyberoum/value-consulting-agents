@@ -24,6 +24,7 @@
 import { useEffect, useState } from 'react';
 import { Loader, MessageSquare, TrendingUp, TrendingDown, Minus, Sparkles, Activity } from 'lucide-react';
 import { getStakeholderDrift } from '../../data/api';
+import { ProvenanceChip } from '../common/Provenance';
 
 const TOPIC_LABEL = {
   budget: 'Budget',
@@ -121,7 +122,19 @@ export default function PersonDriftPanel({ bankKey, personId, personName }) {
           return (
             <div key={idx} className="p-2 rounded border border-[var(--border-subtle)] bg-white">
               <div className="flex items-center justify-between mb-1">
-                <span className="text-[10px] font-semibold text-[var(--text-primary)]">{TOPIC_LABEL[t.topic] || t.topic}</span>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10px] font-semibold text-[var(--text-primary)]">{TOPIC_LABEL[t.topic] || t.topic}</span>
+                  {/* Sprint 3.3: provenance for the latest fact in this drift cell */}
+                  <ProvenanceChip source={{
+                    source_type: 'meeting_fact',
+                    source_date: t.last_seen,
+                    confidence_tier: 1, // attributed person-driven cells are always T1
+                    source_grade: 'A',  // meeting facts are AE-witnessed primary
+                    verifier: 'auto',
+                    label: `${TOPIC_LABEL[t.topic] || t.topic} drift · ${t.n_facts} fact${t.n_facts === 1 ? '' : 's'}`,
+                    evidence_quote: t.series?.[t.series.length - 1]?.evidence_quote,
+                  }} size="xs" showDate={false} />
+                </div>
                 <span className={`inline-flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.5 rounded border ${meta.tone}`}>
                   <TrendIcon size={9} /> {meta.label}
                   {t.n_facts > 1 && <span className="opacity-70">· n={t.n_facts}</span>}

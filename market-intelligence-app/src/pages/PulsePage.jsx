@@ -26,6 +26,8 @@ import {
   getReviewPeriods, getBankPulses, generatePulse, getPulse,
   overrideCell, confirmPulse,
 } from '../data/api';
+import { ProvenanceChip } from '../components/common/Provenance';
+import { applyFloor, getFloor } from '../data/provenanceFloors';
 
 // ─────────────────────────────────────────────────────────────────
 // Helpers
@@ -140,12 +142,28 @@ function StakeholderDriftPanel({ drift }) {
 }
 
 function CorroboratedPatternsPanel({ patterns }) {
-  if (!patterns || patterns.length === 0) {
+  // Sprint 3.5: apply patterns_panel floor (min_tier=2). Patterns can carry
+  // their own confidence (high/medium/low) which we map to tier for the floor.
+  const enriched = (patterns || []).map(p => ({
+    ...p,
+    confidence_tier: p.confidence === 'high' ? 1 : p.confidence === 'medium' ? 2 : 3,
+    source_grade: p.signal_grade,
+  }));
+  const { kept, hidden } = applyFloor(enriched, 'patterns_panel');
+  if (!enriched.length) {
     return <div className="text-[10px] text-slate-500 italic">No corroborated patterns this period.</div>;
+  }
+  if (!kept.length) {
+    return <div className="text-[10px] text-slate-500 italic">{hidden.length} pattern{hidden.length === 1 ? '' : 's'} below confidence floor — none surfaced.</div>;
   }
   return (
     <div className="space-y-1.5">
-      {patterns.map((p) => {
+      {hidden.length > 0 && (
+        <div className="text-[9px] italic text-slate-500">
+          {hidden.length} low-confidence pattern{hidden.length === 1 ? '' : 's'} hidden by floor (min: medium).
+        </div>
+      )}
+      {kept.map((p) => {
         const gapText = p.gap_days >= 0
           ? `signal ${p.gap_days}d AFTER meeting`
           : `signal ${Math.abs(p.gap_days)}d BEFORE meeting (reactive)`;
@@ -162,14 +180,36 @@ function CorroboratedPatternsPanel({ patterns }) {
               <span className="text-[9px] text-slate-500">· {gapText}</span>
             </div>
             <div className="text-[11px] text-slate-800 leading-snug mb-1">{p.summary}</div>
-            <div className="text-[9px] text-slate-500">
-              <span className="font-semibold">Fact:</span> {p.speaker || '(unattributed)'} · {p.meeting_date}
+            <div className="flex items-center gap-1.5 text-[9px] text-slate-500">
+              <span className="font-semibold">Fact:</span>
+              <ProvenanceChip source={{
+                source_type: 'meeting_fact',
+                source_date: p.meeting_date,
+                confidence_tier: p.speaker ? 1 : 2,
+                source_grade: 'A',
+                verifier: 'auto',
+                label: `${p.speaker || '(unattributed)'} · ${p.topic}`,
+              }} size="xs" />
+              <span>{p.speaker || '(unattributed)'} · {p.meeting_date}</span>
             </div>
             {p.signal_url && (
-              <a href={p.signal_url} target="_blank" rel="noopener noreferrer"
-                 className="inline-flex items-center gap-1 text-[9px] text-blue-700 hover:underline mt-0.5">
-                <ExternalLink size={8} /> {p.signal_title?.slice(0, 90)}…
-              </a>
+              <div className="flex items-center gap-1.5 mt-0.5">
+                <span className="text-[9px] font-semibold text-slate-500">Signal:</span>
+                <ProvenanceChip source={{
+                  source_type: 'news',
+                  source_url: p.signal_url,
+                  source_date: p.signal_detected_at,
+                  confidence_tier: p.confidence === 'high' ? 1 : p.confidence === 'medium' ? 2 : 3,
+                  source_grade: p.signal_grade || null,
+                  publisher_name: p.signal_publisher || null,
+                  verifier: 'auto',
+                  label: p.signal_title,
+                }} size="xs" />
+                <a href={p.signal_url} target="_blank" rel="noopener noreferrer"
+                   className="inline-flex items-center gap-1 text-[9px] text-blue-700 hover:underline">
+                  <ExternalLink size={8} /> {p.signal_title?.slice(0, 80)}…
+                </a>
+              </div>
             )}
           </div>
         );
@@ -197,6 +237,10 @@ function formatDate(s) {
 // ─────────────────────────────────────────────────────────────────
 
 function SourceList({ sources }) {
+  // Sprint 3.3: SourceList now renders via the universal <ProvenanceChip> so
+  // every Pulse cell shares the same tier+grade hover semantics that
+  // PersonIntelCard / patterns / drift cells use. Single source of truth for
+  // provenance display across all of Nova.
   if (!sources?.length) {
     return <div className="text-[10px] text-slate-400 italic">No source records — synthesis based on data gap (this section may need refresh).</div>;
   }
@@ -204,10 +248,7 @@ function SourceList({ sources }) {
     <div className="space-y-1">
       {sources.map((s, i) => (
         <div key={i} className="flex items-start gap-1.5 text-[10px]">
-          <span className={`shrink-0 inline-block px-1.5 py-px rounded border text-[8px] font-bold ${TIER_STYLE[s.confidence_tier] || TIER_STYLE[3]}`}>
-            T{s.confidence_tier} · {TIER_LABELS[s.confidence_tier] || 'Estimated'}
-          </span>
-          <span className="text-slate-400 shrink-0 text-[8px]">{s.source_type}</span>
+          <ProvenanceChip source={s} size="sm" />
           {s.source_url ? (
             <a href={s.source_url} target="_blank" rel="noopener noreferrer"
               className="flex-1 min-w-0 text-blue-700 hover:underline truncate">
@@ -215,9 +256,6 @@ function SourceList({ sources }) {
             </a>
           ) : (
             <span className="flex-1 min-w-0 text-slate-700 truncate">{s.label || '(no link)'}</span>
-          )}
-          {s.source_date && (
-            <span className="shrink-0 text-slate-400 text-[8px]">{formatDate(s.source_date)}</span>
           )}
           {s.verifier === 'ae_confirmed' && (
             <span className="shrink-0 text-emerald-600 text-[8px] font-bold" title="Acknowledged by an AE">✓ AE</span>
@@ -334,6 +372,23 @@ function SectionCard({ pulseId, sectionKey, section, onCellSaved }) {
             <span className="text-[9px] font-bold text-blue-700 uppercase tracking-wider">Diff vs. previous: </span>
             <span className="text-[10px] text-blue-900">{section.diff_vs_previous}</span>
           </div>
+
+          {/* Sprint 3.4 — unsourced-claim lint warnings */}
+          {Array.isArray(section._lint) && section._lint.length > 0 && (
+            <div className="px-2 py-1.5 bg-amber-50 border border-amber-200 rounded">
+              <div className="flex items-center gap-1 mb-0.5">
+                <AlertTriangle size={10} className="text-amber-700" />
+                <span className="text-[9px] font-bold text-amber-800 uppercase tracking-wider">
+                  Provenance lint ({section._lint.length} warning{section._lint.length === 1 ? '' : 's'})
+                </span>
+              </div>
+              <ul className="text-[10px] text-amber-900 space-y-0.5">
+                {section._lint.map((w, i) => (
+                  <li key={i}><span className="font-mono text-[9px] text-amber-700">{w.code}</span>: {w.message}</li>
+                ))}
+              </ul>
+            </div>
+          )}
 
           {/* Sprint 2.6 — specialized panels for sections that carry meeting-intel payloads */}
           {sectionKey === 'engagement_trend' && section.data?.stakeholder_drift && (
