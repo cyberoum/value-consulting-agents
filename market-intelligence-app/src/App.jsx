@@ -21,6 +21,7 @@ const SettingsPage = lazy(() => import('./pages/SettingsPage'));
 const DesignSystemPage = lazy(() => import('./pages/DesignSystemPage'));
 const PulsePage = lazy(() => import('./pages/PulsePage'));  // Strategic Repositioning Sprint 1
 const ChangesPage = lazy(() => import('./pages/ChangesPage'));  // Strategic Repositioning Sprint 4 — diff-first portfolio view
+const PortfolioQueryPage = lazy(() => import('./pages/PortfolioQueryPage'));  // Sprint 5 — composable portfolio queries
 
 export default function App() {
   return (
@@ -40,6 +41,8 @@ export default function App() {
         <Route path="/bank/:bankKey/pulse" element={<Suspense fallback={<LoadingState />}><PulsePage /></Suspense>} />
         {/* Sprint 4 — diff-first portfolio change feed */}
         <Route path="/changes" element={<Suspense fallback={<LoadingState />}><ChangesPage /></Suspense>} />
+        {/* Sprint 5 — composable portfolio queries */}
+        <Route path="/query" element={<Suspense fallback={<LoadingState />}><PortfolioQueryPage /></Suspense>} />
         <Route path="/pipeline" element={<Suspense fallback={<LoadingState />}><PipelinePage /></Suspense>} />
         <Route path="/settings" element={<Suspense fallback={<LoadingState />}><SettingsPage /></Suspense>} />
         <Route path="/design-system" element={<Suspense fallback={<LoadingState />}><DesignSystemPage /></Suspense>} />

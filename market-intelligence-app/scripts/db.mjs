@@ -518,6 +518,18 @@ function initSchema(db) {
   addColIfMissing('deal_signals', 'publisher_name', 'TEXT'); // parsed from title tail (" - Reuters" → "Reuters")
   try { db.exec(`CREATE INDEX IF NOT EXISTS idx_deal_signals_grade ON deal_signals(source_grade)`); } catch { /* exists */ }
 
+  // Sprint 5.4 — portfolio saved views (named filters AEs can persist + share)
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS portfolio_saved_views (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      description TEXT,
+      filter_json TEXT NOT NULL,
+      created_at TEXT DEFAULT (datetime('now')),
+      updated_at TEXT DEFAULT (datetime('now'))
+    );
+  `);
+
   // Seed initial review periods — Q1 + Q2 2026 + Q3 + Q4 2026.
   // Idempotent: INSERT OR IGNORE keys on the period id.
   const seedPeriods = [

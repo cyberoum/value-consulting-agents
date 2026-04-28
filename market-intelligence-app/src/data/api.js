@@ -298,6 +298,13 @@ export const getBankChangeFeed = (bankKey, opts = {}) => {
   const qs = params.toString();
   return request(`/api/banks/${encodeURIComponent(bankKey)}/change-feed${qs ? `?${qs}` : ''}`);
 };
+// ── Portfolio Query (Sprint 5) ──
+export const runPortfolioQuery = (filter) => request('/api/portfolio/query', { method: 'POST', body: JSON.stringify({ filter }) });
+export const getPortfolioQueryExamples = () => request('/api/portfolio/query/examples');
+export const listPortfolioSavedViews = () => request('/api/portfolio/saved-views');
+export const createPortfolioSavedView = (data) => request('/api/portfolio/saved-views', { method: 'POST', body: JSON.stringify(data) });
+export const deletePortfolioSavedView = (id) => request(`/api/portfolio/saved-views/${encodeURIComponent(id)}`, { method: 'DELETE' });
+
 export const getPortfolioChangeFeed = (opts = {}) => {
   const params = new URLSearchParams();
   if (opts.lookback != null)        params.set('lookback', String(opts.lookback));

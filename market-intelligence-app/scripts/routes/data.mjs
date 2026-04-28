@@ -16,6 +16,7 @@ import { generatePulseForBank } from '../lib/pulseGenerator.mjs';
 import { getStakeholderDrift, getDriftByStakeholder, getBankDriftRollup } from '../lib/stakeholderDrift.mjs';
 import { getPatternsForBank, runCrossReferenceForBank } from '../lib/crossReferenceEngine.mjs';
 import { getChangeFeed, getChangeFeedCounts } from '../lib/changeFeed.mjs';
+import { runPortfolioQuery, EXAMPLE_QUERIES } from '../lib/portfolioQuery.mjs';
 
 // ── Qualification Score Calculator (mirrors client-side calcScoreFromData) ──
 const QUAL_WEIGHTS = {
@@ -1504,6 +1505,66 @@ export async function handleDataRoute(req, res, { path, url, db, parseRow, parse
     const events = getChangeFeed(db, opts);
     const counts = getChangeFeedCounts(db, { lookbackDays: lookback });
     jsonResponse(res, 200, { lookback_days: lookback, counts, events });
+    return true;
+  }
+
+  // ── POST /api/portfolio/query — Sprint 5.2 ──
+  // Body: { filter: { op, predicates, children } } — see portfolioQuery.mjs
+  // Returns: { matched: [...], total: N, leaf_predicates: N }
+  if (path === '/api/portfolio/query' && req.method === 'POST') {
+    const body = await parseBody(req);
+    if (!body || typeof body !== 'object' || !body.filter) {
+      jsonResponse(res, 400, { error: 'filter is required' });
+      return true;
+    }
+    let results;
+    try { results = runPortfolioQuery(db, body.filter); }
+    catch (err) {
+      jsonResponse(res, 400, { error: 'Query failed', detail: err.message });
+      return true;
+    }
+    jsonResponse(res, 200, { total: results.length, matched: results });
+    return true;
+  }
+
+  // ── GET /api/portfolio/query/examples — pre-built sample queries
+  if (path === '/api/portfolio/query/examples' && req.method === 'GET') {
+    jsonResponse(res, 200, { examples: EXAMPLE_QUERIES });
+    return true;
+  }
+
+  // ── GET /api/portfolio/saved-views — Sprint 5.4 (list)
+  if (path === '/api/portfolio/saved-views' && req.method === 'GET') {
+    let rows = [];
+    try {
+      rows = db.prepare(`SELECT id, name, description, filter_json, created_at, updated_at FROM portfolio_saved_views ORDER BY updated_at DESC`).all();
+    } catch { rows = []; }
+    jsonResponse(res, 200, { views: rows.map(r => ({ ...r, filter: JSON.parse(r.filter_json || '{}') })) });
+    return true;
+  }
+
+  // ── POST /api/portfolio/saved-views — create
+  if (path === '/api/portfolio/saved-views' && req.method === 'POST') {
+    const body = await parseBody(req);
+    if (!body?.name || !body?.filter) {
+      jsonResponse(res, 400, { error: 'name and filter required' });
+      return true;
+    }
+    const id = crypto.randomUUID();
+    db.prepare(`
+      INSERT INTO portfolio_saved_views (id, name, description, filter_json)
+      VALUES (?, ?, ?, ?)
+    `).run(id, body.name, body.description || null, JSON.stringify(body.filter));
+    jsonResponse(res, 201, { id, name: body.name });
+    return true;
+  }
+
+  // ── DELETE /api/portfolio/saved-views/:id
+  match = path.match(/^\/api\/portfolio\/saved-views\/([^/]+)$/);
+  if (match && req.method === 'DELETE') {
+    const id = decodeURIComponent(match[1]);
+    db.prepare(`DELETE FROM portfolio_saved_views WHERE id = ?`).run(id);
+    jsonResponse(res, 200, { id, deleted: true });
     return true;
   }
 
